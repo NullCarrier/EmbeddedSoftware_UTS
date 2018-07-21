@@ -1,6 +1,6 @@
 /* ###################################################################
 **     Filename    : main.c
-**     Project     : Lab1
+**     Project     : Lab2
 **     Processor   : MK70FN1M0VMJ12
 **     Version     : Driver 01.01
 **     Compiler    : GNU C Compiler

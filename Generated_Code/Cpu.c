@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : K70P256M150SF3RM, Rev. 2, Dec 2011
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-29, 13:56, # CodeGen: 10
+**     Date/Time   : 2015-08-14, 10:44, # CodeGen: 7
 **     Abstract    :
 **
 **     Settings    :
@@ -36,7 +36,7 @@
 **                  OSC0ERCLK clock                        : Enabled
 **                  OSC0ERCLK in stop                      : Disabled
 **                  OSC0ERCLK clock [MHz]                  : 0
-**                  OSC1ERCLK clock                        : Enabled
+**                  OSC1ERCLK clock                        : Disabled
 **                  OSC1ERCLK in stop                      : Disabled
 **                  OSC1ERCLK clock [MHz]                  : 0
 **                  ERCLK32K clock source                  : System oscillator 0
@@ -254,7 +254,7 @@
 **            Clock configuration 0                        : 
 **              __IRC_32kHz                                : 0.032768
 **              __IRC_4MHz                                 : 2
-**              __SYSTEM_OSC                               : 8
+**              __SYSTEM_OSC                               : 50
 **              __OSC1                                     : 8
 **              __RTC_OSC                                  : 0
 **              Very low power mode                        : Disabled
@@ -427,8 +427,8 @@ void __init_hardware(void)
   OSC0_CR = OSC_CR_ERCLKEN_MASK;
   /* MCG_C10: LOCRE2=0,??=0,RANGE1=0,HGO1=0,EREFS1=0,??=0,??=0 */
   MCG_C10 = MCG_C10_RANGE1(0x00);
-  /* OSC1_CR: ERCLKEN=1,??=0,EREFSTEN=0,??=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
-  OSC1_CR = OSC_CR_ERCLKEN_MASK;
+  /* OSC1_CR: ERCLKEN=0,??=0,EREFSTEN=0,??=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
+  OSC1_CR = 0x00U;
   /* MCG_C7: OSCSEL=0 */
   MCG_C7 &= (uint8_t)~(uint8_t)(MCG_C7_OSCSEL_MASK);
   /* MCG_C5: PLLREFSEL0=0,PLLCLKEN0=0,PLLSTEN0=0,??=0,??=0,PRDIV0=0 */

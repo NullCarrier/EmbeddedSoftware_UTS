@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : K70P256M150SF3RM, Rev. 2, Dec 2011
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-29, 13:56, # CodeGen: 10
+**     Date/Time   : 2015-08-14, 10:44, # CodeGen: 7
 **     Abstract    :
 **
 **     Settings    :
