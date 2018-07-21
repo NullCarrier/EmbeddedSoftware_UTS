@@ -1,6 +1,6 @@
 /* ###################################################################
 **     Filename    : main.c
-**     Project     : Lab3
+**     Project     : Lab4
 **     Processor   : MK70FN1M0VMJ12
 **     Version     : Driver 01.01
 **     Compiler    : GNU C Compiler
@@ -15,7 +15,7 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 3.0
+** @version 4.0
 ** @brief
 **         Main module.
 **         This module contains user's application code.

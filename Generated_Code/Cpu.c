@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : K70P256M150SF3RM, Rev. 2, Dec 2011
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-08-17, 00:21, # CodeGen: 0
+**     Date/Time   : 2015-09-11, 22:17, # CodeGen: 0
 **     Abstract    :
 **
 **     Settings    :
@@ -22,7 +22,9 @@
 **              Initialize slow trim value                 : no
 **              Fast internal reference clock [MHz]        : 4
 **              Initialize fast trim value                 : no
-**            RTC oscillator                               : Disabled
+**            RTC oscillator                               : Enabled
+**              Clock frequency [MHz]                      : 0.032768
+**              Capacitor load                             : 18pF
 **            System oscillator 0                          : Enabled
 **              Clock source                               : External reference clock
 **                Clock input pin                          : 
@@ -44,8 +46,8 @@
 **                  OSC1ERCLK clock                        : Enabled
 **                  OSC1ERCLK in stop                      : Disabled
 **                  OSC1ERCLK clock [MHz]                  : 0
-**                  ERCLK32K clock source                  : System oscillator 0
-**                  ERCLK32K. clock [kHz]                  : 50
+**                  ERCLK32K clock source                  : RTC oscillator
+**                  ERCLK32K. clock [kHz]                  : 0.032768
 **                MCG settings                             : 
 **                  MCG mode                               : BLPE
 **                  MCG output clock                       : External clock
@@ -262,14 +264,14 @@
 **              __IRC_4MHz                                 : 2
 **              __SYSTEM_OSC                               : 50
 **              __OSC1                                     : 8
-**              __RTC_OSC                                  : 0
+**              __RTC_OSC                                  : 0.032768
 **              Very low power mode                        : Disabled
 **              Clock source setting                       : configuration 0
 **                MCG mode                                 : BLPE
 **                MCG output [MHz]                         : 50
 **                MCGIRCLK clock [MHz]                     : 0.032768
 **                OSCERCLK clock [MHz]                     : 50
-**                ERCLK32K. clock [kHz]                    : 50
+**                ERCLK32K. clock [kHz]                    : 0.032768
 **                MCGFFCLK [kHz]                           : 24.4140625
 **              System clocks                              : 
 **                Core clock prescaler                     : Auto select
@@ -383,6 +385,22 @@ void __init_hardware(void)
   /*** ### MK70FN1M0VMJ12 "Cpu" init code ... ***/
   /*** PE initialization code after reset ***/
   SCB_VTOR = (uint32_t)(&__vect_table); /* Set the interrupt vector table position */
+  /* SIM_SCGC6: RTC=1 */
+  SIM_SCGC6 |= SIM_SCGC6_RTC_MASK;
+  if ((RTC_CR & RTC_CR_OSCE_MASK) == 0u) { /* Only if the OSCILLATOR is not already enabled */
+    /* RTC_CR: SC2P=1,SC4P=0,SC8P=0,SC16P=1 */
+    RTC_CR = (uint32_t)((RTC_CR & (uint32_t)~(uint32_t)(
+              RTC_CR_SC4P_MASK |
+              RTC_CR_SC8P_MASK
+             )) | (uint32_t)(
+              RTC_CR_SC2P_MASK |
+              RTC_CR_SC16P_MASK
+             ));
+    /* RTC_CR: OSCE=1 */
+    RTC_CR |= RTC_CR_OSCE_MASK;
+    /* RTC_CR: CLKO=0 */
+    RTC_CR &= (uint32_t)~(uint32_t)(RTC_CR_CLKO_MASK);
+  }
   /* Disable the WDOG module */
   /* WDOG_UNLOCK: WDOGUNLOCK=0xC520 */
   WDOG_UNLOCK = WDOG_UNLOCK_WDOGUNLOCK(0xC520); /* Key 1 */
@@ -402,8 +420,10 @@ void __init_hardware(void)
                 SIM_CLKDIV1_OUTDIV2(0x01) |
                 SIM_CLKDIV1_OUTDIV3(0x03) |
                 SIM_CLKDIV1_OUTDIV4(0x03); /* Set the system prescalers to safe value */
-  /* SIM_SCGC5: PORTA=1 */
-  SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;   /* Enable clock gate for ports to enable pin routing */
+  /* SIM_SCGC5: PORTE=1,PORTC=1,PORTA=1 */
+  SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK |
+               SIM_SCGC5_PORTC_MASK |
+               SIM_SCGC5_PORTA_MASK;   /* Enable clock gate for ports to enable pin routing */
   if ((PMC_REGSC & PMC_REGSC_ACKISO_MASK) != 0x0U) {
     /* PMC_REGSC: ACKISO=1 */
     PMC_REGSC |= PMC_REGSC_ACKISO_MASK; /* Release IO pads after wakeup from VLLS mode. */
@@ -415,8 +435,8 @@ void __init_hardware(void)
                 SIM_CLKDIV1_OUTDIV4(0x03); /* Update system prescalers */
   /* SIM_SOPT2: PLLFLLSEL=0 */
   SIM_SOPT2 &= (uint32_t)~(uint32_t)(SIM_SOPT2_PLLFLLSEL(0x03)); /* Select FLL as a clock source for various peripherals */
-  /* SIM_SOPT1: OSC32KSEL=0 */
-  SIM_SOPT1 &= (uint32_t)~(uint32_t)(SIM_SOPT1_OSC32KSEL_MASK); /* System oscillator drives 32 kHz clock for various peripherals */
+  /* SIM_SOPT1: OSC32KSEL=1 */
+  SIM_SOPT1 |= SIM_SOPT1_OSC32KSEL_MASK; /* RTC oscillator drives 32 kHz clock for various peripherals */
   /* SIM_SCGC1: OSC1=1 */
   SIM_SCGC1 |= SIM_SCGC1_OSC1_MASK;
   /* PORTA_PCR18: ISF=0,MUX=0 */
