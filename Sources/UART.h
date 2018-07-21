@@ -45,4 +45,10 @@ bool UART_OutChar(const uint8_t data);
  */
 void UART_Poll(void);
 
+/*! @brief Interrupt service routine for the UART.
+ *
+ *  @note Assumes the transmit and receive FIFOs have been initialized.
+ */
+void __attribute__ ((interrupt)) UART_ISR(void);
+
 #endif
