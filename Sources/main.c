@@ -27,9 +27,24 @@
 */         
 /* MODULE main */
 
+void HandlePacket()
+{
+
+ switch(Packet_Command)
+{
+  // for specific command
+  /* case CMD_STARTUP: HandleStartupPacket();
+    break; */
+}
+
+}
+    
+
 
 // CPU module - contains low level hardware initialization routines
 #include "Cpu.h"
+//include the FIFO buffer
+#include "FIFO.h"
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -44,6 +59,9 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
+    if( Packet_Get() )
+     HandlePacket();
+    UART_Poll();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

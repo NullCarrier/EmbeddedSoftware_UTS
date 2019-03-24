@@ -38,17 +38,18 @@ bool FIFO_Put(TFIFO * const fifo, const uint8_t data)
 }
 
 
-bool FIFO_Get(TFIFO * const fifo, const uint8_t dataPtr)
+bool FIFO_Get(TFIFO * const fifo, uint8_t * const dataPtr)
 {
 // can not retrieve if buffer is empty
  if(fifo-> NbBytes != 0)
 {
   fifo-> NbBytes--;
  // place the retrieved byte
- dataPtr = fifo-> Buffer[fifo-> Start];
+ *dataPtr = fifo-> Buffer[fifo-> Start];
 
  // to make a circular array, reset Start index
  fifo-> Start = (fifo-> Start +1 ) % FIFO_SIZE;
+ return true;
 }
  else
  return false;
