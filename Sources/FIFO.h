@@ -13,27 +13,38 @@
 
 // new types
 #include "types.h"
-
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256
 
 /*!
  * @struct TFIFO
  */
-typedef struct
+class TFIFO
 {
-  uint16_t Start;		/*!< The index of the position of the oldest data in the FIFO */
-  uint16_t End; 		/*!< The index of the next available empty position in the FIFO */
+  private:
+
+  uint8_t *Start;		/*!< The index of the position of the oldest data in the FIFO */
+  uint8_t *End; 		/*!< The index of the next available empty position in the FIFO */
   uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
   uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
-} TFIFO;
+
+  public:
+      TFIFO()// default constructor for initializing FIFO
+      {
+        Start = End = Buffer;
+        NbBytes = 0;
+      }
+   bool FIFO_Put(const uint8_t data);
+   bool FIFO_Get(const uint8_t *dataPtr);
+
+};
 
 /*! @brief Initialize the FIFO before first use.
  *
  *  @param fifo A pointer to the FIFO that needs initializing.
  *  @return bool - TRUE if the FIFO was successfully initialised
  */
-bool FIFO_Init(TFIFO * const fifo);
+//bool FIFO_Init(TFIFO * const fifo);
 
 /*! @brief Put one character into the FIFO.
  *
@@ -42,7 +53,7 @@ bool FIFO_Init(TFIFO * const fifo);
  *  @return bool - TRUE if data is successfully stored in the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
-bool FIFO_Put(TFIFO * const fifo, const uint8_t data);
+//bool FIFO_Put(TFIFO * const fifo, const uint8_t data);
 
 /*! @brief Get one character from the FIFO.
  *
@@ -51,6 +62,6 @@ bool FIFO_Put(TFIFO * const fifo, const uint8_t data);
  *  @return bool - TRUE if data is successfully retrieved from the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
-bool FIFO_Get(TFIFO * const fifo, uint8_t * const dataPtr);
+//bool FIFO_Get(TFIFO * const fifo, uint8_t * const dataPtr);
 
 #endif
