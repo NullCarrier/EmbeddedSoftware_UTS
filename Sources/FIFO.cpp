@@ -2,15 +2,15 @@
 // implement FIFO functions
 #include "FIFO.h"
 
- bool TFIFO::FIFO_Put( const uint8_t data )
+ bool TFIFO::FIFO_Put( const uint8_t &data )
 {
 // To make sure the buffer is not full or overflow
  if( NbBytes <= FIFO_SIZE)
 {
    NbBytes++;
  // add a byte of data into array
-  *End = data;
- // to make a circular array
+  Buffer[End] = data;
+ // to make a circular array, reset the index
   ++End %= FIFO_SIZE;
  return true;
 }
@@ -26,7 +26,7 @@ bool TFIFO::FIFO_Get( uint8_t * const dataPtr )
 {
    NbBytes--;
  // place the retrieved byte
- *dataPtr = *Start;
+ *dataPtr = Buffer[Start];
  // to make a circular array, reset Start index
   ++Start %= FIFO_SIZE;
  return true;
@@ -35,12 +35,5 @@ bool TFIFO::FIFO_Get( uint8_t * const dataPtr )
  return false;
 
 }
-
-
-
-
-
-
-
 
 
