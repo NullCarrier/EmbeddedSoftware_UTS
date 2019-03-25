@@ -4,8 +4,9 @@
 
 bool Packet_Init(const uint32_t baudRate, const uint32_t moduleClk)
 {
-
-return true;
+  UART_Init(baudRate, moduleClk);
+  
+  return true;
 }
 
  /* need to call UART_intchar 5times */
@@ -14,10 +15,11 @@ bool Packet_Get(void)
 {
  unsigned nbBytes_Packet = 0;
 
+ 
  while( nbBytes_Packet <= 5)
 {
   //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-  if ( UART_InChar( UART2_D_REG(base) ) )
+  if ( UART_InChar( &UART2_D ) )
  {     
       NbBytes_Packet++;
         switch(nbBytes_Packet) 

@@ -27,6 +27,7 @@
 */         
 /* MODULE main */
 
+// only handling 3 cases
 void HandlePacket()
 {
 
@@ -42,7 +43,7 @@ void HandlePacket()
 
 
 // CPU module - contains low level hardware initialization routines
-#include "Cpu.h"
+#include "Cpu.h"  
 //include the FIFO buffer
 #include "FIFO.h"
 
