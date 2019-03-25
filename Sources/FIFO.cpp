@@ -1,6 +1,6 @@
+
+// implement FIFO functions
 #include "FIFO.h"
-
-
 
  bool TFIFO::FIFO_Put( const uint8_t data )
 {
@@ -8,7 +8,6 @@
  if( NbBytes <= FIFO_SIZE)
 {
    NbBytes++;
- // ?: why is not a const uint8_t array
  // add a byte of data into array
   *End = data;
  // to make a circular array
@@ -20,7 +19,7 @@
 
 }
 
-bool FIFO_Get( uint8_t * const dataPtr )
+bool TFIFO::FIFO_Get( uint8_t * const dataPtr )
 {
 // can not retrieve if buffer is empty
  if( NbBytes != 0 )
