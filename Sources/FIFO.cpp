@@ -9,9 +9,9 @@
 {
    NbBytes++;
  // add a byte of data into array
-  Buffer[End] = data;
+  *End = data;
  // to make a circular array, reset the index
-  ++End %= FIFO_SIZE;
+  End =( End != end(Buffer) )? End++ : Buffer ;
  return true;
 }
  else
@@ -26,9 +26,9 @@ bool TFIFO::FIFO_Get( uint8_t * const dataPtr )
 {
    NbBytes--;
  // place the retrieved byte
- *dataPtr = Buffer[Start];
+ *dataPtr = *Start;
  // to make a circular array, reset Start index
-  ++Start %= FIFO_SIZE;
+  Start = (Start != end(Buffer) )? Start++ : Buffer ;
  return true;
 }
  else

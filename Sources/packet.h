@@ -13,7 +13,7 @@
 
 // New types
 #include "types.h"
-
+#include "UART.h"
 // Packet structure
 class Packet_t
 {
@@ -37,7 +37,7 @@ public:
   bool Packet_Get();
   bool Packet_Put();
   // handlePacket for handling packets
-  friend HandlePacket(Packet_t &packet);
+  friend void HandlePacket(Packet_t& packet);
 };
 
 

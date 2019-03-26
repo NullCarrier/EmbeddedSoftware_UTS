@@ -1,18 +1,28 @@
 #include "UART.h"
-#include "MK70F12.h"// involve mask for RDRF,TDRE, RXRTSE
+#include "MK70F12.h"// involve mask for RDRF,TDRE
 #include "Cpu.h"
-#include "FIFO.cpp"
+#include "FIFO.h"
 
 // declare the global object called RxFIFO, TxFIFO
 extern TFIFO RxFIFO;
 extern TFIFO TxFIFO;
+
+// const number for converting baudrate into SBR
+static constexpr uint32_t DIVISIOR = 16;
+
+// This function is only used to obtain BRFA
+static uint8_t get_fraction(const uint32_t &baudRate, const uint32_t &moduleClk)
+{
+  float sbr = (moduleClk / baudRate) / DIVISIOR ;
+  float sbr_Fraction = sbr % (static_cast<int> sbr) ;
+
+ return static_cast<uint8_t> (sbr_Fraction * 2 *  DIVISIOR);
+}
                                              //CPU_BUS_CLK_HZ
 bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
   uint16union_t sbr;
-  constexpr uint32_t DIVISIOR = 16;
- /* int sbr_integer = 0;
-  float */
+
  // Baud rate = UART module clock / (16* (SBR[12:0]+BRFD) )
  // UART_BDH_SBR_MASK , UART_BDH_SBR(x)
  //Enable the clock module for UART2
@@ -26,8 +36,8 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
   sbr.l = (moduleClk / baudRate) / DIVISIOR ;
   UART2_BDH |= sbr.s.Hi;
   UART2_BDL |= sbr.s.Lo;
-// Write the frantional portion of the Baudrate to the BDH/L register.
-   UART2_C4 |= UART_C4_BRFA(4) ; // get remainder
+// Write the fractional portion of the Baudrate to the BDH/L register.
+ UART2_C4 |= UART_C4_BRFA( get_fraction( baudRate, moduleClk)) ; // get remainder
  // Enable the receiver, transmitter
  UART2_C2 |= (UART_C2_RE_MASK | UART_C2_TE_MASK);
 
@@ -36,13 +46,13 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
   return true;
 }
 
-bool UART_InChar(uint8_t* const dataPtr)
+inline bool UART_InChar(uint8_t* const dataPtr)
 {
  if( RxFIFO.FIFO_Get(dataPtr) )
    return true;
 }
 
-bool UART_OutChar(const uint8_t &data)
+inline bool UART_OutChar(const uint8_t &data)
 {
   if( TxFIFO.FIFO_Put(data) )
    return true;
