@@ -1,13 +1,6 @@
-//
+// implement functions: Packet_Get, Packet_put
 #include "packet.h"
 
-/* Checksum for packets from PC to tower
-static constexpr CheckSum_Startup = 0x04^0x00^0x00 ^0x00;
-static constexpr CheckSum_GetVersion = 0x09^0x76^0x78^0x00;
-static constexpr CheckSum_TowerNum = 0x0B^0x01^0x00 ^0x00; // get tower number */
-
-
- /* need to call UART_intchar 5times */
  //implment FSM
 bool Packet_t::Packet_Get(void)
 {
@@ -45,7 +38,7 @@ bool Packet_t::Packet_Get(void)
 return true;
 }
 
-
+// To send packet from tower to PC
 bool Packet_t::Packed_Put()
 {
  //After calling the handlePacket(), tower has got valid packet

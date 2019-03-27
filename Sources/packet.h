@@ -14,15 +14,19 @@
 // New types
 #include "types.h"
 #include "UART.h"
+#include <deque>
 // Packet structure
 class Packet_t
 {
 private:
+  #if 0
   uint8_t  Packet_Command,		/*!< The packet's command */
   uint8_t  Packet_Parameter1, 	/*!< The packet's 1st parameter */
   uint8_t  Packet_Parameter2, 	/*!< The packet's 2nd parameter */
   uint8_t  Packet_Parameter3,	/*!< The packet's 3rd parameter */
-  uint8_t  Packet_Checksum;	/*!< The packet's checksum */
+  uint8_t  Packet_Checksum;	 /*!< The packet's checksum */
+  #endif
+  deque<uint8_t> (5);
   const uint32_t baudRate;  /* to initialize the packet module via UART_Init() function */
   const uint32_t moduleClk;
 

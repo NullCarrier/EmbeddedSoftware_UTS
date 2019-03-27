@@ -10,7 +10,7 @@ extern TFIFO TxFIFO;
 static constexpr uint32_t DIVISIOR = 16;
 
 // This function is only used to obtain BRFA
-static uint8_t get_fraction(const uint32_t &baudRate, const uint32_t &moduleClk)
+static uint8_t get_fraction(const uint32_t& baudRate, const uint32_t& moduleClk)
 {
   float sbr = (moduleClk / baudRate) / DIVISIOR ;
   float sbr_Fraction = sbr % (static_cast<int> sbr) ;
