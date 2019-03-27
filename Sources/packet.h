@@ -23,7 +23,7 @@ private:
   uint8_t  Packet_Parameter2, 	/*!< The packet's 2nd parameter */
   uint8_t  Packet_Parameter3,	/*!< The packet's 3rd parameter */
   uint8_t  Packet_Checksum;	/*!< The packet's checksum */
-  const uint32_t baudRate;
+  const uint32_t baudRate;  /* to initialize the packet module via UART_Init() function */
   const uint32_t moduleClk;
 
 public:
@@ -36,6 +36,8 @@ public:
   // member function of packet
   bool Packet_Get();
   bool Packet_Put();
+  //it is only return true when check_sum matches
+inline bool Check_Checksum() {return (Packet_Checksum==Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3)}
   // handlePacket for handling packets
   friend void HandlePacket(Packet_t& packet);
 };

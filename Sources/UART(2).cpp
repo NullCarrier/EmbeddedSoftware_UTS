@@ -1,7 +1,6 @@
 #include "UART.h"
-#include "MK70F12.h"// involve mask for RDRF,TDRE
-#include "Cpu.h"
-#include "FIFO.h"
+#include "MK70F12.h"// involve mask for all registers
+#include "FIFO.h" // to use FIFO_Get(), FIFO_Put
 
 // declare the global object called RxFIFO, TxFIFO
 extern TFIFO RxFIFO;
@@ -21,7 +20,8 @@ static uint8_t get_fraction(const uint32_t &baudRate, const uint32_t &moduleClk)
                                              //CPU_BUS_CLK_HZ
 bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
-  uint16union_t sbr;
+  //local variable for storing SBR using union type
+  uint16union_t sbr = 0;
 
  // Baud rate = UART module clock / (16* (SBR[12:0]+BRFD) )
  // UART_BDH_SBR_MASK , UART_BDH_SBR(x)
@@ -36,8 +36,8 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
   sbr.l = (moduleClk / baudRate) / DIVISIOR ;
   UART2_BDH |= sbr.s.Hi;
   UART2_BDL |= sbr.s.Lo;
-// Write the fractional portion of the Baudrate to the BDH/L register.
- UART2_C4 |= UART_C4_BRFA( get_fraction( baudRate, moduleClk)) ; // get remainder
+// Write the fractional portion of the Baudrate to the UART2_C4 register.
+ UART2_C4 |= UART_C4_BRFA( get_fraction( baudRate, moduleClk)) ;
  // Enable the receiver, transmitter
  UART2_C2 |= (UART_C2_RE_MASK | UART_C2_TE_MASK);
 
@@ -58,21 +58,21 @@ inline bool UART_OutChar(const uint8_t &data)
    return true;
 }
 
-// need to do the signal muxing?
+
 // UART2_S1, UART2_D --8bit mode  9th_bit is 0
 void UART_Poll(void)
 {
   // receiving data condition
-  // To check the state of RDRF
+  // To check the state of RDRF bit
  if(UART2_S1 & UART_S1_RDRF_MASK)
 {
-  // enable the receiver to send a byte of data
+  // let the receiver to send a byte of data
   RxFIFO.FIFO_Put(*UART2_D);
 }
-// send data condition
+// To check the state of TDRE bit
 else if(UART2_S1 & UART_S1_TDRE_MASK)
 {
-  //enable transmitter to send data
+  //let transmitter to send data
   TxFIFO.FIFO_Get(&UART2_D);
 }
 
