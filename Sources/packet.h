@@ -27,8 +27,9 @@ private:
   uint8_t  Packet_Parameter3,	/*!< The packet's 3rd parameter */
   uint8_t  Packet_Checksum;	 /*!< The packet's checksum */
   #endif
-  deque<uint8_t> RxPacket(5);
-  const uint32_t baudRate;  /* to initialize the packet module via UART_Init() function */
+  deque<uint8_t> RxPacket(5, 0);
+  // to initialize the packet module via UART_Init() function
+  const uint32_t baudRate;
   const uint32_t moduleClk;
 
 public:
@@ -47,10 +48,10 @@ public:
   void HandleTowerVersionPacket();
 
   //it is only return true when check_sum matches
-inline bool Check_Checksum() {return (RxPacket[4] == Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3)}
-  // handlePacket for handling packets
-  friend bool HandlePacket(Packet_t& packet);
-  friend void HandleAckBit(Packet_t& packet);
+inline bool Check_Checksum() {return RxPacket[4] == RxPacket[0] ^ RxPacket[1] ^ RxPacket[2] ^ RxPacket[3] }
+  // functions for handling packets
+  friend bool HandleCommandPacket(Packet_t& packet);
+  friend void HandlePacket(Packet_t& packet);
 };
 
 

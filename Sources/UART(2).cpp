@@ -17,8 +17,8 @@ static uint8_t get_fraction(const uint32_t& baudRate, const uint32_t& moduleClk)
 
  return static_cast<uint8_t> (sbr_Fraction * 2 *  DIVISIOR);
 }
-                                             //CPU_BUS_CLK_HZ
-bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
+
+bool UART_Init(const uint32_t& baudRate, const uint32_t& moduleClk)
 {
   //local variable for storing SBR using union type
   uint16union_t sbr = 0;
