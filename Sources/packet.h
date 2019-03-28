@@ -14,6 +14,7 @@
 // New types
 #include "types.h"
 #include "UART.h"
+#include <assert.h>
 #include <deque>
 // Packet structure
 class Packet_t
@@ -35,16 +36,21 @@ public:
    Packet_t(const uint32_t rate, const uint32_t clock):
      baudRate{rate}, moduleClk{clock}
    {
-     UART_Init(baudRate, moduleClk);
+     assert( UART_Init(baudRate, moduleClk) );
    }
+
   // member function of packet
   bool Packet_Get();
   bool Packet_Put();
+  void HandleStartupPacket();
+  void HandleTowerVersionPacket();
+  void HandleTowerVersionPacket();
+
   //it is only return true when check_sum matches
 inline bool Check_Checksum() {return (RxPacket[4] == Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3)}
   // handlePacket for handling packets
-  friend void HandlePacket(Packet_t& packet);
-  friend bool HandleAckBit(Packet_t& packet);
+  friend bool HandlePacket(Packet_t& packet);
+  friend void HandleAckBit(Packet_t& packet);
 };
 
 

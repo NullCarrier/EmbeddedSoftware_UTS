@@ -1,7 +1,6 @@
 // implement functions: Packet_Get, Packet_put
 #include "packet.h"
 
- //implment FSM
 bool Packet_t::Packet_Get(void)
 {
 

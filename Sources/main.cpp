@@ -47,8 +47,6 @@ void HandleAckBit(Packet_t& packet)
  else
  {
    HandlePacket();	 
-   // to clear Acknowledgement bit
-   Packet_Command &= ~PACKET_ACK_MASK; 
  }
 
 }
