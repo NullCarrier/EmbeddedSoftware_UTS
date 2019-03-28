@@ -34,7 +34,7 @@ class TFIFO
         Start = End = Buffer;
         NbBytes = 0;
       }
-   bool FIFO_Put(const uint8_t &data);
+   bool FIFO_Put(const uint8_t& data);
    bool FIFO_Get( uint8_t * const dataPtr);
 
 };

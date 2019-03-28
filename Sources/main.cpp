@@ -27,17 +27,80 @@
 */         
 /* MODULE main */
 
-// only handling 3 cases
-void HandlePacket()
-{
+// constant for 3 handling cases
+#define  CMD_STARTUP 0x04
+#define  CMD_TOWERVERSION 0x09
+#define  CMD_TOWERNUMBER 0x0B 
 
- switch(Packet_Command)
+void HandleAckBit(Packet_t& packet)
+{
+ auto Packet_Command = RxPacket.begin();
+ 
+  if(*Packet_Command & PACKET_ACK_MASK )
+ {    
+    if( HandlePacket() )
+   *Packet_Command |= PACKET_ACK_MASK;
+    else
+  // to indicate the process of packet is failed
+   Packet_Command &= ~PACKET_ACK_MASK; 
+ }
+ else
+ {
+   HandlePacket();	 
+   // to clear Acknowledgement bit
+   Packet_Command &= ~PACKET_ACK_MASK; 
+ }
+
+}
+
+void HandleStartupPacket()
+{
+  auto para = RxPacket.begin();
+   for(int j = 0; j<3;j++)
+  {
+   *(para++) = 0x0;
+  }
+}
+
+void HandleTowerVersionPacket();
+{
+ // tower version: v1.0
+   auto para = RxPacket.begin();
+   // Parameter 1
+   *(it++) = 0x76;
+   // Parameter 2
+   *(it++) = 0x01;
+   // Parameter 3
+   *(it++) = 0x00;
+}
+
+void HandleTowerNumberPacket()
+{
+  auto para = RxPacket.begin();
+  // Parameter 1	  
+   *(para++) = 0x01;
+  // Parameter 2
+   *(para++) = 0x0;
+  // Parameter 3
+   *(para++) = 0x01;
+}
+
+// Handling packet protocol (Tower to PC)
+bool HandlePacket(Packet_t RxPacket)
+{
+ auto Packet_Command = RxPacket.begin();
+
+ switch(*Packet_Command)
 {
   // for specific command
    case CMD_STARTUP: HandleStartupPacket();
     break; 
+   case CMD_TOWERVERSION: HandleTowerVersionPacket(); 
+    break;
+   case CMD_TOWERNUMBER: HandleTowerNumberPacket(); 
+  // default: error;		     
 }
-
+return true;
 }
 
 
@@ -51,7 +114,9 @@ int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
-
+  
+  Packet_t packet(38400, CPU_BUS_CLK_HZ);
+	
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
@@ -60,7 +125,7 @@ int main(void)
   for (;;)
   {
     if( Packet_Get() )
-     HandlePacket();
+   HandleAckBit(packet);
     UART_Poll();
   }
 
