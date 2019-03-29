@@ -25,6 +25,13 @@
 **  @addtogroup main_module main module documentation
 **  @{
 */
+// CPU module - contains low level hardware initialization routines
+#include "Cpu.h"
+// include packet module
+#include "Packet(2).h"
+
+
+
 /* MODULE main */
 
 // constant for 3 handling cases
@@ -32,7 +39,7 @@
 #define  CMD_TOWERVERSION 0x09
 #define  CMD_TOWERNUMBER 0x0B
 
-void HandlePacket(Packet_t& packet)
+void HandlePacket(Packet_t &packet)
 {
 
  auto Packet_Command = packet.RxPacket.begin();
@@ -47,9 +54,8 @@ void HandlePacket(Packet_t& packet)
  }
  else
  {
-   HandlePacket(packet);
+   HandleCommandPacket(packet);
  }
-
 
 }
 
@@ -62,9 +68,10 @@ void Packet_t::HandleStartupPacket()
   }
 }
 
-void Packet_t::HandleTowerVersionPacket();
+void Packet_t::HandleTowerVersionPacket()
 {
  // tower version: v1.0
+
    auto para = RxPacket.begin();
    // Parameter 1
    *(para++) = 0x76;
@@ -104,11 +111,6 @@ return true;
 }
 
 
-// CPU module - contains low level hardware initialization routines
-#include "Cpu.h"
-//include the FIFO buffer
-#include "FIFO.h"
-
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -124,7 +126,7 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if( Packet_Get() )
+    if( packet.Packet_Get() )
    HandlePacket(packet);
     UART_Poll();
   }

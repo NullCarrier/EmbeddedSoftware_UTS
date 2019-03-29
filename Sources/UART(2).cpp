@@ -13,7 +13,7 @@ static constexpr uint32_t DIVISIOR = 16;
 static uint8_t get_fraction(const uint32_t& baudRate, const uint32_t& moduleClk)
 {
   float sbr = (moduleClk / baudRate) / DIVISIOR ;
-  float sbr_Fraction = sbr % (static_cast<int> sbr) ;
+  float sbr_Fraction = static_cast<float> ( sbr % (static_cast<int> sbr) ) ;
 
  return static_cast<uint8_t> (sbr_Fraction * 2 *  DIVISIOR);
 }
