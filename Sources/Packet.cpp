@@ -73,8 +73,7 @@ bool Packet_t::Packet_Put()
 	UART_OutChar(Packet_Parameter2);
 	UART_OutChar(Packet_Parameter3);
 	UART_OutChar(Packet_Checksum);
-
-return true;
+  return true;
 }
 
 
@@ -137,7 +136,9 @@ bool Packet_t::HandleCommandPacket()
    case CMD_TOWERNUMBER: this->HandleTowerNumberPacket();
   // default: error;
 }
-return true;
+// output 5 packets
+ this->Packet_Put();
+ return true;
 }
 
 
