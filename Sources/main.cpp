@@ -29,86 +29,11 @@
 #include "Cpu.h"
 // include packet module
 #include "Packet(2).h"
-
-
+#include "FIFO(2).h"
+#include "UART(2).h"
 
 /* MODULE main */
 
-// constant for 3 handling cases
-#define  CMD_STARTUP 0x04
-#define  CMD_TOWERVERSION 0x09
-#define  CMD_TOWERNUMBER 0x0B
-
-void HandlePacket(Packet_t &packet)
-{
-
- auto Packet_Command = packet.RxPacket.begin();
-
-  if(*Packet_Command & PACKET_ACK_MASK )
- {
-    if( HandleCommandPacket(packet) )
-   *Packet_Command |= PACKET_ACK_MASK;
-    else
-  // to indicate the process of packet is failed
-   (*Packet_Command) &= ~PACKET_ACK_MASK;
- }
- else
- {
-   HandleCommandPacket(packet);
- }
-
-}
-
-void Packet_t::HandleStartupPacket()
-{
-  auto para = RxPacket.begin();
-   for(int j = 0; j<3;j++)
-  {
-   *(para++) = 0x0;
-  }
-}
-
-void Packet_t::HandleTowerVersionPacket()
-{
- // tower version: v1.0
-
-   auto para = RxPacket.begin();
-   // Parameter 1
-   *(para++) = 0x76;
-   // Parameter 2
-   *(para++) = 0x01;
-   // Parameter 3
-   *(para++) = 0x00;
-}
-
-void Packet_t::HandleTowerNumberPacket()
-{
-  auto para = RxPacket.begin();
-  // Parameter 1
-   *(para++) = 0x01;
-  // Parameter 2
-   *(para++) = 0x0;
-  // Parameter 3
-   *(para++) = 0x01;
-}
-
-// Handling packet protocol (Tower to PC)
-bool HandleCommandPacket(Packet_t packet)
-{
- auto Packet_Command = packet.RxPacket.begin();
-
- switch(*Packet_Command)
-{
-  // for specific command
-   case CMD_STARTUP: HandleStartupPacket();
-    break;
-   case CMD_TOWERVERSION: HandleTowerVersionPacket();
-    break;
-   case CMD_TOWERNUMBER: HandleTowerNumberPacket();
-  // default: error;
-}
-return true;
-}
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -127,7 +52,7 @@ int main(void)
   for (;;)
   {
     if( packet.Packet_Get() )
-   HandlePacket(packet);
+    packet.HandleCommandPacket();
     UART_Poll();
   }
 

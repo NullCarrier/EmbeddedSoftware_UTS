@@ -12,31 +12,30 @@
 #define PACKET_H
 
 // New types
-#include "types.h"
-#include "UART(2).h"
-#include <deque>
+#include "type_cpp.h"
+#include "UART(2).h" // UART_Init()
+
+
 // Packet structure
 class Packet_t
 {
 private:
-  #if 0
-  uint8_t  Packet_Command,		/*!< The packet's command */
-  uint8_t  Packet_Parameter1, 	/*!< The packet's 1st parameter */
-  uint8_t  Packet_Parameter2, 	/*!< The packet's 2nd parameter */
-  uint8_t  Packet_Parameter3,	/*!< The packet's 3rd parameter */
+  uint8_t  Packet_Command;		/*!< The packet's command */
+  uint8_t  Packet_Parameter1; 	/*!< The packet's 1st parameter */
+  uint8_t  Packet_Parameter2; 	/*!< The packet's 2nd parameter */
+  uint8_t  Packet_Parameter3;	/*!< The packet's 3rd parameter */
   uint8_t  Packet_Checksum;	 /*!< The packet's checksum */
-  #endif
-  deque<uint8_t> RxPacket(5, 0);
+
   // to initialize the packet module via UART_Init() function
-  const uint32_t baudRate;
-  const uint32_t moduleClk;
+  const uint32_t m_baudRate;
+  const uint32_t m_moduleClk;
 
 public:
     // constructor for initializing UART module
-   Packet_t(const uint32_t rate, const uint32_t clock):
-     baudRate{rate}, moduleClk{clock}
+   Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
+     m_baudRate{baudRate}, m_moduleClk{moduleClk}
    {
-     assert( UART_Init(baudRate, moduleClk) );
+      UART_Init(m_baudRate, m_moduleClk) ;
    }
 
   // member function of packet
@@ -44,18 +43,16 @@ public:
   bool Packet_Put();
   void HandleStartupPacket();
   void HandleTowerVersionPacket();
-  void HandleTowerVersionPacket();
-
+  void HandleTowerNumberPacket();
   //it is only return true when check_sum matches
-inline bool Check_Checksum() {return RxPacket[4] == RxPacket[0] ^ RxPacket[1] ^ RxPacket[2] ^ RxPacket[3]; }
+  inline bool Check_Checksum() {return  Packet_Checksum == Packet_Command ^ Packet_Parameter1 ^ Packet_Parameter2 ^ Packet_Parameter3; }
   // functions for handling packets
-  friend bool HandleCommandPacket(Packet_t &packet);
-  friend void HandlePacket(Packet_t &packet);
+  bool HandleCommandPacket();
+ // void HandlePacket();
 };
 
-
 // Acknowledgement bit mask
-extern constexpr uint8_t PACKET_ACK_MASK;
+extern const uint8_t PACKET_ACK_MASK ;
 
 /*! @brief Initializes the packets by calling the initialization routines of the supporting software modules.
  *
