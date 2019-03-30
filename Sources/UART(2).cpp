@@ -1,19 +1,19 @@
-#include "UART.h"
+#include "UART(2).h"
 #include "MK70F12.h"// involve mask for all registers
-#include "FIFO.h" // to use FIFO_Get(), FIFO_Put
+#include <cmath>// include fmod()
 
 // declare the global object called RxFIFO, TxFIFO
-extern TFIFO RxFIFO;
-extern TFIFO TxFIFO;
+static TFIFO RxFIFO;
+static TFIFO TxFIFO;
 
 // const number for converting baudrate into SBR
 static constexpr uint32_t DIVISIOR = 16;
 
 // This function is only used to obtain BRFA
-static uint8_t get_fraction(const uint32_t& baudRate, const uint32_t& moduleClk)
+static uint8_t get_fraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
-  float sbr = (moduleClk / baudRate) / DIVISIOR ;
-  float sbr_Fraction = static_cast<float> ( sbr % (static_cast<int> sbr) ) ;
+  float sbr = static_cast<float> ( (moduleClk / baudRate) / DIVISIOR );
+  float sbr_Fraction = fmod(sbr, static_cast<int>(sbr) );
 
  return static_cast<uint8_t> (sbr_Fraction * 2 *  DIVISIOR);
 }

@@ -1,6 +1,6 @@
 
 // implement functions : FIFO_Put, FIFO_Get
-#include "FIFO.h"
+#include "FIFO(2).h"
 
  bool TFIFO::FIFO_Put( const uint8_t& data )
 {
