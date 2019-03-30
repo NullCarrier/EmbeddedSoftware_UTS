@@ -7,6 +7,16 @@
 #define  CMD_TOWERVERSION 0x09
 #define  CMD_TOWERNUMBER 0x0B
 
+
+void Packet_t::switch_packet()
+{
+    Packet_Command = Packet_Parameter1;
+    Packet_Parameter1 = Packet_Parameter2;
+    Packet_Parameter2 = Packet_Parameter3;
+    Packet_Parameter3 = Packet_Checksum;
+}
+
+
 bool Packet_t::Packet_Get(void)
 {
   // local variable for holding temp value
@@ -37,10 +47,8 @@ bool Packet_t::Packet_Get(void)
              }
               else
             {
-              Packet_Command = Packet_Parameter1;
-              Packet_Parameter1 = Packet_Parameter2;
-              Packet_Parameter2 = Packet_Parameter3;
-              Packet_Parameter3 = Packet_Checksum;
+            // checksum is not good , then discarding first byte, going back to state 4
+              this->switch_packet();
              NbBytes_Packet--;
             }
 
@@ -69,26 +77,22 @@ bool Packet_t::Packet_Put()
 return true;
 }
 
-#if 0
+
 void Packet_t::HandlePacket()
 {
   if( Packet_Command & PACKET_ACK_MASK )
  {
-    if( HandleCommandPacket() )
+    if( this->HandleCommandPacket() )
    Packet_Command |= PACKET_ACK_MASK;
     else
   // to indicate the process of packet is failed
    Packet_Command &= ~PACKET_ACK_MASK;
  }
  else
- {
-  HandleCommandPacket();
- }
-
-
+this->HandleCommandPacket();
 
 }
-#endif
+
 
 void Packet_t::HandleStartupPacket()
 {
@@ -126,11 +130,11 @@ bool Packet_t::HandleCommandPacket()
  switch(Packet_Command)
 {
   // for specific command
-   case CMD_STARTUP: HandleStartupPacket();
+   case CMD_STARTUP: this->HandleStartupPacket();
     break;
-   case CMD_TOWERVERSION: HandleTowerVersionPacket();
+   case CMD_TOWERVERSION: this->HandleTowerVersionPacket();
     break;
-   case CMD_TOWERNUMBER: HandleTowerNumberPacket();
+   case CMD_TOWERNUMBER: this->HandleTowerNumberPacket();
   // default: error;
 }
 return true;

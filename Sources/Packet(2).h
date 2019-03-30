@@ -45,10 +45,11 @@ public:
   void HandleTowerVersionPacket();
   void HandleTowerNumberPacket();
   //it is only return true when check_sum matches
-  inline bool Check_Checksum() {return  Packet_Checksum == Packet_Command ^ Packet_Parameter1 ^ Packet_Parameter2 ^ Packet_Parameter3; }
+  inline bool Check_Checksum() {return (Packet_Checksum == Packet_Command ^ Packet_Parameter1 ^ Packet_Parameter2 ^ Packet_Parameter3); }
   // functions for handling packets
   bool HandleCommandPacket();
  // void HandlePacket();
+ void switch_packet();
 };
 
 // Acknowledgement bit mask
