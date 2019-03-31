@@ -21,28 +21,29 @@ bool Packet_t::Packet_Get(void)
 {
   // local variable for holding temp value
   uint8_t rxData = 0;
- unsigned NbBytes_Packet = 0;
+static unsigned NbBytes_Packet = 0;
 
   while( NbBytes_Packet <= 5)
-{
+ {
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-    if ( UART_InChar( &rxData ) )
-   {
+       if ( UART_InChar( &rxData ) )
+      {
          NbBytes_Packet++;
-          switch(NbBytes_Packet)
-        {
-           case 1: Packet_Command = rxData;
+            switch(NbBytes_Packet)
+          {
+             case 1: Packet_Command = rxData;
         	   break;
-           case 2: Packet_Parameter1 = rxData;
+             case 2: Packet_Parameter1 = rxData;
         	   break;
-           case 3: Packet_Parameter2 = rxData;
+             case 3: Packet_Parameter2 = rxData;
 		       break;
-           case 4: Packet_Parameter3 = rxData;
+             case 4: Packet_Parameter3 = rxData;
         	   break;
-           case 5:  Packet_Checksum = rxData;
+             case 5:  Packet_Checksum = rxData;
                if( Check_Checksum() )
              {
             	   NbBytes_Packet++;
+            	   return true;
             	   break;
              }
               else
@@ -52,13 +53,17 @@ bool Packet_t::Packet_Get(void)
              NbBytes_Packet--;
             }
 
-        }
+          }
 
-   }
+      }
+       else
+     {
+       return false;
+       break;
+     }
 
  }
 
-return true;
 }
 
 // To send packet from tower to PC
@@ -76,7 +81,7 @@ bool Packet_t::Packet_Put()
   return true;
 }
 
-
+/*
 void Packet_t::HandlePacket()
 {
   if( Packet_Command & PACKET_ACK_MASK )
@@ -91,7 +96,7 @@ void Packet_t::HandlePacket()
 this->HandleCommandPacket();
 
 }
-
+*/
 
 void Packet_t::HandleStartupPacket()
 {

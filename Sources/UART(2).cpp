@@ -13,7 +13,7 @@ static constexpr uint32_t DIVISIOR = 16;
 // This function is only used to obtain BRFA
 static uint8_t get_fraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
-  float sbr = static_cast<float> ( (moduleClk / baudRate) / DIVISIOR );
+  float sbr = (float) (moduleClk / baudRate) / DIVISIOR ;
   float sbr_Fraction = fmod(sbr, static_cast<int>(sbr) );
 
  return static_cast<uint8_t> (sbr_Fraction * 2 *  DIVISIOR);
@@ -36,8 +36,8 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
  PORTE_PCR17 |= PORT_PCR_MUX(3);
 // Write the integer portion of the Baudrate to the BDH/L register.
   sbr.l = (uint16_t) (moduleClk / baudRate) / DIVISIOR ;
-  UART2_BDH |= sbr.s.Hi;
-  UART2_BDL |= sbr.s.Lo;
+  UART2_BDH = sbr.s.Hi;
+  UART2_BDL = sbr.s.Lo;
 // Write the fractional portion of the Baudrate to the UART2_C4 register.
  UART2_C4 |= UART_C4_BRFA( get_fraction( baudRate, moduleClk)) ;
  // Enable the receiver, transmitter

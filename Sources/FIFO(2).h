@@ -23,16 +23,14 @@ class TFIFO
 {
   private:
 
-  uint8_t *Start;		/*!< The index of the position of the oldest data in the FIFO */
-  uint8_t *End; 		/*!< The index of the next available empty position in the FIFO */
+  uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
+  uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
   uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
   uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
 
   public:
       TFIFO()// default constructor for initializing FIFO
       {
-        Start = End = Buffer;
-        NbBytes = 0;
       }
    bool FIFO_Put(const uint8_t &data);
    bool FIFO_Get( uint8_t * const dataPtr);
