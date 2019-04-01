@@ -51,8 +51,8 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if( packet.Packet_Get() )
-    packet.HandlePacket();
+    if(packet.Packet_Get())
+    packet.Packet_HandlePacket();
     UART_Poll();
   }
 

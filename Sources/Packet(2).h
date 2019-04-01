@@ -17,7 +17,7 @@
 #include "UART(2).h" // UART_Init()
 
 // Acknowledgement bit mask
-
+static constexpr uint8_t PACKET_ACK_MASK = 0b10000000;
 
 // Packet structure
 class Packet_t
@@ -38,20 +38,25 @@ public:
    Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
      m_baudRate{baudRate}, m_moduleClk{moduleClk}
    {
-      UART_Init(m_baudRate, m_moduleClk) ;
+      UART_Init(m_baudRate, m_moduleClk);
    }
+   // constructor for copying packet object
+  Packet_t(const Packet_t &packet):
+Packet_Parameter1(packet.Packet_Parameter1), Packet_Parameter2(packet.Packet_Parameter2), Packet_Parameter3(packet.Packet_Parameter3)
+  {
+      Packet_Command |= PACKET_ACK_MASK;
+  }
 
   // member function of packet
   bool Packet_Get();
   bool Packet_Put();
-  void HandleStartupPacket();
-  void HandleTowerVersionPacket();
-  void HandleTowerNumberPacket();
-  inline bool CheckChecksum(){ return Packet_Checksum ==Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3; } //it is only return
-                                                                                                                           //true when check_sum matches
-  bool HandleCommandPacket(); // functions for handling packets
-  void HandlePacket();
-  void SwitchPacket(); // to discard first byte and add the new byte
+  void Packet_HandleStartupPacket();
+  void Packet_HandleTowerVersionPacket();
+  void Packet_HandleTowerNumberPacket();
+  inline bool Packet_CheckChecksum(){ return Packet_Checksum ==Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3; } //it is only return
+  friend void HandleACKPacket(Packet_t &packet);                                                                                                                        //true when check_sum matches
+  bool Packet_HandlePacket(); // functions for handling packets
+  void Packet_SwitchPacket(); // to discard first byte and add the new byte
 };
 
 
