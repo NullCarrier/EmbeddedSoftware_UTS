@@ -18,11 +18,11 @@
 static constexpr uint32_t DIVISIOR = 16;
 
 // declare the global object called RxFIFO, TxFIFO
-extern TFIFO RxFIFO;
-extern TFIFO TxFIFO;
+static TFIFO RxFIFO;
+static TFIFO TxFIFO;
 
 // This function is only used to obtain BRFA
-static uint8_t get_Fraction(const uint32_t &baudRate, const uint32_t &moduleClk)
+static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
   float sbr = (float)(moduleClk / baudRate) / DIVISIOR; // using this formula to obtain SBR
                                                         // and typecast it into float type
@@ -54,12 +54,11 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
   UART2_BDH = sbr.s.Hi;
   UART2_BDL = sbr.s.Lo;
 // Write the fractional portion of the Baudrate to the UART2_C4 register.
- UART2_C4 |= UART_C4_BRFA(get_Fraction(baudRate, moduleClk));
+ UART2_C4 |= UART_C4_BRFA(GetFraction(baudRate, moduleClk));
  // Enable the receiver, transmitter
  UART2_C2 |= (UART_C2_RE_MASK | UART_C2_TE_MASK);
 
- // To reset the RDRF bit
- UART2_S1 &= ~UART_S1_RDRF_MASK;
+
   return true;
 }
 
@@ -80,19 +79,20 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 // UART2_S1, UART2_D --8bit mode  9th_bit is 0
 void UART_Poll(void)
 {
-  uint8_t rxData = UART2_D;
+
   // receiving data condition
   // To check the state of RDRF bit
  if(UART2_S1 & UART_S1_RDRF_MASK)
 {
+
   // let the receiver to send a byte of data
-  RxFIFO.FIFO_Put(rxData);
+  RxFIFO.FIFO_Put(UART2_D);
 }
 // To check the state of TDRE bit
 else if(UART2_S1 & UART_S1_TDRE_MASK)
 {
   //let transmitter to send data
-  TxFIFO.FIFO_Get(&rxData);
+  TxFIFO.FIFO_Get((uint8_t *) &UART2_D);
 }
 
 }

@@ -33,7 +33,7 @@ class TFIFO
       TFIFO()// default constructor for initializing FIFO
       {
       }
- bool FIFO_Put(const uint8_t &data);
+ bool FIFO_Put(const uint8_t data);
  bool FIFO_Get(uint8_t * const dataPtr);
 
 };

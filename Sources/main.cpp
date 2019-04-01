@@ -52,7 +52,7 @@ int main(void)
   for (;;)
   {
     if( packet.Packet_Get() )
-    packet.HandleCommandPacket();
+    packet.HandlePacket();
     UART_Poll();
   }
 

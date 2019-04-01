@@ -16,13 +16,9 @@
 #define  CMD_TOWERVERSION 0x09
 #define  CMD_TOWERNUMBER 0x0B
 
-// this function will return true only if checksum is good
-inline bool Check_Checksum()
-{
- return Packet_Checksum ==Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
-}
+static const uint8_t PACKET_ACK_MASK = 0b10000000;
 
-void Packet_t::switch_packet()
+void Packet_t::SwitchPacket()
 {
     Packet_Command = Packet_Parameter1;
     Packet_Parameter1 = Packet_Parameter2;
@@ -54,7 +50,7 @@ static unsigned NbBytes_Packet = 0;
              case 4: Packet_Parameter3 = rxData;
         	   break;
              case 5:  Packet_Checksum = rxData;
-               if(Check_Checksum())
+               if(CheckChecksum())
              {
             	   NbBytes_Packet++;
             	   return true;
@@ -63,7 +59,7 @@ static unsigned NbBytes_Packet = 0;
               else
             {
             // checksum is not good , then discarding first byte, going back to state 4
-             this->switch_packet();
+             this->SwitchPacket();
              NbBytes_Packet--;
             }
 
@@ -79,7 +75,10 @@ static unsigned NbBytes_Packet = 0;
  }
 // reset Nbbytes_packet
   if(NbBytes_Packet > 5)
-   NbBytes_Packet =0;
+  {
+	  NbBytes_Packet = 0;
+	  return false;
+  }
 
 }
 
@@ -98,64 +97,83 @@ Packet_Checksum =  Packet_Command ^ Packet_Parameter1 ^ Packet_Parameter2 ^ Pack
   return true;
 }
 
-/*
+
 void Packet_t::HandlePacket()
 {
-  if(Packet_Command & PACKET_ACK_MASK)
- {
-    if(this->HandleCommandPacket())
-   Packet_Command |= PACKET_ACK_MASK;
-    else
-  // to indicate the process of packet is failed
-   Packet_Command &= ~PACKET_ACK_MASK;
- }
- else
-this->HandleCommandPacket();
+	switch(Packet_Command)
+  {
+	  // for specific command
+	    case CMD_STARTUP: if(Packet_Command & PACKET_ACK_MASK)
+	                    {
+	    	             Packet_Command |= PACKET_ACK_MASK;
+	    	             this->HandleStartupPacket();
+	                    }
+	    break;
+	    case CMD_TOWERVERSION: this->HandleStartupPacket();
+	    break;
+	    case CMD_TOWERNUMBER: this->HandleTowerNumberPacket();
+	  // default: error;
+	  }
+
 
 }
-*/
+
 
 void Packet_t::HandleStartupPacket()
 {
+  Packet_Command = (Packet_Command & PACKET_ACK_MASK)? : CMD_STARTUP;
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0x0;
+  this->Packet_Put();
 }
 
 //Command: Tower Version: v1.0
 void Packet_t::HandleTowerVersionPacket()
 {
 
+	Packet_Command = (Packet_Command & PACKET_ACK_MASK)? : CMD_TOWERVERSION ;
+
 	Packet_Parameter1 = 0x76; // Parameter 1
 
 	Packet_Parameter2 = 0x01; // Parameter 2
 
 	Packet_Parameter3 = 0x0;  // Parameter 3
+
+	this->Packet_Put(); // output 5 bytes
 }
 
 void Packet_t::HandleTowerNumberPacket()
 {
+	Packet_Command = (Packet_Command & PACKET_ACK_MASK)?  : CMD_TOWERNUMBER;
+
 	Packet_Parameter1  = 0x01;  // Parameter 1
 
 	Packet_Parameter2 = 0x0; // Parameter 2
 
 	Packet_Parameter3 = 0x01; // Parameter 3
+
+	this->Packet_Put();
 }
 
 // Handling packet protocol (Tower to PC)
 bool Packet_t::HandleCommandPacket()
 {
 
- switch(Packet_Command)
-{
+    switch(Packet_Command)
+  {
   // for specific command
-   case CMD_STARTUP: this->HandleStartupPacket();
+    case CMD_STARTUP:
+
+	                 this->HandleStartupPacket();
+                     this->HandleTowerVersionPacket();
+                     this->HandleTowerNumberPacket();
+
+
     break;
-   case CMD_TOWERVERSION: this->HandleTowerVersionPacket();
+    case CMD_TOWERVERSION: this->HandleStartupPacket();
     break;
-   case CMD_TOWERNUMBER: this->HandleTowerNumberPacket();
+    case CMD_TOWERNUMBER: this->HandleTowerNumberPacket();
   // default: error;
-}
- this->Packet_Put(); // output 5 packets
+  }
+
  return true;
 }
-
-

@@ -17,7 +17,7 @@
 #include "UART(2).h" // UART_Init()
 
 // Acknowledgement bit mask
-extern const uint8_t PACKET_ACK_MASK;
+
 
 // Packet structure
 class Packet_t
@@ -47,10 +47,11 @@ public:
   void HandleStartupPacket();
   void HandleTowerVersionPacket();
   void HandleTowerNumberPacket();
-  inline bool Check_Checksum() //it is only return true when check_sum matches
+  inline bool CheckChecksum(){ return Packet_Checksum ==Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3; } //it is only return
+                                                                                                                           //true when check_sum matches
   bool HandleCommandPacket(); // functions for handling packets
- // void HandlePacket();
- void switch_packet(); // to discard first byte and add the new byte
+  void HandlePacket();
+  void SwitchPacket(); // to discard first byte and add the new byte
 };
 
 

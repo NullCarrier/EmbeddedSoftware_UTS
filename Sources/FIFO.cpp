@@ -12,10 +12,10 @@
 #include "FIFO(2).h"
 
 
- bool TFIFO::FIFO_Put(const uint8_t& data)
+ bool TFIFO::FIFO_Put(const uint8_t data)
 {
 
- if(NbBytes <= FIFO_SIZE) // To make sure the buffer is not full or overflow
+ if(NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
 {
   NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
