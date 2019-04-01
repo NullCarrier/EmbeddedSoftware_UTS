@@ -1,47 +1,50 @@
+/*! @file
+ *
+ *  @brief Routines to implement a FIFO buffer.
+ *
+ *  This contains "methods" for accessing a byte-wide FIFO.
+ *
+ *  @author PMcL
+ *  @date 01/04/2019
+ *  Copyright (c) UTS. All rights reserved.
+ */
 
-// implement functions : FIFO_Put, FIFO_Get
 #include "FIFO(2).h"
 
 
-
-
- bool TFIFO::FIFO_Put( const uint8_t& data )
+ bool TFIFO::FIFO_Put(const uint8_t& data)
 {
 
-// To make sure the buffer is not full or overflow
- if( NbBytes <= FIFO_SIZE)
+ if(NbBytes <= FIFO_SIZE) // To make sure the buffer is not full or overflow
 {
- // increment one for NbBytes as soon as Buffer is adding one byte
-   NbBytes++;
- // add a byte of data into array
-  Buffer[End] = data;
- // to make a circular array, reset the pointer
-  ++End %= FIFO_SIZE ;
+  NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
+
+  Buffer[End] = data; // add a byte of data into array buffer
+
+  ++End %= FIFO_SIZE; // to make a circular array, reset End index
+
  return true;
 }
  else
  return false;
-
 }
 
 
-bool TFIFO::FIFO_Get( uint8_t * const dataPtr )
+bool TFIFO::FIFO_Get(uint8_t * const dataPtr)
 {
 
-// can not retrieve if buffer is empty
- if( NbBytes != 0 )
+ if(NbBytes != 0) // can not retrieve if buffer is empty
 {
-  // decrement one whenever the Buffer has been retrieved
-   NbBytes--;
- // place the retrieved byte
- *dataPtr = Buffer[Start];
- // to make a circular array, reset Start pointer
-  ++Start %= FIFO_SIZE ;
+  NbBytes--; // decrement one whenever the Buffer has been retrieved
+
+ *dataPtr = Buffer[Start]; // place the retrieved byte
+
+  ++Start %= FIFO_SIZE; // to make a circular array, reset Start index
+
  return true;
 }
  else
  return false;
-
 }
 
 

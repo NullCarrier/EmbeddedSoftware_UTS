@@ -5,7 +5,8 @@
  *  This contains types that are especially useful for the Tower to PC Protocol.
  *
  *  @author PMcL
- *  @date 2015-07-23
+ *  @date 01/04/2019
+ *  Copyright (c) UTS. All rights reserved.
  */
 
 #ifndef TYPES_H

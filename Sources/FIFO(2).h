@@ -5,7 +5,8 @@
  *  This contains the structure and "methods" for accessing a byte-wide FIFO.
  *
  *  @author PMcL
- *  @date 2015-07-23
+ *  @date 01/04/2019
+ *  Copyright (c) UTS. All rights reserved.
  */
 
 #ifndef FIFO_H
@@ -32,8 +33,8 @@ class TFIFO
       TFIFO()// default constructor for initializing FIFO
       {
       }
-   bool FIFO_Put(const uint8_t &data);
-   bool FIFO_Get( uint8_t * const dataPtr);
+ bool FIFO_Put(const uint8_t &data);
+ bool FIFO_Get(uint8_t * const dataPtr);
 
 };
 
