@@ -21,7 +21,7 @@ void Packet_t::Packet_SwitchPacket()
 }
 
 // this function is to obtain 5 bytes of data via UART_InChar()
-bool Packet_t::Packet_Packet_Get(void)
+bool Packet_t::Packet_Get(void)
 {
   // local variable for holding temp value
   uint8_t rxData{0};
@@ -93,27 +93,27 @@ Packet_Checksum =  Packet_Command ^ Packet_Parameter1 ^ Packet_Parameter2 ^ Pack
 }
 
 // To handle all of conditions regarding to send packets
- void HandlePacket(Packet_t &packet)
+ void Packet_HandlePacket(Packet_t &packet)
 {
-   if(Packet_Command & PACKET_ACK_MASK && packet.Packet_Command == CMD_STARTUP)
+   if(packet.Packet_Command & PACKET_ACK_MASK)
   {
     Packet_t Ack_Packet(packet);// initialize Ack_Packet for startup packet
 
     packet.Packet_HandleStartupPacket();
     packet.Packet_HandleTowerVersionPacket();
     packet.Packet_HandleTowerNumberPacket();
-    Ack_Packet.Packet_Put;
+    Ack_Packet.Packet_Put();
   }
-  else if(Packet_Command & PACKET_ACK_MASK && packet.Packet_Command == CMD_TOWERVERSION)
+ /* else if(Packet_Command & PACKET_ACK_MASK && packet.Packet_Command == CMD_TOWERVERSION)
  {
     packet.Packet_HandleTowerVersionPacket();
  }
  else if(Packet_Command & PACKET_ACK_MASK && packet.Packet_Command == CMD_TOWERNUMBER)
 {
      packet.Packet_HandleTowerNumberPacket();
-}
+} */
  else
-  packet.Packet_HandlePacket();
+  packet.Packet_HandleCommandPacket();
 }
 
 void Packet_t::Packet_HandleStartupPacket()
@@ -125,31 +125,24 @@ void Packet_t::Packet_HandleStartupPacket()
 
 void Packet_t::Packet_HandleTowerVersionPacket()
 {
-    Packet_t Ack_Packet(CMD_TOWERVERSION);// to handle acknowledgemnet condition
 
-    Packet_Command = CMD_TOWERVERSION;
     //Command: Tower Version: v1.0
-	Ack_Packet = Packet_Parameter1 = 0x76; // Parameter 1
-	Ack_Packet = Packet_Parameter2 = 0x01; // Parameter 2
-	Ack_Packet = Packet_Parameter3 = 0x0;  // Parameter 3
+	Packet_Parameter1 = 0x76; // Parameter 1
+	Packet_Parameter2 = 0x01; // Parameter 2
+	Packet_Parameter3 = 0x0;  // Parameter 3
 
     this->Packet_Put();
-  if(Packet_Command & PACKET_ACK_MASK)
-    Ack_Packet.Packet_Put;
 }
 
 void Packet_t::Packet_HandleTowerNumberPacket()
 {
-    Packet_t Ack_Packet(CMD_TOWERNUMBER);
 
     Packet_Command = CMD_TOWERNUMBER;
-	Ack_Packet = Packet_Parameter1  = 0x01;  // Parameter 1
-	Ack_Packet = Packet_Parameter2 = 0x94; // Parameter 2
-	Ack_Packet = Packet_Parameter3 = 0x34; // Parameter 3
-
+	Packet_Parameter1 = 0x01;  // Parameter 1
+	Packet_Parameter2 = 0x94; // Parameter 2
+	Packet_Parameter3 = 0x34; // Parameter 3
 	this->Packet_Put();
-if(Packet_Command & PACKET_ACK_MASK)
-    Ack_Packet.Packet_Put;
+
 }
 
 // Handling packet protocol (Tower to PC)
@@ -159,10 +152,10 @@ void Packet_t::Packet_HandleCommandPacket()
   {
   // for specific command. Startup needs to send 3 packets
     case CMD_STARTUP:  this->Packet_HandleStartupPacket();
-                       this->HandleTowerVersionPacket()
+                       this->Packet_HandleTowerVersionPacket();
                        this->Packet_HandleTowerNumberPacket();
                       break;
-    case CMD_TOWERVERSION: this->HandleTowerVersionPacket();//only responce once for version
+    case CMD_TOWERVERSION: this->Packet_HandleTowerVersionPacket();//only responce once for version
 
     break;
     case CMD_TOWERNUMBER: this->Packet_HandleTowerNumberPacket();//only responce once for number
