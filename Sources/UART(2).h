@@ -4,8 +4,9 @@
  *
  *  This contains the functions for operating the UART (serial port).
  *
- *  @author PMcL
- *  @date 01/04/2019
+ *  @author Chao Li
+ *   student ID: 12199434
+ *  @date 02/04/2019
  *  Copyright (c) UTS. All rights reserved.
  */
 

@@ -4,8 +4,8 @@
  *
  *  This contains the functions for implementing the "Tower to PC Protocol" 5-byte packets.
  *
- *  @author : PMcl
- *  @date 01/04/2019
+ *  @author : Chao Li
+ *  @date 02/04/2019
  *  Copyright (c) UTS. All rights reserved.
  */
 
@@ -38,54 +38,59 @@ private:
   const uint32_t m_moduleClk;
 
 public:
-    // constructor for initializing UART module
-   Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
-     m_baudRate{baudRate}, m_moduleClk{moduleClk}
-   {
-      UART_Init(m_baudRate, m_moduleClk);
-   }
 
-   // initializing Ackpacket for towerstartup command
-  Packet_t(const Packet_t &packet):
-Packet_Command(packet.Packet_Command), Packet_Parameter1(packet.Packet_Parameter1), Packet_Parameter2(packet.Packet_Parameter2),
-Packet_Parameter3(packet.Packet_Parameter3), m_baudRate(packet.m_baudRate), m_moduleClk(packet.m_moduleClk)
-  {
-    Packet_Command |= PACKET_ACK_MASK;
-    Packet_Command |= CMD_STARTUP;
-  }
-
-
-  // member function of packet
-  bool Packet_Get();
-  bool Packet_Put();
-  void Packet_HandleStartupPacket();
-  void Packet_HandleTowerVersionPacket();
-  void Packet_HandleTowerNumberPacket();
-  inline bool Packet_CheckChecksum(){ return Packet_Checksum ==Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3; } //it is only return
-  friend void Packet_HandlePacket(Packet_t &packet);                                                                                                                        //true when check_sum matches
-  void Packet_HandleCommandPacket(); // functions for handling packets
-  void Packet_SwitchPacket(); // to discard first byte and add the new byte
-};
-
-
-/*! @brief Initializes the packets by calling the initialization routines of the supporting software modules.
+/*! @brief Constructor initializes the packets by calling the initialization routines of the supporting software modules.
  *
  *  @param baudRate The desired baud rate in bits/sec.
  *  @param moduleClk The module clock rate in Hz.
  *  @return bool - TRUE if the packet module was successfully initialized.
  */
-//bool Packet_Init(const uint32_t baudRate, const uint32_t moduleClk);
+   Packet_t(const uint32_t baudRate, const uint32_t moduleClk);
 
-/*! @brief Attempts to get a packet from the received data.
+   // initializing Ackpacket for towerstartup command
+   Packet_t(const Packet_t &packet);
+
+   // default constructor
+   Packet_t(void)
+     {
+     }
+
+  /*! @brief Attempts to get a packet from the received data.
  *
  *  @return bool - TRUE if a valid packet was received.
  */
-//bool Packet_Get(void);
+  bool Packet_Get();
 
-/*! @brief Builds a packet and places it in the transmit FIFO buffer.
+  /*! @brief Builds a packet and places it in the transmit FIFO buffer.
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-//bool Packet_Put(const uint8_t command, const uint8_t parameter1, const uint8_t parameter2, const uint8_t parameter3);
+  bool Packet_Put();
+
+  /*! @brief There 3 functions below for handling 3 different command packets
+ *
+ *  @return void
+ */
+  void Packet_HandleStartupPacket();
+  void Packet_HandleTowerVersionPacket();
+  void Packet_HandleTowerNumberPacket();
+
+  /*! @brief To determine whether checksum is good or bad
+ *
+ *  @return bool - TRUE if a checksum is correct
+ */
+  inline bool Packet_CheckChecksum(){ return Packet_Checksum == Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3; }
+
+  /*! @brief There 3 functions below for handling packet protocol and error condition
+ *
+ * @param &packet the reference to refer to the packet object
+ *  @return void , int
+ */
+  friend void Packet_HandlePacket(Packet_t &packet); // functions for handling ACK packets                                                                                                                       //true when check_sum matches
+  int Packet_HandleCommandPacket(); // functions for handling packets
+  void Packet_SwitchPacket(); // to handle error by discarding first byte and adding the new byte
+};
+
+
 
 #endif

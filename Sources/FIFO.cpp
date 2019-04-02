@@ -4,8 +4,9 @@
  *
  *  This contains "methods" for accessing a byte-wide FIFO.
  *
- *  @author PMcL
- *  @date 01/04/2019
+ *  @author Chao Li
+ *  student ID : 12199434
+ *  @date 02/04/2019
  *  Copyright (c) UTS. All rights reserved.
  */
 
@@ -21,7 +22,9 @@
 
   Buffer[End] = data; // add a byte of data into array buffer
 
-  ++End %= FIFO_SIZE; // to make a circular array, reset End index
+  End++; // add a new data , then increment one for End index
+
+  End %= FIFO_SIZE; // to make a circular array, reset End index
 
  return true;
 }
@@ -39,7 +42,9 @@ bool TFIFO::FIFO_Get(uint8_t * const dataPtr)
 
  *dataPtr = Buffer[Start]; // place the retrieved byte
 
-  ++Start %= FIFO_SIZE; // to make a circular array, reset Start index
+  Start++; // removing one data, then increment Start index
+
+  Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
  return true;
 }

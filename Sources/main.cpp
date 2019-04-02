@@ -1,5 +1,4 @@
 /* ###################################################################
- * test only remove later
 **     Filename    : main.c
 **     Project     : Lab1
 **     Processor   : MK70FN1M0VMJ12
@@ -20,6 +19,7 @@
 ** @brief
 **         Main module.
 **         This module contains user's application code.
+**  Copyright (c) UTS. All rights reserved.
 */
 /*!
 **  @addtogroup main_module main module documentation
@@ -34,7 +34,7 @@
 
 /* MODULE main */
 
-
+#define BAUDRATE 38400
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -42,7 +42,7 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  Packet_t packet(38400, CPU_BUS_CLK_HZ);
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
