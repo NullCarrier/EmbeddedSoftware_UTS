@@ -29,7 +29,7 @@ bool Packet_t::Packet_Get(void)
   uint8_t rxData{0};
   static unsigned NbBytes_Packet{0};
 
-  while(NbBytes_Packet <= 5)
+  while (NbBytes_Packet <= 5)
  {
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
        if (UART_InChar(&rxData))
@@ -162,8 +162,8 @@ int Packet_t::Packet_HandleCommandPacket()
     break;
     case CMD_TOWERNUMBER: this->Packet_HandleTowerNumberPacket();//only responce once for number
    // Error condition
-   default: std::cerr << "Error: Can't identify the command\n";
-            return 0;
+   default: /*std::cerr << "Error: Can't identify the command\n";
+            return 0;*/
             break;
   }
 
