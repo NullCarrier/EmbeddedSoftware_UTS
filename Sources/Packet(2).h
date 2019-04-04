@@ -50,10 +50,7 @@ public:
    // initializing Ackpacket for towerstartup command
    Packet_t(const Packet_t &packet);
 
-   // default constructor
-   Packet_t(void)
-     {
-     }
+
 
   /*! @brief Attempts to get a packet from the received data.
  *

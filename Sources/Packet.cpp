@@ -121,6 +121,7 @@ void Packet_t::Packet_HandleStartupPacket()
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
 
   this->Packet_Put(); //send it to FIFO
+
 }
 
 void Packet_t::Packet_HandleTowerVersionPacket()
@@ -161,8 +162,9 @@ int Packet_t::Packet_HandleCommandPacket()
     break;
     case CMD_TOWERNUMBER: this->Packet_HandleTowerNumberPacket();//only responce once for number
    // Error condition
-   default: std::cout << "Error: Can't identify the command\n";
-            return EXIT_FAILURE;
+   default: std::cerr << "Error: Can't identify the command\n";
+            return 0;
+            break;
   }
 
 }
