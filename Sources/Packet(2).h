@@ -6,7 +6,7 @@
  *
  *  @author : Chao Li
  *  @date 02/04/2019
- *  Copyright (c) UTS. All rights reserved.
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef PACKET_H
@@ -16,6 +16,7 @@
 #include "type_cpp.h"
 #include "UART(2).h" // UART_Init()
 
+// need to be in enum
 // Acknowledgement bit mask
 static constexpr uint8_t PACKET_ACK_MASK = 0b10000000;
 // constant for handling 3 commands
@@ -39,6 +40,8 @@ private:
 
 public:
 
+  // need description for every function
+  
 /*! @brief Constructor initializes the packets by calling the initialization routines of the supporting software modules.
  *
  *  @param baudRate The desired baud rate in bits/sec.
@@ -48,7 +51,7 @@ public:
    Packet_t(const uint32_t baudRate, const uint32_t moduleClk);
 
    // initializing Ackpacket for towerstartup command
-   Packet_t(const Packet_t &packet);
+   //Packet_t(const Packet_t &packet);
 
 
 
@@ -68,26 +71,25 @@ public:
  *
  *  @return void
  */
-  void Packet_HandleStartupPacket();
-  void Packet_HandleTowerVersionPacket();
-  void Packet_HandleTowerNumberPacket();
+  void HandleStartupPacket();
+  void HandleTowerVersionPacket();
+  void HandleTowerNumberPacket();
 
   /*! @brief To determine whether checksum is good or bad
  *
  *  @return bool - TRUE if a checksum is correct
  */
-  inline bool Packet_CheckChecksum(){ return Packet_Checksum == Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3; }
+   inline uint8_t CheckChecksum();
 
   /*! @brief There 3 functions below for handling packet protocol and error condition
  *
  * @param &packet the reference to refer to the packet object
  *  @return void , int
  */
-  friend void Packet_HandlePacket(Packet_t &packet); // functions for handling ACK packets                                                                                                                       //true when check_sum matches
-  int Packet_HandleCommandPacket(); // functions for handling packets
-  void Packet_SwitchPacket(); // to handle error by discarding first byte and adding the new byte
+  friend void HandlePacket(Packet_t &packet); // functions for handling ACK packets                                                                                                                       //true when check_sum matches
+  int HandleCommandPacket(); // functions for handling packets
+  void SwitchPacket(); // to handle error by discarding first byte and adding the new byte
 };
-
 
 
 #endif

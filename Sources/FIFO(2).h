@@ -6,7 +6,7 @@
  *
  *  @author Chao Li
  *  @date 02/04/2019
- *  Copyright (c) UTS. All rights reserved.
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef FIFO_H
@@ -30,7 +30,13 @@ class TFIFO
   uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
 
   public:
-      TFIFO()// default constructor for initializing FIFO
+
+/*! @brief Initialize the FIFO before first use.
+ *
+ *  @param fifo A pointer to the FIFO that needs initializing.
+ *  @return bool - TRUE if the FIFO was successfully initialised
+ */
+      TFIFO()
       {
       }
 
@@ -53,12 +59,6 @@ class TFIFO
  bool FIFO_Get(uint8_t * const dataPtr);
 
 };
-
-/*! @brief Initialize the FIFO before first use.
- *
- *  @param fifo A pointer to the FIFO that needs initializing.
- *  @return bool - TRUE if the FIFO was successfully initialised
- */
 
 
 #endif

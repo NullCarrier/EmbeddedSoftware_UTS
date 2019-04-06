@@ -7,7 +7,7 @@
  *  @author Chao Li
  *  student ID : 12199434
  *  @date 02/04/2019
- *  Copyright (c) UTS. All rights reserved.
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #include "FIFO(2).h"

@@ -6,7 +6,7 @@
  *
  *  @author : Chao Li
  *  @date 02/04/2019
- *  Copyright (c) UTS. All rights reserved.
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #include "Packet(2).h"
@@ -14,7 +14,7 @@
 
 // in the condition of receiving bad checksum
 // need to discard first byte and add a new byte at the end of packet
-void Packet_t::Packet_SwitchPacket()
+void Packet_t::SwitchPacket()
 {
     Packet_Command = Packet_Parameter1;
     Packet_Parameter1 = Packet_Parameter2;
@@ -27,16 +27,16 @@ bool Packet_t::Packet_Get(void)
 {
   // local variable for holding temp value
   uint8_t rxData{0};
-  static unsigned NbBytes_Packet{0};
+  static unsigned nbBytesPacket{0};
 
-  while (NbBytes_Packet <= 5)
- {
+  while (nbBytesPacket <= 5)
+  {
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
        if (UART_InChar(&rxData))
-     {
-         NbBytes_Packet++;
-            switch(NbBytes_Packet)
-          {
+       {
+         nbBytesPacket++;
+            switch(nbBytes_Packet)
+            {
              case 1: Packet_Command = rxData; // assign data to Packet
         	   break;
              case 2: Packet_Parameter1 = rxData;
@@ -46,19 +46,19 @@ bool Packet_t::Packet_Get(void)
              case 4: Packet_Parameter3 = rxData;
         	   break;
              case 5:  Packet_Checksum = rxData;
-               if(Packet_CheckChecksum())
-             {
+               if(CheckChecksum())
+               {
                 // checksum is good, then check it out
-            	   NbBytes_Packet++;
+            	   nbBytesPacket++;
             	   return true;
             	   break;
-             }
+               }
               else
-            {
+              {
             // checksum is not good , then discarding first byte, going back to case 4
              this->Packet_SwitchPacket();
-             NbBytes_Packet--;
-            }
+             nbBytesPacket--;
+              }
 
           }
 
@@ -72,9 +72,9 @@ bool Packet_t::Packet_Get(void)
      }
 
  }
-  if(NbBytes_Packet > 5)
+  if (nbBytesPacket > 5)
   {
-	  NbBytes_Packet = 0; // reset Nbbytes_packet
+	  nbBytesPacket = 0; // reset Nbbytes_packet
 	  return false; // need to terminate receiving data
   }
 
@@ -98,23 +98,23 @@ Packet_Checksum =  Packet_Command ^ Packet_Parameter1 ^ Packet_Parameter2 ^ Pack
 // To handle all of conditions regarding to send packets
 // this function only can send ACK command packet for startup
 // future improvement will address the issue of sending ACK command for other commands
- void Packet_HandlePacket(Packet_t &packet)
+ void HandlePacket(Packet_t &packet)
 {
-   if(packet.Packet_Command & PACKET_ACK_MASK)
-  {
+   if (packet.Packet_Command & PACKET_ACK_MASK)
+   {
     Packet_t Ack_Packet(packet);// initialize Ack_Packet for startup packet
 
     // send 3 packets for startup command and acknowledgement packet
-    packet.Packet_HandleStartupPacket();
-    packet.Packet_HandleTowerVersionPacket();
-    packet.Packet_HandleTowerNumberPacket();
+    packet.HandleStartupPacket();
+    packet.HandleTowerVersionPacket();
+    packet.HandleTowerNumberPacket();
     Ack_Packet.Packet_Put();
-  }
+   }
  else
-  packet.Packet_HandleCommandPacket();
+  packet.HandleCommandPacket();
 }
 
-void Packet_t::Packet_HandleStartupPacket()
+void Packet_t::HandleStartupPacket()
 {
  // Assgin value for startup command according to packet protocol
   Packet_Command = CMD_STARTUP;
@@ -124,7 +124,7 @@ void Packet_t::Packet_HandleStartupPacket()
 
 }
 
-void Packet_t::Packet_HandleTowerVersionPacket()
+void Packet_t::HandleTowerVersionPacket()
 {
   // Assgin value for towerversion command according to packet protocol
     Packet_Command = CMD_TOWERVERSION;
@@ -135,7 +135,7 @@ void Packet_t::Packet_HandleTowerVersionPacket()
     this->Packet_Put();// send it to FIFO
 }
 
-void Packet_t::Packet_HandleTowerNumberPacket()
+void Packet_t::HandleTowerNumberPacket()
 {
 // Assgin value for towernumber command according to packet protocol
     Packet_Command = CMD_TOWERNUMBER;
@@ -148,10 +148,10 @@ void Packet_t::Packet_HandleTowerNumberPacket()
 }
 
 // Handling packet protocol (Tower to PC)
-int Packet_t::Packet_HandleCommandPacket()
+int Packet_t::HandleCommandPacket()
 {
-    switch(Packet_Command)
-  {
+    switch (Packet_Command)
+    {
   // for specific command. Startup needs to send 3 packets
     case CMD_STARTUP:  this->Packet_HandleStartupPacket();
                        this->Packet_HandleTowerVersionPacket();
@@ -161,14 +161,11 @@ int Packet_t::Packet_HandleCommandPacket()
 
     break;
     case CMD_TOWERNUMBER: this->Packet_HandleTowerNumberPacket();//only responce once for number
-   // Error condition
-   default: /*std::cerr << "Error: Can't identify the command\n";
-            return 0;*/
-            break;
-  }
+    }
 
 }
 
+#if 0
 // initializing Ackpacket for towerstartup command
 Packet_t::Packet_t(const Packet_t &packet):
 Packet_Command(packet.Packet_Command),
@@ -180,6 +177,7 @@ m_baudRate(packet.m_baudRate), m_moduleClk(packet.m_moduleClk)
     Packet_Command |= PACKET_ACK_MASK;
     Packet_Command |= CMD_STARTUP;
   }
+#endif
 
 // constructor for initializing UART module
 Packet_t::Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
@@ -190,6 +188,10 @@ Packet_t::Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
 
 
 
-
+inline uint8_t Packet_t::CheckChecksum()
+{ 
+Packet_Checksum = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
+return Packet_Checksum;
+}
 
 

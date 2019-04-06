@@ -5,9 +5,8 @@
  *  This contains the functions for operating the UART (serial port).
  *
  *  @author Chao Li
- *   student ID: 12199434
  *  @date 02/04/2019
- *  Copyright (c) UTS. All rights reserved.
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef UART_H
@@ -32,7 +31,7 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  *  @return bool - TRUE if the receive FIFO returned a character.
  *  @note Assumes that UART_Init has been called.
  */
- bool UART_InChar(uint8_t* const dataPtr);
+inline bool UART_InChar(uint8_t* const dataPtr);
 
 /*! @brief Put a byte in the transmit FIFO if it is not full.
  *
@@ -40,7 +39,7 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  *  @return bool - TRUE if the data was placed in the transmit FIFO.
  *  @note Assumes that UART_Init has been called.
  */
- bool UART_OutChar(const uint8_t &data);
+inline bool UART_OutChar(const uint8_t &data);
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.
  *

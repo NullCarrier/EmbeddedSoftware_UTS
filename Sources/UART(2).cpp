@@ -5,9 +5,8 @@
  *  This contains the functions for operating the UART (serial port).
  *
  *  @author Chao Li
- *   student ID: 12199434
  *  @date 02/04/2019
- *  Copyright (c) UTS. All rights reserved.
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #include "UART(2).h"
@@ -16,7 +15,7 @@
 #include "type_cpp.h" // uint16union_t
 
 // const number for converting baudrate into SBR
-static constexpr uint32_t DIVISIOR = 16;
+static constexpr float DIVISIOR = 16.0;
 
 // declare the object called RxFIFO, TxFIFO
 static TFIFO RxFIFO;
@@ -25,7 +24,7 @@ static TFIFO TxFIFO;
 // This function is only used to obtain BRFA
 static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
-  float sbr = (float)(moduleClk / baudRate) / DIVISIOR; // using this formula to obtain SBR
+  float sbr = (moduleClk / baudRate) / DIVISIOR; // using this formula to obtain SBR
                                                         // and typecast it into float type
   float sbr_Fraction = fmod(sbr, static_cast<int>(sbr)); // fmod will return reminder
                                                 // using reminder to obtain fractional part of SBR
@@ -67,16 +66,14 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
- bool UART_InChar(uint8_t* const dataPtr)
+inline bool UART_InChar(uint8_t* const dataPtr)
 {
- if(RxFIFO.FIFO_Get(dataPtr)) // retrieve data from FIFO and send it to Packet module
-   return true;
+ return RxFIFO.FIFO_Get(dataPtr); // retrieve data from FIFO and send it to Packet module
 }
 
- bool UART_OutChar(const uint8_t &data)
+inline bool UART_OutChar(const uint8_t &data)
 {
-  if(TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
-   return true;
+ return TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
 }
 
 
@@ -85,13 +82,13 @@ void UART_Poll(void)
 {
   // receiving data condition
   // To check the state of RDRF bit
- if(UART2_S1 & UART_S1_RDRF_MASK)
+ if (UART2_S1 & UART_S1_RDRF_MASK)
 {
   // let the receiver to send a byte of data to RxFIFO
   RxFIFO.FIFO_Put(UART2_D);
 }
 // To check the state of TDRE bit
-   else if(UART2_S1 & UART_S1_TDRE_MASK)
+   else if (UART2_S1 & UART_S1_TDRE_MASK)
   {
   //send data from TxFIFO to data register
   TxFIFO.FIFO_Get((uint8_t *) &UART2_D);
