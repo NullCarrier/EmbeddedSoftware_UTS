@@ -13,6 +13,8 @@
 
 // New types
 #include "types.h"
+#include "UART(2).h" // UART_Init()
+#include <deque>
 
 // Packet structure
 #define PACKET_NB_BYTES 5
@@ -22,7 +24,8 @@
 
 typedef union
 {
-  uint8_t bytes[PACKET_NB_BYTES];     /*!< The packet as an array of bytes. */
+  std::deque<uint8_t> bytes (PACKET_NB_BYTES, 0);
+  //uint8_t bytes[PACKET_NB_BYTES];     /*!< The packet as an array of bytes. */
   struct
   {
     uint8_t command;		      /*!< The packet's command. */

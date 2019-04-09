@@ -17,39 +17,58 @@
 /*! @brief LED to pin mapping on the TWR-K70F120M
  *
  */
-typedef enum
-{
+ class LED_t
+ {
+  public:
+   typedef enum
+ {
   LED_ORANGE = (1 << 11),
   LED_YELLOW = (1 << 28),
   LED_GREEN = (1 << 29),
   LED_BLUE = (1 << 10)
-} TLED;
+ } TLED;
+
+ /*! @brief Turns an LED on.
+ *
+ *  @param color The color of the LED to turn on.
+ *  @note Assumes that LEDs_Init has been called.
+ */
+ void LEDs_On() const;
+
+ /*! @brief Turns off an LED.
+ *
+ *  @param color THe color of the LED to turn off.
+ *  @note Assumes that LEDs_Init has been called.
+ */
+ void LEDs_Off() const;
+
+ /*! @brief Toggles an LED.
+ *
+ *  @param color THe color of the LED to toggle.
+ *  @note Assumes that LEDs_Init has been called.
+ */
+ void LEDs_Toggle() const;
+
+ /*! @brief constructor to Initialise the color
+ *
+ *  @param color THe color of the LED
+ *  @note Assumes that LEDs_Init has been called.
+ */
+ LED_t(TLED color): m_color{color}
+   {
+     LEDsInit(void);
+   }
+
+  private:
+    TLED m_color;
+ };
+
 
 /*! @brief Sets up the LEDs before first use.
  *
  *  @return bool - TRUE if the LEDs were successfully initialized.
  */
-bool LEDs_Init(void);
- 
-/*! @brief Turns an LED on.
- *
- *  @param color The color of the LED to turn on.
- *  @note Assumes that LEDs_Init has been called.
- */
-void LEDs_On(const TLED color);
- 
-/*! @brief Turns off an LED.
- *
- *  @param color THe color of the LED to turn off.
- *  @note Assumes that LEDs_Init has been called.
- */
-void LEDs_Off(const TLED color);
+static bool LEDsInit(void);
 
-/*! @brief Toggles an LED.
- *
- *  @param color THe color of the LED to toggle.
- *  @note Assumes that LEDs_Init has been called.
- */
-void LEDs_Toggle(const TLED color);
 
 #endif
