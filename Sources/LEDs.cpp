@@ -2,7 +2,7 @@
 #include "MK70F12.h"
 
 
-static bool LEDsInit(void)
+static bool LED_t::LEDsInit(void)
 {
   // Enable the clock gating for PortA
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
@@ -28,7 +28,7 @@ static bool LEDsInit(void)
   return true;
 }
 
-void LEDs_On()
+void LED_t::LEDs_On()
 {
   switch (m_color)
   {
@@ -44,7 +44,7 @@ void LEDs_On()
 
 }
 
-void LEDs_off()
+void LED_t::LEDs_off()
 {
   switch (m_color)
   {

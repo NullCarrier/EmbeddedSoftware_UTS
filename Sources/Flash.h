@@ -14,23 +14,53 @@
 // new types
 #include "types.h"
 
-// FLASH data access
-#define _FB(flashAddress)  *(uint8_t  volatile *)(flashAddress)
-#define _FH(flashAddress)  *(uint16_t volatile *)(flashAddress)
-#define _FW(flashAddress)  *(uint32_t volatile *)(flashAddress)
-#define _FP(flashAddress)  *(uint64_t volatile *)(flashAddress)
+// FLASH data access, reading bytes from flash in main routine
+#define _FB(flashAddress)  *(uint8_t  volatile *)(flashAddress)// bytes
+#define _FH(flashAddress)  *(uint16_t volatile *)(flashAddress)// half of word
+#define _FW(flashAddress)  *(uint32_t volatile *)(flashAddress)// words
+#define _FP(flashAddress)  *(uint64_t volatile *)(flashAddress)//phase
 
 // Address of the start of the Flash block we are using for data storage
 #define FLASH_DATA_START 0x00080000LU
 // Address of the end of the Flash block we are using for data storage
 #define FLASH_DATA_END   0x00080007LU
 
+/*
+class Flash_t
+{
+  private:
+    volatile void** variable;
+    volatile uint32_t* const address32;
+    volatile uint16_t* const address16;
+    volatile uint8_t* const address8;
+
+
+  public:
+    Flash_t (volatile void** var, volatile uint32_t* const add32, volatile uint16_t* const add16, volatile uint8_t* const add8):
+      variable{var},
+    {
+     Flash_Init();
+    }
+
+
+
+
+};*/
+
+
+// for handling two commands Program Phrase , Erase Flash Sector
+class TFCCOB
+{
+
+
+};
+
 /*! @brief Enables the Flash module.
  *
  *  @return bool - TRUE if the Flash was setup successfully.
  */
-bool Flash_Init(void);
- 
+inline bool Flash_Init(void);
+
 /*! @brief Allocates space for a non-volatile variable in the Flash memory.
  *
  *  @param variable is the address of a pointer to a variable that is to be allocated space in Flash memory.
@@ -53,8 +83,12 @@ bool Flash_AllocateVar(volatile void** variable, const uint8_t size);
  *  @return bool - TRUE if Flash was written successfully, FALSE if address is not aligned to a 4-byte boundary or if there is a programming error.
  *  @note Assumes Flash has been initialized.
  */
+
+//  write to RAM buffer
 bool Flash_Write32(volatile uint32_t* const address, const uint32_t data);
- 
+// data processing
+// call Flash_Erase
+//....
 /*! @brief Writes a 16-bit number to Flash.
  *
  *  @param address The address of the data.
@@ -72,6 +106,7 @@ bool Flash_Write16(volatile uint16_t* const address, const uint16_t data);
  *  @note Assumes Flash has been initialized.
  */
 bool Flash_Write8(volatile uint8_t* const address, const uint8_t data);
+
 
 /*! @brief Erases the entire Flash sector.
  *

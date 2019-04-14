@@ -20,13 +20,13 @@
  class LED_t
  {
   public:
-   typedef enum
- {
+    typedef enum
+  {
   LED_ORANGE = (1 << 11),
   LED_YELLOW = (1 << 28),
   LED_GREEN = (1 << 29),
   LED_BLUE = (1 << 10)
- } TLED;
+  } TLED;
 
  /*! @brief Turns an LED on.
  *
