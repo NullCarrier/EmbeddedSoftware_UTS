@@ -13,6 +13,8 @@
 
 // new types
 #include "types.h"
+// include mask
+#include "MK70F12.h"
 
 // FLASH data access, reading bytes from flash in main routine
 #define _FB(flashAddress)  *(uint8_t  volatile *)(flashAddress)// bytes
@@ -25,33 +27,29 @@
 // Address of the end of the Flash block we are using for data storage
 #define FLASH_DATA_END   0x00080007LU
 
-/*
-class Flash_t
-{
-  private:
-    volatile void** variable;
-    volatile uint32_t* const address32;
-    volatile uint16_t* const address16;
-    volatile uint8_t* const address8;
-
-
-  public:
-    Flash_t (volatile void** var, volatile uint32_t* const add32, volatile uint16_t* const add16, volatile uint8_t* const add8):
-      variable{var},
-    {
-     Flash_Init();
-    }
-
-
-
-
-};*/
 
 
 // for handling two commands Program Phrase , Erase Flash Sector
 class TFCCOB
 {
-
+ private:
+   uint8_t fccob0;
+   uint8_t fccob1;
+   uint8_t fccob2;
+   uint8_t fccob3;
+   uint8_t dataByte0;
+   uint8_t dataByte1;
+   uint8_t dataByte2;
+   uint8_t dataByte3;
+   uint8_t dataByte4;
+   uint8_t dataByte5;
+ public:
+    TFCCOB()
+    {
+    }
+   friend bool LaunchCommand(TFCCOB &commonCommandObject);
+   bool EraseSector(const uint32_t &address);
+   bool WritePhrase(const uint32_t &address, const uint64union_t &phase);
 
 };
 
