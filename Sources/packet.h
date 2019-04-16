@@ -93,7 +93,7 @@ class PacketVer2_t : public Packet_t
  *
  *  @return None
  */
-  static void SwitchPacket();
+  static void SwitchPacket() override;
   /*! @brief To bulid a checksum
  *
  *  @return None

@@ -12,7 +12,7 @@
 #define TYPES_H
 
 #include <stdint.h>
-#include <stdbool.h>
+
 
 // Unions to efficiently access hi and lo parts of integers and words
 typedef union
