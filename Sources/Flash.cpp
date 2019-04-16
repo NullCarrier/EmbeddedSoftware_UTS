@@ -98,7 +98,7 @@ bool Flash_AllocateVar(volatile void** variable, const uint8_t &size)
        break;
     case 2: FlashAllocateHalfWord(variable);
        break;
-	case 4: FlashAllocateWord(variable);
+    case 4: FlashAllocateWord(variable);
        break;
   }
 

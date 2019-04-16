@@ -73,8 +73,8 @@ void HandlePacketVer2::HandleTowerMode()
 {
         Packet_Command = CMD_TOWERMODE;
   	Packet_Parameter1 = 0x01;  // Parameter 1
-  	Packet_Parameter2 = 0x94; // Parameter 2
-  	Packet_Parameter3 = 0x34; // Parameter 3
+  	Packet_Parameter2 = 0x01; // Parameter 2
+  	Packet_Parameter3 = 0x00; // Parameter 3
 
   	Packet_Put(); // send it to FIFO
 }
@@ -101,24 +101,54 @@ void HandlePacketVer2::HandleCommandPacket()
 
 void InitResponsePacket()
 {
-  Packet_HandleStartupPacket();
-  Packet_HandleTowerVersionPacket();
-  Packet_HandleTowerNumberPacket();
+  HandleStartupPacket();
+  HandleTowerVersionPacket();
+  HandleTowerNumberPacket();
   HandleTowerMode();
 }
 
+
+static void FlashRead()
+{
+
+
+}
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
-    PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
-    if ( Flash_Init() )
-    LED_t led(LED_t::LED_ORANGE);
+  PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
+  bool successNb;
+ // bool successMode;
 
-    led.LEDs_On();
+  // pointer to be allocated memory space
+    volatile uint16union_t *NvTowerNb;
+
+  if ( Flash_Init() )
+  LED_t led(LED_t::LED_ORANGE);
+
+  led.LEDs_On();
+
+  // to allocate  memory address to NVTowerNb
+  successNb = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
+  //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
+
+  if(successNb)
+  {
+    // assign the value to para 2 and 3
+    Packet_Parameter23 = 0x9434;
+    // set the tower number
+    success = Flash_Write16((uint16_t *)NvTowerNb, Packet_Parameter23);
+  }
+
+  // read through flash memory
+  FlashRead();
+
+  // send 4 packets once the tower is turned on
+  HandlePacketVer2::InitResponsePacket();
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();

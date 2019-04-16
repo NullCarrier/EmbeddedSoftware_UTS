@@ -60,13 +60,13 @@ public:
  *
  *  @return bool - TRUE if a valid packet was received.
  */
-  virtual bool Get();
+  virtual bool Packet_Get();
 
   /*! @brief Builds a packet and places it in the transmit FIFO buffer.
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-  virtual bool Put();
+  virtual bool Packet_Put();
 
    /*! @brief to handle error condition by discarding first byte and adding the new byte
  *

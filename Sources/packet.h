@@ -80,13 +80,13 @@ class PacketVer2_t : public Packet_t
  *
  *  @return bool - TRUE if a valid packet was received.
  */
-   bool Packet_Get() ;
+   bool Packet_Get() override;
 
   /*! @brief Builds a packet and places it in the transmit FIFO buffer.
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-   bool Packet_Put() ;
+   bool Packet_Put() override;
 
   /*! @brief to handle error condition by discarding first byte and adding the new byte
  *
