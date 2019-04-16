@@ -25,8 +25,7 @@ static constexpr uint8_t PACKET_NB_BYTES =  5;
 
 typedef union
 {
-  std::deque<uint8_t> bytes (PACKET_NB_BYTES);
-  //uint8_t bytes[PACKET_NB_BYTES];     /*!< The packet as an array of bytes. */
+  uint8_t bytes[PACKET_NB_BYTES];     /*!< The packet as an array of bytes. */
   struct
   {
     uint8_t command;		      /*!< The packet's command. */
@@ -81,19 +80,19 @@ class PacketVer2_t : public Packet_t
  *
  *  @return bool - TRUE if a valid packet was received.
  */
-  static bool Packet_Get() override;
+   bool Packet_Get() ;
 
   /*! @brief Builds a packet and places it in the transmit FIFO buffer.
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-  static bool Packet_Put() override;
+   bool Packet_Put() ;
 
   /*! @brief to handle error condition by discarding first byte and adding the new byte
  *
  *  @return None
  */
-  static void SwitchPacket() override;
+   void SwitchPacket() override;
   /*! @brief To bulid a checksum
  *
  *  @return None
@@ -116,13 +115,19 @@ class HandlePacketVer2
      CMD_TOWERMODE = 0x0D
     };
 
+  /*! @brief There 3 functions below for handling 3 different command packets
+   *
+   *  @return void
+  */
+    void HandleStartupPacket();
+    void HandleTowerVersionPacket();
+    void HandleTowerNumberPacket();
+    void HandleTowerMode();
+    void InitResponsePacket();
 
-
-
+    void HandleCommandPacket(); // functions for handling packets
 
 };
-
-
 
 
 // Acknowledgment bit mask

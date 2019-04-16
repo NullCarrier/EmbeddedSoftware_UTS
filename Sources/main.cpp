@@ -33,11 +33,92 @@
 //include packet module
 #include "packet.h"
 
+#define BAUDRATE 115200
+
+
+void HandlePacketVer2::HandleStartupPacket()
+{
+ // Assgin value for startup command according to packet protocol
+  Packet_Command = CMD_STARTUP;
+  Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
+
+  Packet_Put(); //send it to FIFO
+
+}
+
+void HandlePacketVer2::HandleTowerVersionPacket()
+{
+  // Assgin value for towerversion command according to packet protocol
+        Packet_Command = CMD_TOWERVERSION;
+	Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
+	Packet_Parameter2 = 0x01; // Parameter 2
+	Packet_Parameter3 = 0x0;  // Parameter 3
+
+        Packet_Put();// send it to FIFO
+}
+
+void HandlePacketVer2::HandleTowerNumberPacket()
+{
+// Assgin value for towernumber command according to packet protocol
+        Packet_Command = CMD_TOWERNUMBER;
+	Packet_Parameter1 = 0x01;  // Parameter 1
+	Packet_Parameter2 = 0x94; // Parameter 2
+	Packet_Parameter3 = 0x34; // Parameter 3
+
+	Packet_Put(); // send it to FIFO
+
+}
+
+void HandlePacketVer2::HandleTowerMode()
+{
+        Packet_Command = CMD_TOWERMODE;
+  	Packet_Parameter1 = 0x01;  // Parameter 1
+  	Packet_Parameter2 = 0x94; // Parameter 2
+  	Packet_Parameter3 = 0x34; // Parameter 3
+
+  	Packet_Put(); // send it to FIFO
+}
+
+
+// Handling packet protocol (Tower to PC)
+void HandlePacketVer2::HandleCommandPacket()
+{
+    switch (Packet_Command)
+    {
+  // for specific command. Startup needs to send 3 packets
+    case CMD_STARTUP:      InitResponsePacket();
+                           break;
+    case CMD_TOWERVERSION: HandleTowerVersionPacket();//only responce once for version
+                           break;
+    case CMD_TOWERNUMBER:  HandleTowerNumberPacket();//only responce once for number
+                           break;
+    case CMD_TOWERMODE:    HandleTowerMode();
+                           break;
+    }
+
+}
+
+
+void InitResponsePacket()
+{
+  Packet_HandleStartupPacket();
+  Packet_HandleTowerVersionPacket();
+  Packet_HandleTowerNumberPacket();
+  HandleTowerMode();
+}
+
+
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
+    PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
+
+    if ( Flash_Init() )
+    LED_t led(LED_t::LED_ORANGE);
+
+    led.LEDs_On();
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -46,8 +127,8 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-	if(packet.Packet_Get())
-    Packet_HandlePacket(packet);
+    if ( Packet_Get() )
+    HandleCommandPacket();
     UART_Poll();
   }
 

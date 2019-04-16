@@ -43,6 +43,8 @@ class TFCCOB
    uint8_t dataByte3;
    uint8_t dataByte4;
    uint8_t dataByte5;
+   uint8_t dataByte6;
+   uint8_t dataByte7;
  public:
     TFCCOB()
     {
@@ -83,7 +85,7 @@ bool Flash_AllocateVar(volatile void** variable, const uint8_t size);
  */
 
 //  write to RAM buffer
-bool Flash_Write32(volatile uint32_t* const address, const uint32_t data);
+bool Flash_Write32(volatile uint32_t* const address, const uint32_t &data);
 // data processing
 // call Flash_Erase
 //....
@@ -94,7 +96,7 @@ bool Flash_Write32(volatile uint32_t* const address, const uint32_t data);
  *  @return bool - TRUE if Flash was written successfully, FALSE if address is not aligned to a 2-byte boundary or if there is a programming error.
  *  @note Assumes Flash has been initialized.
  */
-bool Flash_Write16(volatile uint16_t* const address, const uint16_t data);
+bool Flash_Write16(volatile uint16_t* const address, const uint16_t &data);
 
 /*! @brief Writes an 8-bit number to Flash.
  *
@@ -103,7 +105,7 @@ bool Flash_Write16(volatile uint16_t* const address, const uint16_t data);
  *  @return bool - TRUE if Flash was written successfully, FALSE if there is a programming error.
  *  @note Assumes Flash has been initialized.
  */
-bool Flash_Write8(volatile uint8_t* const address, const uint8_t data);
+bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data);
 
 
 /*! @brief Erases the entire Flash sector.

@@ -12,7 +12,7 @@
 #include "UART(2).h"
 #include "MK70F12.h"// involve mask for all registers
 #include <cmath>// include fmod()
-#include "type_cpp.h" // uint16union_t
+#include "types.h" // uint16union_t
 
 // const number for converting baudrate into SBR
 static constexpr float DIVISIOR = 16.0;

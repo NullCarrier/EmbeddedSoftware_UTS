@@ -9,21 +9,18 @@
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
-#ifndef PACKET_H
-#define PACKET_H
+#ifndef PACKET2_H
+#define PACKET2_H
 
 // New types
-#include "type_cpp.h"
+#include "types.h"
 #include "UART(2).h" // UART_Init()
 
 // need to be in enum
 // Acknowledgement bit mask
 //static constexpr uint8_t PACKET_ACK_MASK = 0b10000000;
-extern const uint8_t PACKET_ACK_MASK;
-/* constant for handling 3 commands
-#define  CMD_STARTUP 0x04
-#define  CMD_TOWERVERSION 0x09
-#define  CMD_TOWERNUMBER 0x0B */
+//extern const uint8_t PACKET_ACK_MASK;
+
 
 // Packet structure
 class Packet_t

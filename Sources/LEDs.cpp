@@ -2,7 +2,7 @@
 #include "MK70F12.h"
 
 
-static bool LED_t::LEDsInit(void)
+ bool LEDsInit()
 {
   // Enable the clock gating for PortA
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
@@ -28,51 +28,18 @@ static bool LED_t::LEDsInit(void)
   return true;
 }
 
-void LED_t::LEDs_On()
+void LED_t::LEDs_On() const
 {
-  switch (m_color)
-  {
-    case LED_ORANGE: GPIO_PSOR_PTSO_MASK |= GPIO_PSOR_PTSO(11);
-            break;
-    case LED_YELLOW: GPIO_PSOR_PTSO_MASK |= GPIO_PSOR_PTSO(28);
-	        break;
-	case LED_GREEN: GPIO_PSOR_PTSO_MASK |= GPIO_PSOR_PTSO(29);
-	        break;
-	case LED_BLUE: GPIO_PSOR_PTSO_MASK |= GPIO_PSOR_PTSO(10);
-	        break;
-  }
-
+  GPIOA_PSOR |= m_color;
 }
 
-void LED_t::LEDs_off()
+void LED_t::LEDs_Off() const
 {
-  switch (m_color)
-  {
-    case LED_ORANGE: GPIO_PCOR_PTCO_MASK |= GPIO_PCOR_PTCO(11);
-            break;
-    case LED_YELLOW: GPIO_PCOR_PTCO_MASK |= GPIO_PCOR_PTCO(28);
-	        break;
-	case LED_GREEN: GPIO_PCOR_PTCO_MASK |= GPIO_PCOR_PTCO(29);
-	        break;
-	case LED_BLUE: GPIO_PCOR_PTCO_MASK |= GPIO_PCOR_PTCO(10);
-	        break;
-  }
-
+  GPIOA_PCOR |= m_color;
 }
 
-void LEDs_Toggle()
+void LED_t::LEDs_Toggle() const
 {
-  switch (m_color)
-  {
-    case LED_ORANGE: GPIO_PTOR_PTTO_MASK |= GPIO_PTOR_PTTO(11);
-            break;
-    case LED_YELLOW: GPIO_PTOR_PTTO_MASK |= GPIO_PTOR_PTTO(28);
-	        break;
-	case LED_GREEN: GPIO_PTOR_PTTO_MASK |= GPIO_PTOR_PTTO(29);
-	        break;
-	case LED_BLUE: GPIO_PTOR_PTTO_MASK |= GPIO_PTOR_PTTO(10);
-	        break;
-  }
-
+  GPIOA_PTOR |= m_color;
 }
 

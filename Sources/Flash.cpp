@@ -19,7 +19,7 @@ static bool FlashAllocateByte(volatile void** variable)
   {
 	if (flashSector0[i] == 0)
 	{
-	 *variable = FLASH_DATA_START + i;
+	 *variable = (void *) (FLASH_DATA_START + i);
 	  flashSector0[i] = 1;
 	  return true;
 	}
@@ -34,8 +34,8 @@ static bool FlashAllocateHalfWord(volatile void** variable)
   {
 	if ( (flashSector0[i] == 0) && (i % i == 0) )
 	{
-	 *variable = FLASH_DATA_START + i;
-     flashSector0[i] = 1;
+	 *variable = (void *) (FLASH_DATA_START + i) ;
+         flashSector0[i] = 1;
 	 flashSector0[++i] = 1;
 	 return true;
 	}
@@ -51,32 +51,34 @@ static bool FlashAllocateWord(volatile void** variable)
   // testing upper half memory block
   for (unsigned i = 0; i < NB_BYTES - 4; i++)
   {
-	 (flashSector0[i] != 1)?counter++ : ;
+     if (flashSector0[i] != 1)
+	     counter++;
   }
 
   if (counter == 4)
   {
-      *variable = FLASH_DATA_START;
-	  for (unsigned p = 0; p < NB_BYTES - 4; p++)
-	  {
-		flashSector0[p] = 1;
-	  }
-	    return true;
+      *variable  = (void *) FLASH_DATA_START;
+     for (unsigned i = 0; i < NB_BYTES - 4; i++)
+     {
+       flashSector0[i] = 1;
+     }
+       return true;
   }
   else
   {
    // testing lower half memory block
-   for (unsigned j = 4; i < NB_BYTES; j++)
+   for (unsigned i = 4; i < NB_BYTES; i++)
     {
-	  (flashSector0[j] != 1)?counter++ : ;
+	 if (flashSector0[i] != 1)
+	      counter++;
     }
 
    if (counter == 4)
    {
-	  *variable = FLASH_DATA_START + 4;
-      for (unsigned k = 4; i < NB_BYTES; k++)
-	  {
-	   flashSector0[k] = 1;
+	  *variable = (void *) (FLASH_DATA_START + 4);
+      for (unsigned i = 4; i < NB_BYTES; i++)
+      {
+	   flashSector0[i] = 1;
       }
       return true;
 
@@ -106,9 +108,14 @@ bool Flash_AllocateVar(volatile void** variable, const uint8_t &size)
 
 bool Flash_Write32(volatile uint32_t* const address, const uint32_t &data)
 {
+  // local var for handling bytes
+  uint64union_t phrase;
+
+  phrase.l = data;
+
   commandObject.EraseSector(FLASH_DATA_START);
 
-  commandObject.WritePhrase(FLASH_DATA_START, data);
+  commandObject.WritePhrase(FLASH_DATA_START, phrase);
 
   return true;
 }
@@ -116,7 +123,7 @@ bool Flash_Write32(volatile uint32_t* const address, const uint32_t &data)
 
 bool Flash_Write16(volatile uint16_t* const address, const uint16_t &data)
 {
- Flash_write32((uint32_t *)address, data);
+ Flash_Write32((uint32_t *)address, data);
  return true;
 }
 
@@ -142,9 +149,9 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	// more parameter?
  	// write to FCCOB to load required command parameter
 	// assgin FCMD
-	   FTFE_FCCOB0 |= commonCommandObject.fccob0;
-	   // assgin flash address to FCCOB
-	   FTFE_FCCOB3 |= commonCommandObject.fccob3;
+       FTFE_FCCOB0 |= commonCommandObject.fccob0;
+	 // assgin flash address to FCCOB
+       FTFE_FCCOB3 |= commonCommandObject.fccob3;
        FTFE_FCCOB2 |= commonCommandObject.fccob2;
 	   FTFE_FCCOB1 |= commonCommandObject.fccob1;
        // assign data into byte0-7 in FCCOB
@@ -167,44 +174,44 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 }
 
  // Program Phrase command
- bool TFCCOB::WritePhrase(const uint32_t &address, const uint64union_t &phase)
+ bool TFCCOB::WritePhrase(const uint32_t &address, const uint64union_t &phrase)
 {
    //union type local var to handle bytes
    uint32union_t word;
    uint16union_t halfWord;
 
    // to access lower 4bytes in phase
-   word = phase.s.Lo;
+   word.l = phrase.s.Lo;
 
    // access first, two bytes in phase
    halfWord.l = word.s.Lo;
 
    //assign data to parameter of FCCOB
    dataByte0 = halfWord.s.Lo;
-   dataByte1 = halWord.s.Hi;
+   dataByte1 = halfWord.s.Hi;
 
    // access third , fourth byte in phase
    halfWord.l = word.s.Hi;
 
    // assign data to Byte 2, Byte3 in FCCOB
-   dataByte2 = halWord.s.Lo;
-   dataByte3 = halWord.s.Hi;
+   dataByte2 = halfWord.s.Lo;
+   dataByte3 = halfWord.s.Hi;
 
    // to access higher 4bytes in phase
-   word = phase.s.Hi;
+   word.l = phrase.s.Hi;
    halfWord.l = word.s.Lo;
 
    // access fifth , sixth byte in phase
    halfWord.l = word.s.Lo;
 
    // assign data to Byte 4, Byte5 in FCCOB
-   dataByte4 = halWord.s.Lo;
-   dataByte5 = halWord.s.Hi;
+   dataByte4 = halfWord.s.Lo;
+   dataByte5 = halfWord.s.Hi;
 
    // to access last two bytes in phase
    halfWord.l = word.s.Hi;
-   dataByte6 = halWord.s.Lo;
-   dataByte7 = halWord.s.Hi;
+   dataByte6 = halfWord.s.Lo;
+   dataByte7 = halfWord.s.Hi;
 
    // FCMD for Program Phrase command
    fccob0 = 0x07;
@@ -223,12 +230,12 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
   flashAddress.l = address;
 
   // assgin lower and mid byte to fccob3 , fccob2
-  loMidByte.l = flashAddress.Lo;
-  fccob3 = loMidByte.Lo;
-  fccob2 = loMidByte.Hi;
+  loMidByte.l = flashAddress.s.Lo;
+  fccob3 = loMidByte.s.Lo;
+  fccob2 = loMidByte.s.Hi;
 
   // assign higher byte to fccob1
-  fccob1 = flashAddress.Hi;
+  fccob1 = flashAddress.s.Hi;
 
   // FCMD for  Erase Flash Sector Command
   fccob0 = 0x09;
@@ -238,6 +245,7 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
   return true;
 }
 
+ /*
 static bool ModifyPhrase(const uint32_t address, const uint64union_t phrase)
 {
   // allocate the memory space for RAM
@@ -250,4 +258,9 @@ static bool ModifyPhrase(const uint32_t address, const uint64union_t phrase)
 
   Flash_Write32(address, ram);
 
-}
+} */
+
+
+//bool Flash_Erase(void)
+
+

@@ -13,7 +13,7 @@
 #define UART_H
 
 // new types
-#include "type_cpp.h"
+#include "types.h"
 // include FIFO module
 #include "FIFO(2).h"
 

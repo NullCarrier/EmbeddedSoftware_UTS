@@ -56,19 +56,22 @@
  */
  LED_t(TLED color): m_color{color}
    {
-     LEDsInit(void);
+     LEDsInit();
    }
+
+ /*! @brief Sets up the LEDs before first use.
+  *
+  *  @return bool - TRUE if the LEDs were successfully initialized.
+*/
+  bool LEDsInit(void);
 
   private:
     TLED m_color;
+
  };
 
 
-/*! @brief Sets up the LEDs before first use.
- *
- *  @return bool - TRUE if the LEDs were successfully initialized.
- */
-static bool LEDsInit(void);
+
 
 
 #endif
