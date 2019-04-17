@@ -47,12 +47,6 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
          }
 
       }
-      else
-      {
-       // must return false when the UART_InChar can't get a byte or
-       // receiving section has done for packet module
-       return false;
-      }
 
    return false;
 }

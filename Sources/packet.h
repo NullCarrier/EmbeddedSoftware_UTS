@@ -14,9 +14,13 @@
 // New types
 #include "types.h"
 //include deque
-#include <deque>
+//#include <deque>
+
 //include packet module in Lab1
 #include "Packet(2).h"
+
+#include "UART(2).h" // UART_Init()
+
 // Packet structure
 static constexpr uint8_t PACKET_NB_BYTES =  5;
 
@@ -65,6 +69,7 @@ typedef union
 class PacketVer2_t : public Packet_t
 {
   public:
+     static TPacket s_Packet;
 
   /*! @brief Initializes the packets by calling the initialization routines of the supporting software modules.
  *
@@ -73,7 +78,7 @@ class PacketVer2_t : public Packet_t
  *  @return None
  */
    PacketVer2_t(const uint32_t baudRate, const uint32_t moduleClk):
-        Packet_t(baudRate, moduleClk)
+     Packet_t(baudRate, moduleClk)
       {
       }
   /*! @brief Attempts to get a packet from the received data.
@@ -99,8 +104,6 @@ class PacketVer2_t : public Packet_t
  */
   inline static void MakeChecksum();
 
-  private:
-    static TPacket s_Packet;
 };
 
 
@@ -119,13 +122,13 @@ class HandlePacketVer2
    *
    *  @return void
   */
-    void HandleStartupPacket();
-    void HandleTowerVersionPacket();
-    void HandleTowerNumberPacket();
-    void HandleTowerMode();
-    void InitResponsePacket();
+  static  void HandleStartupPacket(PacketVer2_t &packet);
+  static  void HandleTowerVersionPacket(PacketVer2_t &packet);
+  static  void HandleTowerNumberPacket(PacketVer2_t &packet);
+  static  void HandleTowerMode(PacketVer2_t &packet);
+  static  void InitResponsePacket(PacketVer2_t &packet);
 
-    void HandleCommandPacket(); // functions for handling packets
+  static void HandleCommandPacket(PacketVer2_t &packet); // functions for handling packets
 
 };
 

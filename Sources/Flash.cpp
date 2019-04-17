@@ -90,6 +90,13 @@ static bool FlashAllocateWord(volatile void** variable)
 }
 
 
+static void Flash_Read()
+{
+
+
+}
+
+
 bool Flash_AllocateVar(volatile void** variable, const uint8_t &size)
 {
   switch (size)

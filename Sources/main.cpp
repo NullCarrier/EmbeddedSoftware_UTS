@@ -33,31 +33,35 @@
 //include packet module
 #include "packet.h"
 
+#include "LEDs.h"
+
+#include "Flash.h"
+
 #define BAUDRATE 115200
 
 
-void HandlePacketVer2::HandleStartupPacket()
+void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
 {
  // Assgin value for startup command according to packet protocol
   Packet_Command = CMD_STARTUP;
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
 
-  Packet_Put(); //send it to FIFO
+  packet.PacketVer2_t::Packet_Put(); //send it to FIFO
 
 }
 
-void HandlePacketVer2::HandleTowerVersionPacket()
+void HandlePacketVer2::HandleTowerVersionPacket(PacketVer2_t &packet)
 {
   // Assgin value for towerversion command according to packet protocol
-        Packet_Command = CMD_TOWERVERSION;
-	Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
-	Packet_Parameter2 = 0x01; // Parameter 2
-	Packet_Parameter3 = 0x0;  // Parameter 3
+   Packet_Command = CMD_TOWERVERSION;
+   Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
+   Packet_Parameter2 = 0x01; // Parameter 2
+   Packet_Parameter3 = 0x0;  // Parameter 3
 
-        Packet_Put();// send it to FIFO
+   packet.PacketVer2_t::Packet_Put(); // send it to FIFO
 }
 
-void HandlePacketVer2::HandleTowerNumberPacket()
+void HandlePacketVer2::HandleTowerNumberPacket(PacketVer2_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
         Packet_Command = CMD_TOWERNUMBER;
@@ -65,54 +69,50 @@ void HandlePacketVer2::HandleTowerNumberPacket()
 	Packet_Parameter2 = 0x94; // Parameter 2
 	Packet_Parameter3 = 0x34; // Parameter 3
 
-	Packet_Put(); // send it to FIFO
+	packet.PacketVer2_t::Packet_Put(); //send it to FIFO
 
 }
 
-void HandlePacketVer2::HandleTowerMode()
+void HandlePacketVer2::HandleTowerMode(PacketVer2_t &packet)
 {
         Packet_Command = CMD_TOWERMODE;
   	Packet_Parameter1 = 0x01;  // Parameter 1
   	Packet_Parameter2 = 0x01; // Parameter 2
   	Packet_Parameter3 = 0x00; // Parameter 3
 
-  	Packet_Put(); // send it to FIFO
+  	packet.PacketVer2_t::Packet_Put(); //send it to FIFO
 }
 
 
 // Handling packet protocol (Tower to PC)
-void HandlePacketVer2::HandleCommandPacket()
+void HandlePacketVer2::HandleCommandPacket(PacketVer2_t &packet)
 {
     switch (Packet_Command)
     {
   // for specific command. Startup needs to send 3 packets
-    case CMD_STARTUP:      InitResponsePacket();
+    case CMD_STARTUP:      InitResponsePacket(packet);
                            break;
-    case CMD_TOWERVERSION: HandleTowerVersionPacket();//only responce once for version
+    case CMD_TOWERVERSION: HandleTowerVersionPacket(packet);//only responce once for version
                            break;
-    case CMD_TOWERNUMBER:  HandleTowerNumberPacket();//only responce once for number
+    case CMD_TOWERNUMBER:  HandleTowerNumberPacket(packet);//only responce once for number
                            break;
-    case CMD_TOWERMODE:    HandleTowerMode();
+    case CMD_TOWERMODE:    HandleTowerMode(packet);
                            break;
     }
 
 }
 
 
-void InitResponsePacket()
+void HandlePacketVer2::InitResponsePacket(PacketVer2_t &packet)
 {
-  HandleStartupPacket();
-  HandleTowerVersionPacket();
-  HandleTowerNumberPacket();
-  HandleTowerMode();
+  HandleStartupPacket(packet);
+  HandleTowerVersionPacket(packet);
+  HandleTowerNumberPacket(packet);
+  HandleTowerMode(packet);
 }
 
 
-static void FlashRead()
-{
 
-
-}
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -125,30 +125,29 @@ int main(void)
  // bool successMode;
 
   // pointer to be allocated memory space
-    volatile uint16union_t *NvTowerNb;
+  volatile uint16union_t *NvTowerNb;
 
-  if ( Flash_Init() )
   LED_t led(LED_t::LED_ORANGE);
 
   led.LEDs_On();
 
-  // to allocate  memory address to NVTowerNb
+  /* to allocate  memory address to NVTowerNb
   successNb = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
-  //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
-
+  //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb)); */
+  /*
   if(successNb)
   {
     // assign the value to para 2 and 3
     Packet_Parameter23 = 0x9434;
     // set the tower number
     success = Flash_Write16((uint16_t *)NvTowerNb, Packet_Parameter23);
-  }
+  } */
 
   // read through flash memory
-  FlashRead();
+  //FlashRead();
 
   // send 4 packets once the tower is turned on
-  HandlePacketVer2::InitResponsePacket();
+  HandlePacketVer2::InitResponsePacket(packet);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -157,8 +156,8 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( Packet_Get() )
-    HandleCommandPacket();
+    if ( packet.PacketVer2_t::Packet_Get() )
+    HandlePacketVer2::HandleCommandPacket(packet);
     UART_Poll();
   }
 

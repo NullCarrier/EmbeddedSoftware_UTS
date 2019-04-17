@@ -2,7 +2,7 @@
 #include "MK70F12.h"
 
 
- bool LEDsInit()
+ bool LED_t::LEDsInit()
 {
   // Enable the clock gating for PortA
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;

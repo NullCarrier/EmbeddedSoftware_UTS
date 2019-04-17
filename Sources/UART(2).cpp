@@ -71,7 +71,7 @@ inline bool UART_InChar(uint8_t* const dataPtr)
  return RxFIFO.FIFO_Get(dataPtr); // retrieve data from FIFO and send it to Packet module
 }
 
-inline bool UART_OutChar(const uint8_t &data)
+inline bool UART_OutChar(const uint8_t data)
 {
  return TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
 }
