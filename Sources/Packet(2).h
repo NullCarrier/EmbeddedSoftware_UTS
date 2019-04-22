@@ -5,7 +5,7 @@
  *  This contains the functions for implementing the "Tower to PC Protocol" 5-byte packets.
  *
  *  @author : Chao Li
- *  @date 02/04/2019
+ *  @date 22/04/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -15,6 +15,7 @@
 // New types
 #include "types.h"
 #include "UART(2).h" // UART_Init()
+#include <cassert>
 
 // need to be in enum
 // Acknowledgement bit mask
@@ -47,7 +48,7 @@ public:
   Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
      m_baudRate{baudRate}, m_moduleClk{moduleClk}
    {
-      UART_Init(m_baudRate, m_moduleClk);
+     assert(UART_Init(m_baudRate, m_moduleClk));
    }
 
   /*! @brief Attempts to get a packet from the received data.
@@ -68,7 +69,9 @@ public:
  */
   virtual void SwitchPacket();
 
-  friend class HandlePacket;
+  //virtual ~Packet_t() = default;
+
+  //friend class HandlePacket;
 };
 
 #if 0

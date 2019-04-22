@@ -115,7 +115,8 @@ class HandlePacketVer2
      CMD_STARTUP = 0x04,
      CMD_TOWERVERSION = 0x09,
      CMD_TOWERNUMBER = 0x0B,
-     CMD_TOWERMODE = 0x0D
+     CMD_TOWERMODE = 0x0D,
+     CMD_MYTOWERNUMBER = 0x9434
     };
 
   /*! @brief There 3 functions below for handling 3 different command packets

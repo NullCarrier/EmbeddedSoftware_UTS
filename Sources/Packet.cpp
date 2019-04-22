@@ -54,7 +54,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  bool PacketVer2_t::Packet_Put()
 {
-   MakeChecksum();
+ MakeChecksum();
  return UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&& UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
 }
 

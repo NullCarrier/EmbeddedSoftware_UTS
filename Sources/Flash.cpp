@@ -1,10 +1,10 @@
 #include "Flash.h"
-#include <array>
+
 
 #define NB_BYTES 8
 
 // declare array to keep track of flash memory
-static std::array<int, NB_BYTES> flashSector0;
+static int flashSector0[NB_BYTES];
 
 static TFCCOB commandObject;
 
@@ -13,28 +13,29 @@ inline bool Flash_Init(void)
  return true;
 }
 
+/*
 static bool FlashAllocateByte(volatile void** variable)
 {
   for (unsigned i = 0; i < NB_BYTES;i++)
   {
 	if (flashSector0[i] == 0)
 	{
-	 *variable = (void *) (FLASH_DATA_START + i);
+	 *variable = (uint32_t *) (FLASH_DATA_START + i);
 	  flashSector0[i] = 1;
 	  return true;
 	}
   }
 
 }
+ */
 
-
-static bool FlashAllocateHalfWord(volatile void** variable)
+static bool FlashAllocateHalfWord(volatile uint16union_t** variable)
 {
   for (unsigned i = 0; i < NB_BYTES;i++)
   {
 	if ( (flashSector0[i] == 0) && (i % i == 0) )
 	{
-	 *variable = (void *) (FLASH_DATA_START + i) ;
+	 *variable = (uint16union_t *) (FLASH_DATA_START + i) ;
          flashSector0[i] = 1;
 	 flashSector0[++i] = 1;
 	 return true;
@@ -43,7 +44,7 @@ static bool FlashAllocateHalfWord(volatile void** variable)
 
 }
 
-
+/*
 static bool FlashAllocateWord(volatile void** variable)
 {
   int counter = 0;
@@ -57,7 +58,7 @@ static bool FlashAllocateWord(volatile void** variable)
 
   if (counter == 4)
   {
-      *variable  = (void *) FLASH_DATA_START;
+      *variable  = (uint32_t *) FLASH_DATA_START;
      for (unsigned i = 0; i < NB_BYTES - 4; i++)
      {
        flashSector0[i] = 1;
@@ -75,7 +76,7 @@ static bool FlashAllocateWord(volatile void** variable)
 
    if (counter == 4)
    {
-	  *variable = (void *) (FLASH_DATA_START + 4);
+	  *variable = (uint32_t *) (FLASH_DATA_START + 4);
       for (unsigned i = 4; i < NB_BYTES; i++)
       {
 	   flashSector0[i] = 1;
@@ -87,7 +88,7 @@ static bool FlashAllocateWord(volatile void** variable)
       return false;
   }
 
-}
+} */
 
 
 static void Flash_Read()
@@ -97,47 +98,65 @@ static void Flash_Read()
 }
 
 
-bool Flash_AllocateVar(volatile void** variable, const uint8_t &size)
+bool Flash_AllocateVar(volatile uint16union_t** variable, const uint8_t &size)
 {
   switch (size)
   {
-    case 1: FlashAllocateByte(variable);
+    case 1: //FlashAllocateByte(variable);
        break;
     case 2: FlashAllocateHalfWord(variable);
        break;
-    case 4: FlashAllocateWord(variable);
+    case 4: //FlashAllocateWord(variable);
        break;
   }
 
     return true;
 }
 
+bool static isEmpty()
+{
+  for (auto it : flashSector0)
+  {
+    if (it == 1)
+    return false;
+  }
+  return true;
+}
 
 bool Flash_Write32(volatile uint32_t* const address, const uint32_t &data)
 {
   // local var for handling bytes
   uint64union_t phrase;
 
-  phrase.l = data;
+  phrase.l = static_cast<uint64_t> (data);
 
-  commandObject.EraseSector(FLASH_DATA_START);
+  if (isEmpty())
+   commandObject.WritePhrase(FLASH_DATA_START, phrase);
+  else
+  // ModifyPhrase();
 
-  commandObject.WritePhrase(FLASH_DATA_START, phrase);
-
-  return true;
+   return true;
 }
 
 
 bool Flash_Write16(volatile uint16_t* const address, const uint16_t &data)
 {
- Flash_Write32((uint32_t *)address, data);
+ uint32union_t data4Bytes;
+
+ data4Bytes.l = static_cast<uint32_t> (data);
+
+ Flash_Write32((uint32_t *)address, data4Bytes.l);
  return true;
 }
 
 
 bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 {
- Flash_Write16((uint16_t *)address, data);
+ uint16union_t data2Bytes;
+
+ data2Bytes.l = static_cast<uint16_t> (data);
+
+ Flash_Write16((uint16_t *)address, data2Bytes.l);
  return true;
 }
 
@@ -148,36 +167,36 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	if (FTFE_FSTAT & FTFE_FSTAT_CCIF_MASK)
 	{
 	  if ((FTFE_FSTAT & FTFE_FSTAT_ACCERR_MASK) || (FTFE_FSTAT & FTFE_FSTAT_FPVIOL_MASK))
-      {
+	  {
 	   FTFE_FSTAT |= 0x30; // clear the old errors
 	  }
-      else
+          else
 	  {
 	// more parameter?
  	// write to FCCOB to load required command parameter
 	// assgin FCMD
-       FTFE_FCCOB0 |= commonCommandObject.fccob0;
+           FTFE_FCCOB0 |= commonCommandObject.fccob0;
 	 // assgin flash address to FCCOB
-       FTFE_FCCOB3 |= commonCommandObject.fccob3;
-       FTFE_FCCOB2 |= commonCommandObject.fccob2;
+           FTFE_FCCOB3 |= commonCommandObject.fccob3;
+           FTFE_FCCOB2 |= commonCommandObject.fccob2;
 	   FTFE_FCCOB1 |= commonCommandObject.fccob1;
        // assign data into byte0-7 in FCCOB
-       FTFE_FCCOB4 |= commonCommandObject.dataByte7;
-       FTFE_FCCOB5 |= commonCommandObject.dataByte6;
-       FTFE_FCCOB6 |= commonCommandObject.dataByte5;
-       FTFE_FCCOB7 |= commonCommandObject.dataByte4;
-       FTFE_FCCOB8 |= commonCommandObject.dataByte3;
-       FTFE_FCCOB9 |= commonCommandObject.dataByte2;
-       FTFE_FCCOBA |= commonCommandObject.dataByte1;
-       FTFE_FCCOBB |= commonCommandObject.dataByte0;
+           FTFE_FCCOB4 |= commonCommandObject.dataByte7;
+           FTFE_FCCOB5 |= commonCommandObject.dataByte6;
+           FTFE_FCCOB6 |= commonCommandObject.dataByte5;
+           FTFE_FCCOB7 |= commonCommandObject.dataByte4;
+           FTFE_FCCOB8 |= commonCommandObject.dataByte3;
+           FTFE_FCCOB9 |= commonCommandObject.dataByte2;
+           FTFE_FCCOBA |= commonCommandObject.dataByte1;
+           FTFE_FCCOBB |= commonCommandObject.dataByte0;
 	  }
 
-       FTFE_FSTAT &= ~0x80; //clear CCIF to launch command
+           FTFE_FSTAT &= ~0x80; //clear CCIF to launch command
 	   break;
-    }
+      }
   }
 
-       return true;//(FTFE_FSTAT & FTFE_FSTAT_CCIF_MASK)? true : false;
+          return true;//(FTFE_FSTAT & FTFE_FSTAT_CCIF_MASK)? true : false;
 }
 
  // Program Phrase command
@@ -187,7 +206,10 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
    uint32union_t word;
    uint16union_t halfWord;
 
-   // to access lower 4bytes in phase
+ if (EraseSector((uint32_t)FLASH_DATA_START))
+ {
+
+  // to access lower 4bytes in phase
    word.l = phrase.s.Lo;
 
    // access first, two bytes in phase
@@ -224,6 +246,7 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
    fccob0 = 0x07;
 
    LaunchCommand(*this);
+ }
    return true;
 }
 
@@ -252,7 +275,7 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
   return true;
 }
 
- /*
+/*
 static bool ModifyPhrase(const uint32_t address, const uint64union_t phrase)
 {
   // allocate the memory space for RAM
@@ -268,6 +291,9 @@ static bool ModifyPhrase(const uint32_t address, const uint64union_t phrase)
 } */
 
 
-//bool Flash_Erase(void)
+bool Flash_Erase()
+{
+  return commandObject.TFCCOB::EraseSector((uint32_t)FLASH_DATA_START);
+}
 
 

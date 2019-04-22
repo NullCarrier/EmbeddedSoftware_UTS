@@ -54,10 +54,11 @@
  *  @param color THe color of the LED
  *  @note Assumes that LEDs_Init has been called.
  */
- LED_t(TLED color): m_color{color}
-   {
-     LEDsInit();
-   }
+ LED_t(TLED color)
+ {
+     if (LEDsInit())
+     m_color = color;
+ }
 
  /*! @brief Sets up the LEDs before first use.
   *

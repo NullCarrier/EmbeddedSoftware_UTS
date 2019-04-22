@@ -43,7 +43,7 @@
 void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
 {
  // Assgin value for startup command according to packet protocol
-  Packet_Command = CMD_STARTUP;
+
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
 
   packet.PacketVer2_t::Packet_Put(); //send it to FIFO
@@ -53,7 +53,7 @@ void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
 void HandlePacketVer2::HandleTowerVersionPacket(PacketVer2_t &packet)
 {
   // Assgin value for towerversion command according to packet protocol
-   Packet_Command = CMD_TOWERVERSION;
+
    Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
    Packet_Parameter2 = 0x01; // Parameter 2
    Packet_Parameter3 = 0x0;  // Parameter 3
@@ -64,7 +64,7 @@ void HandlePacketVer2::HandleTowerVersionPacket(PacketVer2_t &packet)
 void HandlePacketVer2::HandleTowerNumberPacket(PacketVer2_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
-        Packet_Command = CMD_TOWERNUMBER;
+
 	Packet_Parameter1 = 0x01;  // Parameter 1
 	Packet_Parameter2 = 0x94; // Parameter 2
 	Packet_Parameter3 = 0x34; // Parameter 3
@@ -75,7 +75,7 @@ void HandlePacketVer2::HandleTowerNumberPacket(PacketVer2_t &packet)
 
 void HandlePacketVer2::HandleTowerMode(PacketVer2_t &packet)
 {
-        Packet_Command = CMD_TOWERMODE;
+
   	Packet_Parameter1 = 0x01;  // Parameter 1
   	Packet_Parameter2 = 0x01; // Parameter 2
   	Packet_Parameter3 = 0x00; // Parameter 3
@@ -122,29 +122,29 @@ int main(void)
 
   PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
   bool successNb;
- // bool successMode;
+  // bool successMode;
 
-  // pointer to be allocated memory space
-  volatile uint16union_t *NvTowerNb;
+  //The non-volatile Tower number pointer to be allocated memory space
+  volatile uint16union_t* NvTowerNb;
 
+  // declare and define obj led
   LED_t led(LED_t::LED_ORANGE);
-
   led.LEDs_On();
 
-  /* to allocate  memory address to NVTowerNb
+  // to allocate  memory address to NVTowerNb
   successNb = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
-  //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb)); */
-  /*
-  if(successNb)
+  //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
+
+  if(successNb && Flash_Erase())
   {
     // assign the value to para 2 and 3
-    Packet_Parameter23 = 0x9434;
+    Packet_Parameter23 = HandlePacketVer2::CMD_MYTOWERNUMBER;
     // set the tower number
-    success = Flash_Write16((uint16_t *)NvTowerNb, Packet_Parameter23);
-  } */
+    successNb = Flash_Write16((uint16_t *)NvTowerNb, Packet_Parameter23);
+  }
 
   // read through flash memory
-  //FlashRead();
+  //Flash_Read();
 
   // send 4 packets once the tower is turned on
   HandlePacketVer2::InitResponsePacket(packet);
