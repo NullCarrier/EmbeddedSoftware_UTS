@@ -19,7 +19,7 @@
 //include packet module in Lab1
 #include "Packet(2).h"
 
-#include "UART(2).h" // UART_Init()
+
 
 // Packet structure
 static constexpr uint8_t PACKET_NB_BYTES =  5;
@@ -78,7 +78,7 @@ class PacketVer2_t : public Packet_t
  *  @return None
  */
    PacketVer2_t(const uint32_t baudRate, const uint32_t moduleClk):
-     Packet_t(baudRate, moduleClk)
+     Packet_t::Packet_t(baudRate, moduleClk)
       {
       }
   /*! @brief Attempts to get a packet from the received data.

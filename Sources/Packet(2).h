@@ -45,11 +45,7 @@ public:
  *  @param moduleClk The module clock rate in Hz.
  *  @return bool - TRUE if the packet module was successfully initialized.
  */
-  Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
-     m_baudRate{baudRate}, m_moduleClk{moduleClk}
-   {
-     assert(UART_Init(m_baudRate, m_moduleClk));
-   }
+  Packet_t(const uint32_t baudRate, const uint32_t moduleClk);
 
   /*! @brief Attempts to get a packet from the received data.
  *
@@ -68,6 +64,12 @@ public:
  *  @return None
  */
   virtual void SwitchPacket();
+
+  /*! @brief To determine whether checksum is good or bad
+   *
+   *  @return bool - TRUE if a checksum is correct
+  */
+   uint8_t& CheckChecksum();
 
   //virtual ~Packet_t() = default;
 
@@ -93,11 +95,7 @@ class HandlePacket
   void HandleTowerVersionPacket();
   void HandleTowerNumberPacket();
 
-  /*! @brief To determine whether checksum is good or bad
- *
- *  @return bool - TRUE if a checksum is correct
- */
-  uint8_t& CheckChecksum();
+
 
   /*! @brief There 3 functions below for handling packet protocol and error condition
  *
