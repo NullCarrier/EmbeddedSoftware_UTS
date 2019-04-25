@@ -5,7 +5,7 @@
  *  This contains the functions for implementing the "Tower to PC Protocol" 5-byte packets.
  *
  *  @author : Chao Li
- *  @date 22/04/2019
+ *  @date 25/04/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -32,6 +32,13 @@ private:
   uint8_t  Packet_Parameter2; 	/*!< The packet's 2nd parameter */
   uint8_t  Packet_Parameter3;	/*!< The packet's 3rd parameter */
   uint8_t  Packet_Checksum;	 /*!< The packet's checksum */
+
+  /*! @brief To determine whether checksum is good or bad
+   *
+   *  @return bool - TRUE if a checksum is correct
+  */
+  uint8_t& CheckChecksum();
+
 protected:
 // to initialize the packet module via UART_Init() function
   const uint32_t m_baudRate;
@@ -39,7 +46,7 @@ protected:
 
 public:
 
-/*! @brief Constructor initializes the packets by calling the initialization routines of the supporting software modules.
+ /*! @brief Constructor initializes the packets by calling the initialization routines of the supporting software modules.
  *
  *  @param baudRate The desired baud rate in bits/sec.
  *  @param moduleClk The module clock rate in Hz.
@@ -64,14 +71,6 @@ public:
  *  @return None
  */
   virtual void SwitchPacket();
-
-  /*! @brief To determine whether checksum is good or bad
-   *
-   *  @return bool - TRUE if a checksum is correct
-  */
-   uint8_t& CheckChecksum();
-
-  //virtual ~Packet_t() = default;
 
   //friend class HandlePacket;
 };

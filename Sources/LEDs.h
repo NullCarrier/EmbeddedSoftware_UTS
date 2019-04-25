@@ -4,8 +4,9 @@
  *
  *  This contains the functions for operating the LEDs.
  *
- *  @author PMcL
- *  @date 2015-08-15
+ *  @author Chao Li
+ *  @date 25/04/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef LEDS_H
@@ -14,9 +15,7 @@
 // new types
 #include "types.h"
 
-/*! @brief LED to pin mapping on the TWR-K70F120M
- *
- */
+
  class LED_t
  {
   public:
@@ -56,8 +55,8 @@
  */
  LED_t(TLED color)
  {
-     if (LEDsInit())
-     m_color = color;
+   if (LEDsInit())
+   m_color = color;
  }
 
  /*! @brief Sets up the LEDs before first use.
@@ -67,7 +66,7 @@
   bool LEDsInit(void);
 
   private:
-    TLED m_color;
+    TLED m_color; /*!< The member color with TLED type */
 
  };
 

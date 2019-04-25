@@ -1,3 +1,13 @@
+/*! @file
+ *
+ *  @brief Routines to access the LEDs on the TWR-K70F120M.
+ *
+ *  This contains the functions implementtation for operating the LEDs.
+ *
+ *  @author Chao Li
+ *  @date 25/04/2019
+ *  Copyright (c) Chao Li. All rights reserved.
+ */
 #include "LEDs.h"
 #include "MK70F12.h"
 

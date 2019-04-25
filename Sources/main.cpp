@@ -19,11 +19,11 @@
 ** @brief
 **         Main module.
 **         This module contains user's application code.
-*/         
+*/
 /*!
 **  @addtogroup main_module main module documentation
 **  @{
-*/         
+*/
 /* MODULE main */
 
 
@@ -37,7 +37,7 @@
 
 #include "Flash.h"
 
-#define BAUDRATE 115200
+#define BAUDRATE 115200U
 
 
 void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
@@ -73,7 +73,7 @@ void HandlePacketVer2::HandleTowerNumberPacket(PacketVer2_t &packet)
 
 }
 
-void HandlePacketVer2::HandleTowerMode(PacketVer2_t &packet)
+void HandlePacketVer2::HandleTowerModePacket(PacketVer2_t &packet)
 {
 
   	Packet_Parameter1 = 0x01;  // Parameter 1
@@ -90,28 +90,81 @@ void HandlePacketVer2::HandleCommandPacket(PacketVer2_t &packet)
     switch (Packet_Command)
     {
   // for specific command. Startup needs to send 3 packets
-    case CMD_STARTUP:      InitResponsePacket(packet);
-                           break;
+    case CMD_STARTUP: InitResponsePacket(packet);
+                      break;
+	case CMD_ACK_STARTUP: HandleACKStartupPacket(packet);
+	                      break;
     case CMD_TOWERVERSION: HandleTowerVersionPacket(packet);//only responce once for version
                            break;
-    case CMD_TOWERNUMBER:  HandleTowerNumberPacket(packet);//only responce once for number
-                           break;
-    case CMD_TOWERMODE:    HandleTowerMode(packet);
-                           break;
+	case CMD_ACK_TOWERVERSION: HandleACKTowerVersionPacket(packet);
+	                           break;
+    case CMD_TOWERNUMBER: HandleTowerNumberPacket(packet);//only responce once for number
+                          break;
+	case CMD_ACK_TOWERNUMBER: HandleACKTowerNumberPacket(packet);
+	                          break;
+    case CMD_TOWERMODE: HandleTowerModePacket(packet);
+                        break;
+	case CMD_ACK_TOWERMODE: HandleACKTowerModePacket(packet);
+	                        break;
     }
 
 }
-
 
 void HandlePacketVer2::InitResponsePacket(PacketVer2_t &packet)
 {
   HandleStartupPacket(packet);
   HandleTowerVersionPacket(packet);
   HandleTowerNumberPacket(packet);
-  HandleTowerMode(packet);
+  HandleTowerModePacket(packet);
 }
 
+void HandlePacketVer2::HandleACKStartupPacket(PacketVer2_t &packet)
+{
+  InitResponsePacket(packet);
 
+  Packet_Command = HandlePacketVer2::CMD_ACK_STARTUP; // to modify the packet command ID
+
+  HandleStartupPacket(packet); // to send ack pakcet
+}
+
+void HandlePacketVer2::HandleACKTowerVersionPacket(PacketVer2_t &packet)
+{
+  // Send tower version packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
+
+  HandleTowerVersionPacket(packet);
+
+  // Send ack tower version packet
+  Packet_Command = HandlePacketVer2::CMD_ACK_TOWERVERSION;
+
+  HandleTowerVersionPacket(packet);
+}
+
+void HandlePacketVer2::HandleACKTowerNumberPacket(PacketVer2_t &packet)
+{
+  // Send tower number packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
+
+  HandleTowerVersionPacket(packet);
+
+  // Send ack tower version packet
+  Packet_Command = HandlePacketVer2::CMD_ACK_TOWERNUMBER;
+
+  HandleTowerNumberPacket(packet);
+}
+
+void HandlePacketVer2::HandleACKTowerModePacket(PacketVer2_t &packet)
+{
+  // Send tower mode packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
+
+  HandleTowerVersionPacket(packet);
+
+  // Send ack tower mode packet
+  Packet_Command = HandlePacketVer2::CMD_ACK_TOWERMODE;
+
+  HandleTowerModePacket(packet);
+}
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -144,7 +197,8 @@ int main(void)
   }
 
   // read through flash memory
-  //Flash_Read();
+  if (successNb)
+  Flash_Read();
 
   // send 4 packets once the tower is turned on
   HandlePacketVer2::InitResponsePacket(packet);
@@ -156,7 +210,7 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( packet.PacketVer2_t::Packet_Get() )
+    if ( packet.PacketVer2_t::Packet_Get())
     HandlePacketVer2::HandleCommandPacket(packet);
     UART_Poll();
   }

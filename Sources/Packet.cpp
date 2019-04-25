@@ -8,7 +8,7 @@ TPacket PacketVer2_t::s_Packet;
 const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  bool PacketVer2_t::Packet_Get()
-{	
+{
   // local variable for holding temp value
   uint8_t rxData{0};
   static unsigned nbBytesPacket{1};
@@ -50,7 +50,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
    return false;
 }
-	
+
 
  bool PacketVer2_t::Packet_Put()
 {
@@ -73,8 +73,5 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 {
   Packet_Checksum = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 }
-
-
-
 
 

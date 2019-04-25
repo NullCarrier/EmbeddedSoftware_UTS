@@ -4,9 +4,10 @@
  *
  *  This contains the functions needed for accessing the internal Flash.
  *
- *  @author PMcL
- *  @date 2015-08-07
- */
+ *  @author Chao Li
+ *  @date 25/04/2019
+ *  Copyright (c) Chao Li. All rights reserved.
+*/
 
 #ifndef FLASH_H
 #define FLASH_H
@@ -33,26 +34,54 @@
 class TFCCOB
 {
  private:
-   uint8_t fccob0;
-   uint8_t fccob1;
-   uint8_t fccob2;
-   uint8_t fccob3;
-   uint8_t dataByte0;
-   uint8_t dataByte1;
-   uint8_t dataByte2;
-   uint8_t dataByte3;
-   uint8_t dataByte4;
-   uint8_t dataByte5;
-   uint8_t dataByte6;
-   uint8_t dataByte7;
- public:
-    TFCCOB()
-    {
-    }
-   friend bool LaunchCommand(TFCCOB &commonCommandObject);
-   bool EraseSector(const uint32_t &address);
-   bool WritePhrase(const uint32_t &address, const uint64union_t &phase);
+   uint8_t fccob0; /*!< The fccob number 0 */
+   uint8_t fccob1; /*!< The fccob number 1 */
+   uint8_t fccob2; /*!< The fccob number 2 */
+   uint8_t fccob3; /*!< The fccob number 3 */
+   uint8_t fccob4; /*!< The fccob number 4 */
+   uint8_t fccob5; /*!< The fccob number 5 */
+   uint8_t fccob6; /*!< The fccob number 6 */
+   uint8_t fccob7; /*!< The fccob number 7 */
+   uint8_t fccob8; /*!< The fccob number 8 */
+   uint8_t fccob9; /*!< The fccob number 9 */
+   uint8_t fccobA; /*!< The fccob number A */
+   uint8_t fccobB; /*!< The fccob number B */
 
+ public:
+    enum Command_FCCOB
+    {
+      CMD_READRESOURCE = 0x03,
+      CMD_PROGRAMPHRASE = 0x07,
+      CMD_ERASEFLASHSECTOR = 0x09
+    };
+
+/*! @brief Writes the command into FCCOB register and launch the command
+ *
+ *  @param commonCommandObject the TFCCOB object contains parameter of fccob register
+ *  @return bool - TRUE if Command was written successfully
+ *  @note Assumes Flash has been initialized.
+ */
+   friend bool LaunchCommand(TFCCOB &commonCommandObject);
+
+/*! @brief the command Erase flash secctor to erase whole sector
+ *  @param address The address of the data.
+ *  @return bool - TRUE if the Flash sector was erased successfully
+ *  @note Assumes Flash has been initialized.
+ */
+   bool EraseSector(const uint32_t &address);
+
+/*! @brief to write phrase into flash sector
+ *  @param address The address of the data.
+ *  @return bool - TRUE if the phrase was written successfully
+ *  @note Assumes Flash has been initialized.
+ */
+   bool WritePhrase(const uint32_t &address, const uint64union_t &phase);
+/*! @brief to write phrase into flash sector
+ *  @param address The address of the data.
+ *  @return bool - TRUE if the phrase was written successfully
+ *  @note Assumes Flash has been initialized.
+ */
+   bool flashRead(const uint32_t &address);
 };
 
 /*! @brief Enables the Flash module.
@@ -114,5 +143,12 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data);
  *  @note Assumes Flash has been initialized.
  */
 bool Flash_Erase(void);
+
+/*! @brief Read data from flash memory
+ *
+ *  @return bool - TRUE if the Flash "data" sector was read successfully.
+ *  @note Assumes Flash has been initialized.
+ */
+bool Flash_Read(void);
 
 #endif

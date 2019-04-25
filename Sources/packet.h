@@ -4,8 +4,9 @@
  *
  *  This contains the functions for implementing the "Tower to PC Protocol" 5-byte packets.
  *
- *  @author PMcL
- *  @date 2015-07-23
+ *  @author : Chao Li
+ *  @date 25/04/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef PACKET_H
@@ -13,16 +14,12 @@
 
 // New types
 #include "types.h"
-//include deque
-//#include <deque>
 
 //include packet module in Lab1
 #include "Packet(2).h"
 
-
-
 // Packet structure
-static constexpr uint8_t PACKET_NB_BYTES =  5;
+ const uint8_t PACKET_NB_BYTES =  5;
 
 #pragma pack(push)
 #pragma pack(1)
@@ -69,7 +66,7 @@ typedef union
 class PacketVer2_t : public Packet_t
 {
   public:
-     static TPacket s_Packet;
+     static TPacket s_Packet; /*!< The static variable packet with TPacket type */
 
   /*! @brief Initializes the packets by calling the initialization routines of the supporting software modules.
  *
@@ -102,7 +99,7 @@ class PacketVer2_t : public Packet_t
  *
  *  @return None
  */
-  inline static void MakeChecksum();
+  inline void MakeChecksum();
 
 };
 
@@ -116,20 +113,72 @@ class HandlePacketVer2
      CMD_TOWERVERSION = 0x09,
      CMD_TOWERNUMBER = 0x0B,
      CMD_TOWERMODE = 0x0D,
+     CMD_ACK_STARTUP = 0x84,
+     CMD_ACK_TOWERVERSION = 0x89,
+     CMD_ACK_TOWERNUMBER = 0x8B,
+     CMD_ACK_TOWERMODE = 0x8D,
      CMD_MYTOWERNUMBER = 0x9434
     };
 
-  /*! @brief There 3 functions below for handling 3 different command packets
-   *
+  /*! @brief To handle startup packet
+   *  @param packet the PacketVert2 object
    *  @return void
   */
-  static  void HandleStartupPacket(PacketVer2_t &packet);
-  static  void HandleTowerVersionPacket(PacketVer2_t &packet);
-  static  void HandleTowerNumberPacket(PacketVer2_t &packet);
-  static  void HandleTowerMode(PacketVer2_t &packet);
-  static  void InitResponsePacket(PacketVer2_t &packet);
+  static void HandleStartupPacket(PacketVer2_t &packet);
 
-  static void HandleCommandPacket(PacketVer2_t &packet); // functions for handling packets
+  /*! @brief To handle acknowledgement startup packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKStartupPacket(PacketVer2_t &packet);
+
+  /*! @brief To handle tower version packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerVersionPacket(PacketVer2_t &packet);
+
+  /*! @brief To handle acknowledgement tower version packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerVersionPacket(PacketVer2_t &packet);
+
+  /*! @brief To handle tower number packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerNumberPacket(PacketVer2_t &packet);
+
+  /*! @brief To handle acknowledgement tower number packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerNumberPacket(PacketVer2_t &packet);
+
+  /*! @brief To handle tower mode packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerModePacket(PacketVer2_t &packet);
+
+  /*! @brief To handle acknowledgement tower mode packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerModePacket(PacketVer2_t &packet);
+
+  /*! @brief To send 4 packets initially and the repsonse for startup protocol
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void InitResponsePacket(PacketVer2_t &packet);
+
+ /*! @brief To decide how to send packet depending on packet command ID
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleCommandPacket(PacketVer2_t &packet);
 
 };
 
