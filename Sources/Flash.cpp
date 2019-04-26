@@ -123,13 +123,13 @@ bool TFCCOB::flashRead(const uint32_t &address)
 
   // assgin resource select code
   fccob4 = 0x0;
-
-  /*if (LaunchCommand(*this))
+/*
+  if (LaunchCommand(*this))
   {
     Packet_Parameter2 = FTFE_FCCOBB;
     Packet_Parameter3 = FTFE_FCCOBA;
   } */
-  return LaunchCommand(*this);
+  return true;
 }
 
 
@@ -194,20 +194,20 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	// more parameter?
  	// write to FCCOB to load required command parameter
 	// assgin FCMD
-        FTFE_FCCOB0 |= commonCommandObject.fccob0;
+        FTFE_FCCOB0 = commonCommandObject.fccobB;
 	 // assgin flash address to FCCOB
-        FTFE_FCCOB3 |= commonCommandObject.fccob3;
-        FTFE_FCCOB2 |= commonCommandObject.fccob2;
-        FTFE_FCCOB1 |= commonCommandObject.fccob1;
+        FTFE_FCCOB3 = commonCommandObject.fccobA;
+        FTFE_FCCOB2 = commonCommandObject.fccob9;
+        FTFE_FCCOB1 = commonCommandObject.fccob8;
        // assign data into byte0-7 in FCCOB
-        FTFE_FCCOB4 |= commonCommandObject.fccobB; //dataByte7
-        FTFE_FCCOB5 |= commonCommandObject.fccobA; //dataByte6
-        FTFE_FCCOB6 |= commonCommandObject.fccob9; //dataByte5
-        FTFE_FCCOB7 |= commonCommandObject.fccob8; //dataByte4
-        FTFE_FCCOB8 |= commonCommandObject.fccob7; //dataByte3
-        FTFE_FCCOB9 |= commonCommandObject.fccob6; //dataByte2
-        FTFE_FCCOBA |= commonCommandObject.fccob5; //dataByte1
-        FTFE_FCCOBB |= commonCommandObject.fccob4; //dataByte0
+        FTFE_FCCOB4 = commonCommandObject.fccob7; //dataByte7
+        FTFE_FCCOB5 = commonCommandObject.fccob6; //dataByte6
+        FTFE_FCCOB6 = commonCommandObject.fccob5; //dataByte5
+        FTFE_FCCOB7 = commonCommandObject.fccob4; //dataByte4
+        FTFE_FCCOB8 = commonCommandObject.fccob3; //dataByte3
+        FTFE_FCCOB9 = commonCommandObject.fccob2; //dataByte2
+        FTFE_FCCOBA = commonCommandObject.fccob1; //dataByte1
+        FTFE_FCCOBB = commonCommandObject.fccob0; //dataByte0
 	  }
 
         FTFE_FSTAT &= ~0x80; //clear CCIF to launch command

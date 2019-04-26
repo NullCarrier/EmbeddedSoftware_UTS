@@ -180,6 +180,7 @@ int main(void)
   //The non-volatile Tower number pointer to be allocated memory space
   volatile uint16union_t* NvTowerNb;
 
+
   // declare and define obj led
   LED_t led(LED_t::LED_ORANGE);
   led.LEDs_On();
@@ -188,7 +189,7 @@ int main(void)
   successNb = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
   //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
 
-  if(successNb && Flash_Erase())
+  if(successNb)
   {
     // assign the value to para 2 and 3
     Packet_Parameter23 = HandlePacketVer2::CMD_MYTOWERNUMBER;
