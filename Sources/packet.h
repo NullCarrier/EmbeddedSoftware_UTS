@@ -95,11 +95,12 @@ class PacketVer2_t : public Packet_t
  *  @return None
  */
    void SwitchPacket() override;
+
   /*! @brief To bulid a checksum
  *
- *  @return None
+ *  @return uint8_t&  a reference to anonymous variable holding checksum
  */
-  inline void MakeChecksum();
+   uint8_t MakeChecksum() override;
 
 };
 

@@ -31,7 +31,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
                      nbBytesPacket++;
         	     break;
              case 5: Packet_Checksum = rxData;
-               if (Packet_Checksum == Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3)
+               if (Packet_Checksum == MakeChecksum())
                {
                 // checksum is good, then check it out
             	     nbBytesPacket = 1;
@@ -48,15 +48,15 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
       }
 
-   return false;
+                    return false;
 }
 
 
  bool PacketVer2_t::Packet_Put()
 {
- MakeChecksum();
- return UART_OutChar((uint8_t)Packet_Command)&& UART_OutChar((uint8_t)Packet_Parameter1)&&
-      UART_OutChar((uint8_t)Packet_Parameter2)&& UART_OutChar((uint8_t)Packet_Parameter3)&& UART_OutChar((uint8_t)Packet_Checksum);
+ Packet_Checksum = MakeChecksum();
+ return UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
+      UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
 }
 
 
@@ -66,12 +66,12 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
    Packet_Parameter1 = Packet_Parameter2;
    Packet_Parameter2 = Packet_Parameter3;
    Packet_Parameter3 = Packet_Checksum;
-}
+ }
 
 
- void PacketVer2_t::MakeChecksum()
+ uint8_t PacketVer2_t::MakeChecksum()
 {
-  Packet_Checksum = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
+  return (Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3);
 }
 
 

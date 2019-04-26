@@ -18,7 +18,7 @@ Packet_t::Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
   assert(UART_Init(m_baudRate, m_moduleClk));
  }
 
-
+#if 0
 // in the condition of receiving bad checksum
 // need to discard first byte and add a new byte at the end of packet
 void Packet_t::SwitchPacket()
@@ -108,4 +108,4 @@ uint8_t& Packet_t::CheckChecksum()
 Packet_Checksum = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 return Packet_Checksum;
 }
-
+#endif

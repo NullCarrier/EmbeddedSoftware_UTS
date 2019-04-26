@@ -26,23 +26,11 @@
 // Packet structure
 class Packet_t
 {
-private:
-  uint8_t  Packet_Command;		/*!< The packet's command */
-  uint8_t  Packet_Parameter1; 	/*!< The packet's 1st parameter */
-  uint8_t  Packet_Parameter2; 	/*!< The packet's 2nd parameter */
-  uint8_t  Packet_Parameter3;	/*!< The packet's 3rd parameter */
-  uint8_t  Packet_Checksum;	 /*!< The packet's checksum */
-
-  /*! @brief To determine whether checksum is good or bad
-   *
-   *  @return bool - TRUE if a checksum is correct
-  */
-  uint8_t& CheckChecksum();
 
 protected:
 // to initialize the packet module via UART_Init() function
-  const uint32_t m_baudRate;
-  const uint32_t m_moduleClk;
+  const uint32_t m_baudRate; /*!< The baudRate for UART module */
+  const uint32_t m_moduleClk; /*!< The moduleClock for UART module */
 
 public:
 
@@ -58,53 +46,27 @@ public:
  *
  *  @return bool - TRUE if a valid packet was received.
  */
-  virtual bool Packet_Get();
+ virtual bool Packet_Get() = 0;
 
   /*! @brief Builds a packet and places it in the transmit FIFO buffer.
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-  virtual bool Packet_Put();
+ virtual bool Packet_Put() = 0;
 
    /*! @brief to handle error condition by discarding first byte and adding the new byte
  *
  *  @return None
  */
-  virtual void SwitchPacket();
+ virtual void SwitchPacket() = 0;
 
-  //friend class HandlePacket;
-};
-
-#if 0
-class HandlePacket
-{
-  public:
-
-   enum Command
-   {
-
-
-   };
-
- /*! @brief There 3 functions below for handling 3 different command packets
- *
- *  @return void
- */
-  void HandleStartupPacket();
-  void HandleTowerVersionPacket();
-  void HandleTowerNumberPacket();
-
-
-
-  /*! @brief There 3 functions below for handling packet protocol and error condition
- *
- * @param &packet the reference to refer to the packet object
- *  @return void , int
- */
-  //friend void HandlePacket(Packet_t &packet); // functions for handling ACK packets                                                                                                                       //true when check_sum matches
-  int HandleCommandPacket(); // functions for handling packets
+  /*! @brief To determine whether checksum is good or bad
+     *
+     *  @return bool - TRUE if a checksum is correct
+    */
+ virtual uint8_t MakeChecksum() = 0;
 
 };
-#endif
+
 
 #endif
