@@ -50,7 +50,7 @@ class TFCCOB
  public:
     enum Command_FCCOB
     {
-      CMD_READRESOURCE = 0x03,
+      //CMD_READRESOURCE = 0x03,
       CMD_PROGRAMPHRASE = 0x07,
       CMD_ERASEFLASHSECTOR = 0x09
     };

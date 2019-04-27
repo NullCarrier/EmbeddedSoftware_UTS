@@ -69,9 +69,9 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  }
 
 
- uint8_t PacketVer2_t::MakeChecksum()
+ uint8_t&& PacketVer2_t::MakeChecksum()
 {
-  return (Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3);
+  return Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 }
 
 

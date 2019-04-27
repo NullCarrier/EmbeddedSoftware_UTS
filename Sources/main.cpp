@@ -112,9 +112,19 @@ void HandlePacketVer2::HandleCommandPacket(PacketVer2_t &packet)
 
 void HandlePacketVer2::InitResponsePacket(PacketVer2_t &packet)
 {
+  // Send tower startup packet
   HandleStartupPacket(packet);
+
+  // Send tower version packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
   HandleTowerVersionPacket(packet);
+
+  // Send tower number packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
   HandleTowerNumberPacket(packet);
+
+  // Send tower mode packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
   HandleTowerModePacket(packet);
 }
 
@@ -165,6 +175,26 @@ void HandlePacketVer2::HandleACKTowerModePacket(PacketVer2_t &packet)
 
   HandleTowerModePacket(packet);
 }
+// function description
+static void InitResponsePacket(PacketVer2_t &packet, uint8_t& Parameter2, uint8_t& Parameter3)
+{
+  // Send tower startup packet
+  HandlePacketVer2::HandleStartupPacket(packet);
+
+  // Send tower version packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
+  HandlePacketVer2::HandleTowerVersionPacket(packet);
+
+  // Send tower number packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
+  Packet_Parameter2 = Parameter2;
+  Packet_Parameter3 = Parameter3;
+  packet.PacketVer2_t::Packet_Put(); //send it to FIFO
+
+  // Send tower mode packet
+  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
+  HandlePacketVer2::HandleTowerModePacket(packet);
+}
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -193,16 +223,12 @@ int main(void)
   {
     // assign the value to para 2 and 3
     Packet_Parameter23 = HandlePacketVer2::CMD_MYTOWERNUMBER;
-    // set the tower number
+    // write the tower number
     successNb = Flash_Write16((uint16_t *)NvTowerNb, Packet_Parameter23);
   }
 
-  // read through flash memory
   if (successNb)
-  Flash_Read();
-
-  // send 4 packets once the tower is turned on
-  HandlePacketVer2::InitResponsePacket(packet);
+  HandlePacketVer2::InitResponsePacket(packet, NvTowerNb->s.Lo, NvTowerNb->s.Hi);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();

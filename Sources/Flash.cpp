@@ -98,7 +98,7 @@ static bool FlashAllocateWord(volatile void** variable)
   }
 
 }
-#endif
+
 
 
 bool TFCCOB::flashRead(const uint32_t &address)
@@ -131,7 +131,7 @@ bool TFCCOB::flashRead(const uint32_t &address)
   } */
   return true;
 }
-
+#endif
 
 bool Flash_AllocateVar(volatile uint16union_t** variable, const uint8_t &size)
 {
@@ -313,8 +313,9 @@ bool Flash_Erase()
   return commandObject.TFCCOB::EraseSector(static_cast<uint32_t> (FLASH_DATA_START));
 }
 
-// utilize Read Resource Command
+/* utilize Read Resource Command
 bool Flash_Read()
 {
  return commandObject.flashRead(static_cast<uint32_t> (FLASH_DATA_START));
 }
+ */
