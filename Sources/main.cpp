@@ -130,10 +130,12 @@ void HandlePacketVer2::InitResponsePacket(PacketVer2_t &packet)
 
 void HandlePacketVer2::HandleACKStartupPacket(PacketVer2_t &packet)
 {
+  // Send tower startup packet
+  Packet_Command = HandlePacketVer2::CMD_STARTUP;
   InitResponsePacket(packet);
 
+  // Send ack tower startup packet
   Packet_Command = HandlePacketVer2::CMD_ACK_STARTUP; // to modify the packet command ID
-
   HandleStartupPacket(packet); // to send ack pakcet
 }
 
@@ -175,10 +177,12 @@ void HandlePacketVer2::HandleACKTowerModePacket(PacketVer2_t &packet)
 
   HandleTowerModePacket(packet);
 }
+
 // function description
-static void InitResponsePacket(PacketVer2_t &packet, uint8_t& Parameter2, uint8_t& Parameter3)
+static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter2, volatile uint8_t &Parameter3)
 {
   // Send tower startup packet
+  Packet_Command = HandlePacketVer2::CMD_STARTUP;
   HandlePacketVer2::HandleStartupPacket(packet);
 
   // Send tower version packet
@@ -187,6 +191,7 @@ static void InitResponsePacket(PacketVer2_t &packet, uint8_t& Parameter2, uint8_
 
   // Send tower number packet
   Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
+  Packet_Parameter1 = 0x01;
   Packet_Parameter2 = Parameter2;
   Packet_Parameter3 = Parameter3;
   packet.PacketVer2_t::Packet_Put(); //send it to FIFO
@@ -228,7 +233,8 @@ int main(void)
   }
 
   if (successNb)
-  HandlePacketVer2::InitResponsePacket(packet, NvTowerNb->s.Lo, NvTowerNb->s.Hi);
+  //Flash_Read();
+  InitResponsePacket(packet, NvTowerNb->s.Lo, NvTowerNb->s.Hi);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();

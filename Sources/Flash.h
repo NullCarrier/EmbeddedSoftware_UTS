@@ -17,6 +17,7 @@
 // include mask
 #include "MK70F12.h"
 
+
 // FLASH data access, reading bytes from flash in main routine
 #define _FB(flashAddress)  *(uint8_t  volatile *)(flashAddress)// bytes
 #define _FH(flashAddress)  *(uint16_t volatile *)(flashAddress)// half of word
@@ -50,7 +51,7 @@ class TFCCOB
  public:
     enum Command_FCCOB
     {
-      //CMD_READRESOURCE = 0x03,
+      CMD_READRESOURCE = 0x03,
       CMD_PROGRAMPHRASE = 0x07,
       CMD_ERASEFLASHSECTOR = 0x09
     };

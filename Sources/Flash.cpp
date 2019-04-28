@@ -103,32 +103,13 @@ static bool FlashAllocateWord(volatile void** variable)
 
 bool TFCCOB::flashRead(const uint32_t &address)
 {
-  // local union_t to handle bytes
-  uint32union_t flashAddress;
-  uint16union_t loMidByte;
-
-  // using union to hold memory address
-  flashAddress.l = address;
-
-  // assgin lower and mid byte to fccob3 , fccob2
-  loMidByte.l = flashAddress.s.Lo;
-  fccob3 = loMidByte.s.Lo;
-  fccob2 = loMidByte.s.Hi;
-
-  // assign higher byte to fccob1
-  fccob1 = flashAddress.s.Hi;
-
-  // FCMD for Read Resource Command
   fccob0 = CMD_READRESOURCE;
 
-  // assgin resource select code
-  fccob4 = 0x0;
-/*
   if (LaunchCommand(*this))
   {
-    Packet_Parameter2 = FTFE_FCCOBB;
-    Packet_Parameter3 = FTFE_FCCOBA;
-  } */
+    Packet_Parameter2 = FTFE_FCCOB7;
+    Packet_Parameter3 = FTFE_FCCOB6;
+  }
   return true;
 }
 #endif
@@ -194,23 +175,23 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	// more parameter?
  	// write to FCCOB to load required command parameter
 	// assgin FCMD
-        FTFE_FCCOB0 = commonCommandObject.fccobB;
+        FTFE_FCCOB0 = commonCommandObject.fccob0;
 	 // assgin flash address to FCCOB
-        FTFE_FCCOB3 = commonCommandObject.fccobA;
-        FTFE_FCCOB2 = commonCommandObject.fccob9;
-        FTFE_FCCOB1 = commonCommandObject.fccob8;
+        FTFE_FCCOB1 = commonCommandObject.fccob1;
+        FTFE_FCCOB2 = commonCommandObject.fccob2;
+        FTFE_FCCOB3 = commonCommandObject.fccob3;
        // assign data into byte0-7 in FCCOB
-        FTFE_FCCOB4 = commonCommandObject.fccob7; //dataByte7
-        FTFE_FCCOB5 = commonCommandObject.fccob6; //dataByte6
-        FTFE_FCCOB6 = commonCommandObject.fccob5; //dataByte5
-        FTFE_FCCOB7 = commonCommandObject.fccob4; //dataByte4
-        FTFE_FCCOB8 = commonCommandObject.fccob3; //dataByte3
-        FTFE_FCCOB9 = commonCommandObject.fccob2; //dataByte2
-        FTFE_FCCOBA = commonCommandObject.fccob1; //dataByte1
-        FTFE_FCCOBB = commonCommandObject.fccob0; //dataByte0
+        FTFE_FCCOB4 = commonCommandObject.fccobB; //dataByte7
+        FTFE_FCCOB5 = commonCommandObject.fccobA; //dataByte6
+        FTFE_FCCOB6 = commonCommandObject.fccob4; //dataByte0
+        FTFE_FCCOB7 = commonCommandObject.fccob5; //dataByte1
+        FTFE_FCCOB8 = commonCommandObject.fccob6; //dataByte2
+        FTFE_FCCOB9 = commonCommandObject.fccob7; //dataByte2
+        FTFE_FCCOBA = commonCommandObject.fccob8; //dataByte1
+        FTFE_FCCOBB = commonCommandObject.fccob9; //dataByte0
 	  }
 
-        FTFE_FSTAT &= ~0x80; //clear CCIF to launch command
+        FTFE_FSTAT = FTFE_FSTAT_CCIF_MASK; //clear CCIF to launch command
         break;
       }
   }
@@ -313,9 +294,10 @@ bool Flash_Erase()
   return commandObject.TFCCOB::EraseSector(static_cast<uint32_t> (FLASH_DATA_START));
 }
 
-/* utilize Read Resource Command
+/*
+// utilize Read Resource Command
 bool Flash_Read()
 {
  return commandObject.flashRead(static_cast<uint32_t> (FLASH_DATA_START));
 }
- */
+*/
