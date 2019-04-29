@@ -30,10 +30,10 @@
   PORTA_PCR10 |= PORT_PCR_DSE_MASK;
 
   // configure 4 pins as output
-  GPIOA_PDDR |= LED_ALL;
+  GPIOA_PDDR |= LEDALL;
 
   // Reset all LED
-  GPIOA_PSOR |= LED_ALL;
+  GPIOA_PSOR |= LEDALL;
 
   return true;
 }

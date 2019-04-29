@@ -77,12 +77,6 @@ class TFCCOB
  *  @note Assumes Flash has been initialized.
  */
    bool WritePhrase(const uint32_t &address, const uint64union_t &phase);
-/*! @brief to write phrase into flash sector
- *  @param address The address of the data.
- *  @return bool - TRUE if the phrase was written successfully
- *  @note Assumes Flash has been initialized.
- */
-   bool flashRead(const uint32_t &address);
 };
 
 /*! @brief Enables the Flash module.
@@ -116,9 +110,7 @@ bool Flash_AllocateVar(volatile uint16union_t** variable, const uint8_t &size);
 
 //  write to RAM buffer
 bool Flash_Write32(volatile uint32_t* const address, const uint32_t &data);
-// data processing
-// call Flash_Erase
-//....
+
 /*! @brief Writes a 16-bit number to Flash.
  *
  *  @param address The address of the data.

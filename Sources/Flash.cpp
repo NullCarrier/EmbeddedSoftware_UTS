@@ -5,7 +5,7 @@
  *  This contains the functions implementation needed for accessing the internal Flash.
  *
  *  @author Chao Li
- *  @date 25/04/2019
+ *  @date 29/04/2019
  *  Copyright (c) Chao Li. All rights reserved.
 */
 #include "Flash.h"
@@ -23,10 +23,17 @@ inline bool Flash_Init(void)
  return true;
 }
 
-
+/*! @brief To allocate memory address to data with a byte and keep track of memory space by
+ *         the vaule of element:
+ *         1 signify falsh memory has been written in the postion indicated by index of array
+ *         0 signify falsh memory is avaiable in the postion indicated by index of array
+ *  @param variable the address of a pointer to a variable that is to be allocated space in Flash memory.
+ *  @return bool - TRUE if corresponding memory address has been assgined to pointer
+ *  @note Assumes Flash has been initialized.
+ */
 static bool FlashAllocateByte(volatile uint16union_t** variable)
 {
-  for (unsigned i = 0; i < NB_BYTES; i++)
+  for (uint64_t i = 0; i < NB_BYTES; i++)
   {
 	if (flashSector0[i] == 0)
 	{
@@ -38,14 +45,22 @@ static bool FlashAllocateByte(volatile uint16union_t** variable)
 
 }
 
-
+/*! @brief To allocate memory address to data with two bytes and keep track of memory space by
+ *         the vaule of element:
+ *         1 signify falsh memory has been written in the postion indicated by index of array
+ *         0 signify falsh memory is avaiable in the postion indicated by index of array
+ *  @param variable the address of a pointer to a variable that is to be allocated space in Flash memory.
+ *  @return bool - TRUE if corresponding memory address has been assgined to pointer
+ *  @note Assumes Flash has been initialized.
+ */
 static bool FlashAllocateHalfWord(volatile uint16union_t** variable)
 {
   for (uint64_t i = 0; i < NB_BYTES;i++)
   {
 	if ((flashSector0[i] == 0)&& fmod(i, 2)==0 )
 	{
-	 *variable = (uint16union_t *) (FLASH_DATA_START + i) ;
+	 *variable = (uint16union_t *) (FLASH_DATA_START + i);
+
      flashSector0[i] = 1;
 	 flashSector0[++i] = 1;
 	 return true;
@@ -99,19 +114,6 @@ static bool FlashAllocateWord(volatile void** variable)
 
 }
 
-
-
-bool TFCCOB::flashRead(const uint32_t &address)
-{
-  fccob0 = CMD_READRESOURCE;
-
-  if (LaunchCommand(*this))
-  {
-    Packet_Parameter2 = FTFE_FCCOB7;
-    Packet_Parameter3 = FTFE_FCCOB6;
-  }
-  return true;
-}
 #endif
 
 bool Flash_AllocateVar(volatile uint16union_t** variable, const uint8_t &size)
@@ -172,15 +174,16 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	  }
       else
 	  {
-	// more parameter?
- 	// write to FCCOB to load required command parameter
-	// assgin FCMD
+ 	   // write to FCCOB to load required command parameter
+	   // assgin FCMD
         FTFE_FCCOB0 = commonCommandObject.fccob0;
-	 // assgin flash address to FCCOB
+
+	    // assgin flash address to FCCOB
         FTFE_FCCOB1 = commonCommandObject.fccob1;
         FTFE_FCCOB2 = commonCommandObject.fccob2;
         FTFE_FCCOB3 = commonCommandObject.fccob3;
-       // assign data into byte0-7 in FCCOB
+
+        // assign data into byte0-7 in FCCOB
         FTFE_FCCOB4 = commonCommandObject.fccobB; //dataByte7
         FTFE_FCCOB5 = commonCommandObject.fccobA; //dataByte6
         FTFE_FCCOB6 = commonCommandObject.fccob4; //dataByte0
@@ -195,6 +198,7 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
         break;
       }
   }
+        // wait until the command been processed
         while ( !(FTFE_FSTAT & FTFE_FSTAT_CCIF_MASK))
          ;
         return true;
@@ -294,10 +298,3 @@ bool Flash_Erase()
   return commandObject.TFCCOB::EraseSector(static_cast<uint32_t> (FLASH_DATA_START));
 }
 
-/*
-// utilize Read Resource Command
-bool Flash_Read()
-{
- return commandObject.flashRead(static_cast<uint32_t> (FLASH_DATA_START));
-}
-*/

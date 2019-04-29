@@ -55,7 +55,6 @@
  */
  LED_t(TLED color)
  {
-   LED_ALL = LED_ORANGE | LED_YELLOW | LED_GREEN | LED_BLUE;
    if (LEDsInit() )
    m_color = color;
  }
@@ -68,11 +67,8 @@
 
   private:
     TLED m_color; /*!< The member color with TLED type */
-    int LED_ALL;
+    const int LEDALL = LED_ORANGE | LED_YELLOW | LED_GREEN | LED_BLUE;/*!< The const member LED_ALL */
  };
-
-
-
 
 
 #endif

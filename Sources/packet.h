@@ -19,7 +19,7 @@
 #include "Packet(2).h"
 
 // Packet structure
- const uint8_t PACKET_NB_BYTES =  5;
+ const uint8_t PACKET_NB_BYTES = 5;
 
 #pragma pack(push)
 #pragma pack(1)

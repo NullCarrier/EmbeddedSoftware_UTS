@@ -178,7 +178,12 @@ void HandlePacketVer2::HandleACKTowerModePacket(PacketVer2_t &packet)
   HandleTowerModePacket(packet);
 }
 
-// function description
+/*! @brief Overload function of InitResponsePacket
+ *
+ *  @param packet the PacketVert2 object
+ *  @param Parameter2 the reference to hold the vaule read from flash memory
+ *  @param Parameter3 the reference to hold the vaule read from flash memory
+ */
 static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter2, volatile uint8_t &Parameter3)
 {
   // Send tower startup packet
@@ -215,16 +220,16 @@ int main(void)
   //The non-volatile Tower number pointer to be allocated memory space
   volatile uint16union_t* NvTowerNb;
 
-
   // declare and define obj led
   LED_t led(LED_t::LED_ORANGE);
   led.LEDs_On();
 
   // to allocate  memory address to NVTowerNb
+  if (Flash_Init() )
   successNb = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
   //successMode = Flash_AllocateVar(&NvTowerNb, sizeof(*NvTowerNb));
 
-  if(successNb)
+  if (successNb)
   {
     // assign the value to para 2 and 3
     Packet_Parameter23 = HandlePacketVer2::CMD_MYTOWERNUMBER;
@@ -232,8 +237,8 @@ int main(void)
     successNb = Flash_Write16((uint16_t *)NvTowerNb, Packet_Parameter23);
   }
 
+  // To send 4 packets once the tower has been turned on
   if (successNb)
-  //Flash_Read();
   InitResponsePacket(packet, NvTowerNb->s.Lo, NvTowerNb->s.Hi);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
