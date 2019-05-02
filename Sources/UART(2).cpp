@@ -16,7 +16,7 @@
 
 
 // const number for converting baudrate into SBR
-static constexpr float DIVISIOR = 16.0;
+const float DIVISIOR = 16.0;
 
 // declare the object called RxFIFO, TxFIFO
 static TFIFO RxFIFO;
@@ -62,7 +62,10 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 
  // Enable the receiver, transmitter
  UART2_C2 |= (UART_C2_RE_MASK | UART_C2_TE_MASK);
+ 
+ //The interrupt source is enabled in the NVIC
 
+  _EI();// Enable the interrupt
   return true;
 }
 
@@ -76,11 +79,19 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 
  bool UART_OutChar(const uint8_t &data)
 {
- return TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
+ if( TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
+  {
+  //check output status of output device
+   UART2_S1 |= UART_C2_TIE_MASK; //arm output device
+
+   UART_ISR();
+  }
+  else
+  return false;
 }
 
 
-// UART2_S1, UART2_D --8bit mode  9th_bit is 0
+#if 0
 void UART_Poll(void)
 {
   // receiving data condition
@@ -91,10 +102,49 @@ void UART_Poll(void)
   RxFIFO.FIFO_Put(UART2_D);
 }
 // To check the state of TDRE bit
-   else if (UART2_S1 & UART_S1_TDRE_MASK)
-  {
+ else if (UART2_S1 & UART_S1_TDRE_MASK)
+ {
   //send data from TxFIFO to data register
   TxFIFO.FIFO_Get((uint8_t *) &UART2_D);
+ }
+
+} 
+#endif
+
+void __attribute__ ((interrupt)) UART_ISR(void)
+{
+  // receiving data condition
+  // To check the state of RDRF bit
+ if (UART2_C2 & UART_C2_RIE_MASK)
+ {
+  if (UART2_S1 & UART_S1_RDRF_MASK)
+  {
+  // let the receiver to send a byte of data to RxFIFO
+   RxFIFO.FIFO_Put(UART2_D);
+  }
+ }
+// Transmit a byte of data
+ else if (UART2_C2 & UART_C2_TIE_MASK)
+ {
+  if (UART2_S1 & UART_S1_TDRE_MASK)
+  {
+
+   SendData((uint8_t *) &UART2_D);
   }
 
+ }
+
 }
+
+
+//function description
+static bool SendData(uint8_t * const dataPtr)
+{
+  if (!(TxFIFO.FIFO_Get(dataPtr)) )
+
+  UART2_S1 &= ~UART_C2_TIE_MASK; // disarm the output device
+
+  return true;
+}
+
+

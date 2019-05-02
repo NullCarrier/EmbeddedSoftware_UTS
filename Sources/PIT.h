@@ -12,7 +12,31 @@
 #define PIT_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
+
+
+class PIT_t
+{
+  private:
+  uint32_t moduleClk;
+  void (*userFunction)(void*);
+  void* userArguments;
+  uint32_t period;
+  //bool restart;
+
+  public:
+  PIT_t(const uint32_t mClock, void (*callback)(void*), void* userArgu);
+
+  bool PIT_Init() const;
+
+  void PIT_Set() const;
+
+  void PIT_Enable(const bool &enable);
+
+  void __attribute__ ((interrupt)) PIT_ISR(void);
+};
+
+
 
 /*! @brief Sets up the PIT before first use.
  *
