@@ -30,9 +30,8 @@
 #define FLASH_DATA_END   0x00080007LU
 
 
-
 // for handling two commands Program Phrase , Erase Flash Sector
-class TFCCOB
+class TFCCOB final
 {
  private:
    uint8_t fccob0; /*!< The fccob number 0 */
@@ -51,18 +50,9 @@ class TFCCOB
  public:
     enum Command_FCCOB
     {
-      CMD_READRESOURCE = 0x03,
       CMD_PROGRAMPHRASE = 0x07,
       CMD_ERASEFLASHSECTOR = 0x09
     };
-
-/*! @brief Writes the command into FCCOB register and launch the command
- *
- *  @param commonCommandObject the TFCCOB object contains parameter of fccob register
- *  @return bool - TRUE if Command was written successfully
- *  @note Assumes Flash has been initialized.
- */
-   friend bool LaunchCommand(TFCCOB &commonCommandObject);
 
 /*! @brief the command Erase flash secctor to erase whole sector
  *  @param address The address of the data.
@@ -78,6 +68,7 @@ class TFCCOB
  */
    bool WritePhrase(const uint32_t &address, const uint64union_t &phase);
 };
+
 
 /*! @brief Enables the Flash module.
  *

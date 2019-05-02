@@ -14,9 +14,9 @@
 #define NB_BYTES 8
 
 // declare array to keep track of flash memory
-static int flashSector0[NB_BYTES];
+static int FlashSector0[NB_BYTES];
 
-static TFCCOB commandObject;
+static TFCCOB CommandObject;
 
 inline bool Flash_Init(void)
 {
@@ -162,7 +162,13 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
  return Flash_Write16((uint16_t *)address, data2Bytes.l);
 }
 
- bool LaunchCommand(TFCCOB &commonCommandObject)
+/*! @brief Writes the command into FCCOB register and launch the command
+ *
+ *  @param commonCommandObject the TFCCOB object contains parameter of fccob register
+ *  @return bool - TRUE if Command was written successfully
+ *  @note Assumes Flash has been initialized.
+ */
+static bool LaunchCommand(TFCCOB &commonCommandObject)
 {
   while (1)
   {
@@ -170,7 +176,7 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	{
 	  if ((FTFE_FSTAT & FTFE_FSTAT_ACCERR_MASK) || (FTFE_FSTAT & FTFE_FSTAT_FPVIOL_MASK))
 	  {
-	       FTFE_FSTAT |= 0x30; // clear the old errors
+        FTFE_FSTAT = 0x30; // clear the old errors
 	  }
       else
 	  {

@@ -5,7 +5,7 @@
  *  This contains the functions implementtation for operating the LEDs.
  *
  *  @author Chao Li
- *  @date 25/04/2019
+ *  @date 29/04/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 #include "LEDs.h"
@@ -29,27 +29,27 @@
   PORTA_PCR29 |= PORT_PCR_DSE_MASK;
   PORTA_PCR10 |= PORT_PCR_DSE_MASK;
 
-  // configure 4 pins as output
-  GPIOA_PDDR |= LEDALL;
-
   // Reset all LED
-  GPIOA_PSOR |= LEDALL;
+  GPIOA_PSOR = LEDALL;
+
+  // configure 4 pins as output
+  GPIOA_PDDR = LEDALL;
 
   return true;
 }
 
 void LED_t::LEDs_On() const
 {
-  GPIOA_PCOR |= m_color;
+  GPIOA_PCOR = m_color;
 }
 
 void LED_t::LEDs_Off() const
 {
-  GPIOA_PSOR |= m_color;
+  GPIOA_PSOR = m_color;
 }
 
 void LED_t::LEDs_Toggle() const
 {
-  GPIOA_PTOR |= m_color;
+  GPIOA_PTOR = m_color;
 }
 
