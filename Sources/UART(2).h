@@ -1,11 +1,12 @@
-/*! @file
+
+/*! @file UART(2).h
  *
  *  @brief I/O routines for UART communications on the TWR-K70F120M.
  *
  *  This contains the functions for operating the UART (serial port).
  *
  *  @author Chao Li
- *  @date 02/04/2019
+ *  @date 02/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -51,4 +52,11 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  */
 void UART_Poll(void);
 
+/*! @brief Interrupt service routine for the UART.
+ *
+ *  @note Assumes the transmit and receive FIFOs have been initialized.
+ */
+void __attribute__ ((interrupt)) UART_ISR(void);
+
 #endif
+
