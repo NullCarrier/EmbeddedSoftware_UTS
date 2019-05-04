@@ -209,7 +209,8 @@ static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter
 //function description
 void PITCallback(void* argu)
 {
-
+  LED_t led(LED_t::LED_GREEN);
+  led.LEDs_Toggle();
 }
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -218,21 +219,25 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+  PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+/*
   PIT_t pit(CPU_BUS_CLK_HZ, PITCallback, 0); // initialize PIT module
+  pit.PIT_Set(500); // period 500ms
+*/
+   __DI();//Disable interrupt
 
-
-   _DI();//Disable interrupt
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
-  _EI(); //Enable the interrupt
+
+  __EI(); //Enable the interrupt
   /* Write your code here */
   for (;;)
   {
     if ( packet.PacketVer2_t::Packet_Get())
     HandlePacketVer2::HandleCommandPacket(packet);
-    UART_Poll();
+
+    UART_ISR();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

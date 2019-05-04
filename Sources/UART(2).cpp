@@ -10,7 +10,13 @@
  */
 
 #include "UART(2).h"
-#include <cmath>// include fmod()
+
+// include fmod()
+#include <cmath>
+
+// _EI() _DI()
+#include "PE_Types.h"
+
 
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
@@ -20,7 +26,8 @@ static TFIFO RxFIFO;
 static TFIFO TxFIFO;
 
 // This function is only used to obtain BRFA
-static uint8_t&& GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
+// Baud rate = UART module clock / (16* (SBR[12:0]+BRFD) )
+static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
   float sbr = (moduleClk / baudRate) / DIVISIOR; // using this formula to obtain SBR
                                                         // and typecast it into float type
@@ -34,13 +41,10 @@ static uint8_t&& GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk
 
 bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 {
-  _DI();//Disable interrupt
+  __DI();//Disable interrupt
 
  //local variable for storing SBR using union type
   uint16union_t sbr;
-  uint8_t &&num;
-  uint8_t IRQ = 49;
- // Baud rate = UART module clock / (16* (SBR[12:0]+BRFD) )
 
  //Enable the clock module for UART2
   SIM_SCGC4 |= SIM_SCGC4_UART2_MASK;
@@ -65,36 +69,44 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 
  //The interrupt source is enabled in the NVIC
  // vector num = 65, IRQ = 49 means should use NVICICPR1 IRQ(32-63)
-  num = IRQ % 32;
  // Clear any pending interrupts on UART2
-  NVICICPR1 = NVIC_ICPR_CLRPEND(1 << num);
+  NVICICPR1 = NVIC_ICPR_CLRPEND(1 << 17);
+
  // Enable interrupts from UART2 module
-  NVICISER1 = NVIC_ISER_SETENA(1 << num);
+  NVICISER1 = NVIC_ISER_SETENA(1 << 17);
 
  //Set priority?
 
-  _EI();// Enable the interrupt
+  __EI();// Enable the interrupt
+
   return true;
 }
 
 
-
  bool UART_InChar(uint8_t* const dataPtr)
 {
- return RxFIFO.FIFO_Get(dataPtr); // retrieve data from FIFO and send it to Packet module
+
+ if (!RxFIFO.FIFO_Get(dataPtr)) // retrieve data from FIFO and send it to Packet module
+  return false;
+
+ UART2_C2 |= UART_C2_RIE_MASK; // arm the receive interrupt
+ return true;
 }
 
 
  bool UART_OutChar(const uint8_t &data)
 {
-  if ( TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
-  {
-  //check output status of output device
-   UART2_C2 |= UART_C2_TIE_MASK; //arm output device
+  // Packet module requires to send data to FIFO
+  bool success;
+  
+  UART2_C2 &= ~UART_C2_TIE_MASK; //start critical section
+  
+  success = TxFIFO.FIFO_Put(data);
+  
+  UART2_C2 |= UART_C2_TIE_MASK;//end critical section, arm output device
 
-  }
-  else
-  return false;
+  
+  return success;
 }
 
 
@@ -132,25 +144,24 @@ void __attribute__ ((interrupt)) UART_ISR(void)
 // Transmit a byte of data
  else if (UART2_C2 & UART_C2_TIE_MASK)
  {
-  if (UART2_S1 & UART_S1_TDRE_MASK)
+  if (UART2_S1 & UART_S1_TDRE_MASK)	  
   {
+   if (!(TxFIFO.FIFO_Get( (uint8_t*) &UART2_D) ) )
 
-   SendData((uint8_t *) &UART2_D);
+    UART2_C2 &= ~UART_C2_TIE_MASK; // disarm the output device
   }
-
  }
 
 }
 
-
+/*
 //function description
-static bool SendData(uint8_t * const dataPtr)
+static void SendData(uint8_t * const dataPtr)
 {
   if (!(TxFIFO.FIFO_Get(dataPtr)) )
 
   UART2_C2 &= ~UART_C2_TIE_MASK; // disarm the output device
 
-  return true;
 }
-
+*/
 

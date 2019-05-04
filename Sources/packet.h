@@ -13,7 +13,7 @@
 #define PACKET_H
 
 // New types
-#include "types.h"
+#include "type_cpp.h"
 
 //include packet module in Lab1
 #include "Packet(2).h"

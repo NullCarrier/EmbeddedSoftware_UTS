@@ -13,7 +13,7 @@
 #define FLASH_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
 // include mask
 #include "MK70F12.h"
 
@@ -46,6 +46,8 @@ class TFCCOB final
    uint8_t fccob9; /*!< The fccob number 9 */
    uint8_t fccobA; /*!< The fccob number A */
    uint8_t fccobB; /*!< The fccob number B */
+
+  friend bool LaunchCommand(TFCCOB &commonCommandObject);
 
  public:
     enum Command_FCCOB

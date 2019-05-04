@@ -14,27 +14,27 @@
 // new types
 #include "type_cpp.h"
 
+
+
 class PIT_t
 {
  using F = void (void*); // a function type, not a pointer
 
  private:
   uint32_t moduleClk;
+  uint32_t period;
   F* userFunction;
   void* userArguments;
-  uint32_t period;
   //bool restart;
- protected:
-  void __attribute__ ((interrupt)) PIT_ISR(void);
 
  public:
   PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
 
-  bool PIT_Init() const;
-
-  void PIT_Set() const;
+  void PIT_Set(const uint32_t&);
 
   void PIT_Enable(const bool &enable);
+
+  void __attribute__ ((interrupt)) PIT_ISR(void);
 
 };
 
@@ -48,7 +48,7 @@ class PIT_t
  *  @return bool - TRUE if the PIT was successfully initialized.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-bool PIT_Init(const uint32_t moduleClk, void (*userFunction)(void*), void* userArguments);
+//bool PIT_Init(const uint32_t moduleClk, void (*userFunction)(void*), void* userArguments);
 
 /*! @brief Sets the value of the desired period of the PIT.
  *
@@ -57,13 +57,13 @@ bool PIT_Init(const uint32_t moduleClk, void (*userFunction)(void*), void* userA
  *                 FALSE if the PIT will use the new value after a trigger event.
  *  @note The function will enable the timer and interrupts for the PIT.
  */
-void PIT_Set(const uint32_t period, const bool restart);
+//void PIT_Set(const uint32_t period, const bool restart);
 
 /*! @brief Enables or disables the PIT.
  *
  *  @param enable - TRUE if the PIT is to be enabled, FALSE if the PIT is to be disabled.
  */
-void PIT_Enable(const bool enable);
+//void PIT_Enable(const bool enable);
 
 /*! @brief Interrupt service routine for the PIT.
  *
@@ -71,6 +71,6 @@ void PIT_Enable(const bool enable);
  *  The user callback function will be called.
  *  @note Assumes the PIT has been initialized.
  */
-void __attribute__ ((interrupt)) PIT_ISR(void);
+//void __attribute__ ((interrupt)) PIT_ISR(void);
 
 #endif

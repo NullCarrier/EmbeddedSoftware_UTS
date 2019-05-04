@@ -13,7 +13,7 @@
 #define PACKET2_H
 
 // New types
-#include "types.h"
+#include "type_cpp.h"
 #include "UART(2).h" // UART_Init()
 #include <cassert>
 

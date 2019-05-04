@@ -13,7 +13,7 @@
 #define LEDS_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
 
 
  class LED_t
