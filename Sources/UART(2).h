@@ -19,6 +19,12 @@
 // include FIFO module
 #include "FIFO(2).h"
 
+// involve mask for all registers
+#include "MK70F12.h"
+
+// _EI() _DI()
+#include "PE_Types.h"
+
 /*! @brief Sets up the UART interface before first use.
  *
  *  @param baudRate The desired baud rate in bits/sec.

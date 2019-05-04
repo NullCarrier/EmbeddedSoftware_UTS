@@ -14,7 +14,7 @@
 #define NB_BYTES 8
 
 // declare array to keep track of flash memory
-static int FlashSector0[NB_BYTES];
+static bool FlashSector0[NB_BYTES];
 
 static TFCCOB CommandObject;
 

@@ -14,18 +14,21 @@
 // new types
 #include "type_cpp.h"
 
-
 class PIT_t
 {
-  private:
+ using F = void (void*); // a function type, not a pointer
+
+ private:
   uint32_t moduleClk;
-  void (*userFunction)(void*);
+  F* userFunction;
   void* userArguments;
   uint32_t period;
   //bool restart;
+ protected:
+  void __attribute__ ((interrupt)) PIT_ISR(void);
 
-  public:
-  PIT_t(const uint32_t mClock, void (*callback)(void*), void* userArgu);
+ public:
+  PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
 
   bool PIT_Init() const;
 
@@ -33,9 +36,7 @@ class PIT_t
 
   void PIT_Enable(const bool &enable);
 
-  void __attribute__ ((interrupt)) PIT_ISR(void);
 };
-
 
 
 /*! @brief Sets up the PIT before first use.

@@ -12,7 +12,33 @@
 #define RTC_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
+
+class RTC_t
+{
+ using F = void(void*); // a function type, not a pointer
+
+ private:
+  uint8_t hours;
+  uint8_t minutes;
+  uint8_t seconds;
+  F* userFuction;
+  void* userArguments;
+
+ protected:
+  void __attribute__ ((interrupt)) RTC_ISR(void);
+
+ public:
+  RTC_t(F* uF, void* userArgu);
+
+  bool RTC_Init();
+
+  void RTC_Set();
+
+  void RTC_Get();
+
+
+};
 
 /*! @brief Initializes the RTC before first use.
  *

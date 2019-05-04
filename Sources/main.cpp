@@ -35,7 +35,9 @@
 
 #include "Flash.h"
 
-const uint32_t BAUDRATE = 115200;
+#include "PIT.h"
+
+const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
 void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
@@ -204,9 +206,11 @@ static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter
   HandlePacketVer2::HandleTowerModePacket(packet);
 }
 
+//function description
+void PITCallback(void* argu)
+{
 
-
-
+}
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -215,14 +219,14 @@ int main(void)
   /* Write your local variable definition here */
 
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
-  
+  PIT_t pit(CPU_BUS_CLK_HZ, PITCallback, 0); // initialize PIT module
 
 
-
+   _DI();//Disable interrupt
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
-
+  _EI(); //Enable the interrupt
   /* Write your code here */
   for (;;)
   {
