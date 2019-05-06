@@ -1,18 +1,29 @@
-/*! @file
+/*! @file FTM.h
  *
  *  @brief Routines for setting up the FlexTimer module (FTM) on the TWR-K70F120M.
  *
  *  This contains the functions for operating the FlexTimer module (FTM).
  *
- *  @author PMcL
- *  @date 2015-09-04
+ *  @author Chao Li
+ *  @date 4/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef FTM_H
 #define FTM_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
+
+#include "MK70F12.h"
+
+namespace FTM{
+
+class FTM_t
+{
+ using F = void (void*); // a function type, not a pointer
+
+ public:
 
 typedef enum
 {
@@ -46,9 +57,19 @@ typedef struct
     TTimerOutputAction outputAction;
     TTimerInputDetection inputDetection;
   } ioType;
-  void (*callbackFunction)(void*);
+  F *callbackFunction;
   void *callbackArguments;
 } TFTMChannel;
+
+  FTM_t();
+
+  bool FTM_Set();
+
+  void __attribute__ ((interrupt)) FTM0_ISR(void);
+
+ private:
+  TFTMChannel aFTMChannel;
+};
 
 
 /*! @brief Sets up the FTM before first use.
@@ -57,6 +78,8 @@ typedef struct
  *  @return bool - TRUE if the FTM was successfully initialized.
  */
 bool FTM_Init();
+
+}
 
 /*! @brief Sets up a timer channel.
  *
@@ -72,7 +95,7 @@ bool FTM_Init();
  *  @return bool - TRUE if the timer was set up successfully.
  *  @note Assumes the FTM has been initialized.
  */
-bool FTM_Set(const TFTMChannel* const aFTMChannel);
+//bool FTM_Set(const TFTMChannel* const aFTMChannel);
 
 
 /*! @brief Starts a timer if set up for output compare.
@@ -81,7 +104,7 @@ bool FTM_Set(const TFTMChannel* const aFTMChannel);
  *  @return bool - TRUE if the timer was started successfully.
  *  @note Assumes the FTM has been initialized.
  */
-bool FTM_StartTimer(const TFTMChannel* const aFTMChannel);
+//bool FTM_StartTimer(const TFTMChannel* const aFTMChannel);
 
 
 /*! @brief Interrupt service routine for the FTM.
@@ -89,6 +112,6 @@ bool FTM_StartTimer(const TFTMChannel* const aFTMChannel);
  *  If a timer channel was set up as output compare, then the user callback function will be called.
  *  @note Assumes the FTM has been initialized.
  */
-void __attribute__ ((interrupt)) FTM0_ISR(void);
+//void __attribute__ ((interrupt)) FTM0_ISR(void);
 
 #endif

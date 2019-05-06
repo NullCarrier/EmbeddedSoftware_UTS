@@ -14,7 +14,7 @@
 **
 ** ###################################################################*/
 /*!
-** @file main.c
+** @file main.cpp
 ** @version 2.0
 ** @brief
 **         Main module.
@@ -213,6 +213,15 @@ void PITCallback(void* argu)
   led.LEDs_Toggle();
 }
 
+void RTCCalback(void* argu)
+{
+
+ LED_t led(LED_t::LED_BLUE);
+ led.LEDs_On();
+
+
+}
+
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -220,10 +229,10 @@ int main(void)
   /* Write your local variable definition here */
 
   PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
-/*
-  PIT_t pit(CPU_BUS_CLK_HZ, PITCallback, 0); // initialize PIT module
-  pit.PIT_Set(500); // period 500ms
-*/
+
+  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, PITCallback, 0); // initialize PIT module
+
+
    __DI();//Disable interrupt
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
@@ -231,6 +240,7 @@ int main(void)
   /*** End of Processor Expert internal initialization.                    ***/
 
   __EI(); //Enable the interrupt
+
   /* Write your code here */
   for (;;)
   {

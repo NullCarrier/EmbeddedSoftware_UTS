@@ -15,7 +15,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-       if (UART_InChar(&rxData))
+       if (UART_InChar(rxData))
        {
          switch (nbBytesPacket)
          {

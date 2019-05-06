@@ -14,9 +14,6 @@
 // include fmod()
 #include <cmath>
 
-// _EI() _DI()
-#include "PE_Types.h"
-
 
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
@@ -79,34 +76,32 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 
   __EI();// Enable the interrupt
 
+  UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
+
   return true;
 }
 
 
- bool UART_InChar(uint8_t* const dataPtr)
+bool UART_InChar(uint8_t &dataPtr)
 {
-
- if (!RxFIFO.FIFO_Get(dataPtr)) // retrieve data from FIFO and send it to Packet module
-  return false;
-
- UART2_C2 |= UART_C2_RIE_MASK; // arm the receive interrupt
- return true;
+ return RxFIFO.FIFO_Get(dataPtr); // retrieve data from FIFO and send it to Packet module
+/*
+ if(success)
+ UART2_C2 |= UART_C2_RIE_MASK; // Disarm the receive interrupt
+*/
 }
 
 
- bool UART_OutChar(const uint8_t &data)
+ bool UART_OutChar(const uint8_t data)
 {
-  // Packet module requires to send data to FIFO
-  bool success;
-  
-  UART2_C2 &= ~UART_C2_TIE_MASK; //start critical section
-  
-  success = TxFIFO.FIFO_Put(data);
-  
-  UART2_C2 |= UART_C2_TIE_MASK;//end critical section, arm output device
+ bool success;
 
-  
-  return success;
+ success =  TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
+
+ if (success)
+ UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
+
+ return success;
 }
 
 
@@ -137,21 +132,25 @@ void __attribute__ ((interrupt)) UART_ISR(void)
  {
   if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
   {
-  // let the receiver to send a byte of data to RxFIFO
-   RxFIFO.FIFO_Put(UART2_D);
+   RxFIFO.FIFO_Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
   }
  }
+
 // Transmit a byte of data
- else if (UART2_C2 & UART_C2_TIE_MASK)
+ if (UART2_C2 & UART_C2_TIE_MASK)
  {
-  if (UART2_S1 & UART_S1_TDRE_MASK)	  
+  if (UART2_S1 & UART_S1_TDRE_MASK)
   {
-   if (!(TxFIFO.FIFO_Get( (uint8_t*) &UART2_D) ) )
+	uint8_t data;
+   if (!TxFIFO.FIFO_Get(data) )
+   {
+	UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+   }
 
-    UART2_C2 &= ~UART_C2_TIE_MASK; // disarm the output device
+    UART2_D = data;
   }
- }
 
+ }
 }
 
 /*

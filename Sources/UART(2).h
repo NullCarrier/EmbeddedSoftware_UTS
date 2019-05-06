@@ -16,6 +16,9 @@
 // new types
 #include "type_cpp.h"
 
+// _EI() _DI()
+#include "PE_Types.h"
+
 // include FIFO module
 #include "FIFO(2).h"
 
@@ -39,7 +42,7 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  *  @note Assumes that UART_Init has been called.
  */
 
- bool UART_InChar(uint8_t* const dataPtr);
+ bool UART_InChar(uint8_t &dataPtr);
 
 /*! @brief Put a byte in the transmit FIFO if it is not full.
  *
@@ -48,7 +51,7 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  *  @note Assumes that UART_Init has been called.
  */
 
- bool UART_OutChar(const uint8_t &data);
+ bool UART_OutChar(const uint8_t data);
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.
  *

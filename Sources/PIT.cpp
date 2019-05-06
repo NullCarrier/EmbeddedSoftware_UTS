@@ -3,9 +3,11 @@
 // involve mask for all registers
 #include "MK70F12.h"
 
-#include "PE_Types.h" // _EI() _DI()
 
- bool PIT_Init(const uint32_t moduleClk)
+
+namespace PIT{
+
+ bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit)
 {
 
  __DI();//Disable interrupt
@@ -13,22 +15,30 @@
  //enable clock gate
  SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
+ //Disable timer0
+ pit.PIT_Enable(false);
+
  //enable timer module
- PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+ PIT_MCR &= ~PIT_MCR_MDIS_MASK ;
 
  //Freeze the timer
  PIT_MCR |= PIT_MCR_FRZ_MASK;
 
  //initialize the timer: 500ms
- //PIT_LDVAL0 = ( moduleClk / 2) - 1;
+ PIT_LDVAL0 = 0xBEBC1F;
+
+ pit.PIT_Set(500, false); // period 500ms
 
  // Initialize NVIC
  // Vector =84, IRQ=68
  // Clear any pending interrupts on PIT0
- NVICICPR2 = NVIC_ICPR_CLRPEND(1 << 4);
+ NVICICPR2 = (1 << (68 % 32));
 
  // Enable interrupts from PIT module
- NVICISER2 = NVIC_ISER_SETENA(1 << 4);
+ NVICISER2 = (1 << (68 % 32));
+
+ //Enable timer0
+ pit.PIT_Enable(true);
 
  __EI();// Enable the interrupt
 
@@ -36,15 +46,26 @@
 }
 
 
-void PIT_t::PIT_Set(const uint32_t &Tp)
+void PIT_t::PIT_Set(const uint32_t &p, bool restart)
 {
- period = Tp * 1000 ; // set a new value for period in ns
+ period = p ; // set a new value for period in sec
 
- //Enable timer0
- this->PIT_Enable(true);
+ if (restart)
+ {
+  //disable timer0
+  this->PIT_Enable(false);
 
- //reload the timer
- PIT_LDVAL0 = (period / moduleClk) - 1;
+  //reload the timer
+  PIT_LDVAL0 = (period / (1 / moduleClk) ) - 1;
+
+  //Enable timer0
+  this->PIT_Enable(true);
+ }
+ else
+ {
+  //reload the timer during running the timer
+  //PIT_LDVAL0 = ( (period*1e-3) / (1 / moduleClk) ) - 1;
+ }
 
  // Enable timer0 interrupt
  PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK;
@@ -52,7 +73,7 @@ void PIT_t::PIT_Set(const uint32_t &Tp)
 }
 
 
-void PIT_t::PIT_Enable(const bool &enable)
+void PIT_t::PIT_Enable(const bool enable)
 {
  if (enable)
  PIT_TCTRL0 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
@@ -64,19 +85,22 @@ void PIT_t::PIT_Enable(const bool &enable)
 PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
 moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
 {
-  PIT_Init(moduleClk);
+  PIT_Init(moduleClk, *this);
 }
 
 void __attribute__ ((interrupt)) PIT_t::PIT_ISR(void)
 {
-
- PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
+ if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
+ {
+  PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
  // then call callback function
- if (userFunction)
- userFunction(userArguments);
+  if (userFunction)
+  userFunction(userArguments);
+ }
+
 }
 
-
+}
 
 

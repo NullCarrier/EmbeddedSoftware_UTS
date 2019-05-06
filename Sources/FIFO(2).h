@@ -15,6 +15,14 @@
 // new types
 #include "type_cpp.h"
 
+// _EI() _DI()
+#include "PE_Types.h"
+
+// involve mask for all registers
+#include "MK70F12.h"
+
+#include "Cpu.h";
+
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256
 
@@ -57,7 +65,7 @@ class TFIFO
  *  @return bool - TRUE if data is successfully retrieved from the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
- bool FIFO_Get(uint8_t * const dataPtr);
+ bool FIFO_Get(uint8_t &dataPtr);
 
 };
 

@@ -14,7 +14,9 @@
 // new types
 #include "type_cpp.h"
 
+#include "PE_Types.h" // _EI() _DI()
 
+namespace PIT{
 
 class PIT_t
 {
@@ -25,14 +27,13 @@ class PIT_t
   uint32_t period;
   F* userFunction;
   void* userArguments;
-  //bool restart;
 
  public:
   PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
 
-  void PIT_Set(const uint32_t&);
+  void PIT_Set(const uint32_t& p, bool restart);
 
-  void PIT_Enable(const bool &enable);
+  void PIT_Enable(const bool enable);
 
   void __attribute__ ((interrupt)) PIT_ISR(void);
 
@@ -48,7 +49,9 @@ class PIT_t
  *  @return bool - TRUE if the PIT was successfully initialized.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-//bool PIT_Init(const uint32_t moduleClk, void (*userFunction)(void*), void* userArguments);
+bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit);
+
+}
 
 /*! @brief Sets the value of the desired period of the PIT.
  *
