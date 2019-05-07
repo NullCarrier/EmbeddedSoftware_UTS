@@ -7,19 +7,11 @@ namespace PIT{
 
 using F = void (void*); // a function type, not a pointer
 
-LED_t led(LED_t::LED_GREEN);
-
 static F* userFunc;
 static void* userArgu;
 
-void PITCallback(void* argu)
-{
-  led.LEDs_Toggle();
-}
 
-
-
- bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit)
+ bool PIT_t::PIT_Init(const uint32_t &moduleClk)
 {
 
  __DI();//Disable interrupt
@@ -28,7 +20,7 @@ void PITCallback(void* argu)
  SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
  //Disable timer0
- pit.PIT_Enable(false);
+ this->PIT_Enable(false);
 
  //enable timer module
  PIT_MCR &= ~PIT_MCR_MDIS_MASK ;
@@ -39,7 +31,7 @@ void PITCallback(void* argu)
  //initialize the timer: 500ms
  PIT_LDVAL0 = 0xBEBC1F;
 
- pit.PIT_Set(500, false); // period 500ms
+ this->PIT_Set(500, false); // period 500ms
 
  // Initialize NVIC
  // Vector =84, IRQ=68
@@ -50,7 +42,10 @@ void PITCallback(void* argu)
  NVICISER2 = (1 << (68 % 32));
 
  //Enable timer0
- pit.PIT_Enable(true);
+ this->PIT_Enable(true);
+
+ userFunc = userFunction;
+ userArgu = userArguments;
 
  __EI();// Enable the interrupt
 
@@ -94,10 +89,10 @@ void PIT_t::PIT_Enable(const bool enable)
 }
 
 
-PIT_t::PIT_t(const uint32_t mClock/*, F* userFunc, void* userArgu*/):
-moduleClk(mClock) //, userFunction(userFunc), userArguments(userArgu)
+PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
+moduleClk(mClock) , userFunction(userFunc), userArguments(userArgu)
 {
-  PIT_Init(moduleClk, *this);
+  this->PIT_Init(moduleClk);
 }
 
 void __attribute__ ((interrupt)) PIT_ISR(void)
@@ -105,8 +100,6 @@ void __attribute__ ((interrupt)) PIT_ISR(void)
  if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
  {
   PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
-
-  userFunc = PITCallback;
 
  // then call callback function
   if (userFunc)

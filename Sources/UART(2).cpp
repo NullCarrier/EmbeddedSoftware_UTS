@@ -90,7 +90,8 @@ bool UART_InChar(uint8_t* const dataPtr)
 
  bool UART_OutChar(const uint8_t data)
 {
- return TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
+ if( TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
+ UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 }
 
 
@@ -139,6 +140,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
   }
 
  }
+
 }
 
 /*

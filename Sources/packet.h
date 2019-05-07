@@ -15,6 +15,11 @@
 // New types
 #include "type_cpp.h"
 
+// _EI() _DI()
+#include "PE_Types.h"
+
+#include "Cpu.h"
+
 //include packet module in Lab1
 #include "Packet(2).h"
 

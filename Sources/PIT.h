@@ -32,7 +32,9 @@ class PIT_t
   void* userArguments;
 
  public:
-  PIT_t(const uint32_t mClock/*, F* userFunc, void* userArgu*/);
+  PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
+
+  bool PIT_Init(const uint32_t &moduleClk);
 
   void PIT_Set(const uint32_t& p, bool restart);
 
@@ -50,7 +52,7 @@ class PIT_t
  *  @return bool - TRUE if the PIT was successfully initialized.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit);
+//bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit);
 
 void __attribute__ ((interrupt)) PIT_ISR(void);
 

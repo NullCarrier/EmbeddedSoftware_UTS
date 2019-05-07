@@ -205,22 +205,25 @@ static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter
   Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
   HandlePacketVer2::HandleTowerModePacket(packet);
 }
-/*
+
+namespace CallBack{
+
+LED_t ledPIT(LED_t::LED_GREEN);
+LED_t ledRTC(LED_t::LED_BLUE);
+
 //function description
-void PITCallback(void* argu)
-{
-  LED_t led(LED_t::LED_GREEN);
-  led.LEDs_Toggle();
-}
-*/
-void RTCCalback(void* argu)
-{
+ void PITCallback(void* argu)
+ {
+  ledPIT.LEDs_Toggle();
+ }
 
- LED_t led(LED_t::LED_BLUE);
- led.LEDs_On();
-
+ void RTCCalback(void* argu)
+ {
+  ledRTC.LEDs_On();
+ }
 
 }
+
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -230,7 +233,7 @@ int main(void)
 
   PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ); // initialize PIT module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PITCallback, 0); // initialize PIT module
 
 
    __DI();//Disable interrupt
