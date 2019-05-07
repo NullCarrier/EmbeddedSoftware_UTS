@@ -1,11 +1,23 @@
 #include "PIT.h"
 
-// involve mask for all registers
-#include "MK70F12.h"
-
+#include "LEDs.h"
 
 
 namespace PIT{
+
+using F = void (void*); // a function type, not a pointer
+
+LED_t led(LED_t::LED_GREEN);
+
+static F* userFunc;
+static void* userArgu;
+
+void PITCallback(void* argu)
+{
+  led.LEDs_Toggle();
+}
+
+
 
  bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit)
 {
@@ -82,21 +94,23 @@ void PIT_t::PIT_Enable(const bool enable)
 }
 
 
-PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
-moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
+PIT_t::PIT_t(const uint32_t mClock/*, F* userFunc, void* userArgu*/):
+moduleClk(mClock) //, userFunction(userFunc), userArguments(userArgu)
 {
   PIT_Init(moduleClk, *this);
 }
 
-void __attribute__ ((interrupt)) PIT_t::PIT_ISR(void)
+void __attribute__ ((interrupt)) PIT_ISR(void)
 {
  if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
  {
   PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
+  userFunc = PITCallback;
+
  // then call callback function
-  if (userFunction)
-  userFunction(userArguments);
+  if (userFunc)
+  userFunc(userArgu);
  }
 
 }

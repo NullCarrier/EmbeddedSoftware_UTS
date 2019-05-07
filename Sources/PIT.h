@@ -16,6 +16,9 @@
 
 #include "PE_Types.h" // _EI() _DI()
 
+// involve mask for all registers
+#include "MK70F12.h"
+
 namespace PIT{
 
 class PIT_t
@@ -29,13 +32,11 @@ class PIT_t
   void* userArguments;
 
  public:
-  PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
+  PIT_t(const uint32_t mClock/*, F* userFunc, void* userArgu*/);
 
   void PIT_Set(const uint32_t& p, bool restart);
 
   void PIT_Enable(const bool enable);
-
-  void __attribute__ ((interrupt)) PIT_ISR(void);
 
 };
 
@@ -50,6 +51,8 @@ class PIT_t
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
 bool PIT_Init(const uint32_t &moduleClk, PIT_t &pit);
+
+void __attribute__ ((interrupt)) PIT_ISR(void);
 
 }
 

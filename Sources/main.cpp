@@ -205,14 +205,14 @@ static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter
   Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
   HandlePacketVer2::HandleTowerModePacket(packet);
 }
-
+/*
 //function description
 void PITCallback(void* argu)
 {
   LED_t led(LED_t::LED_GREEN);
   led.LEDs_Toggle();
 }
-
+*/
 void RTCCalback(void* argu)
 {
 
@@ -230,7 +230,7 @@ int main(void)
 
   PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
-  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, PITCallback, 0); // initialize PIT module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ); // initialize PIT module
 
 
    __DI();//Disable interrupt

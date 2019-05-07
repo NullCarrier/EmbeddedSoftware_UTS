@@ -66,7 +66,7 @@ public:
      *
      *  @return rvalue reference -- a bind to anonymous variable holding checksum
     */
- virtual uint8_t&& MakeChecksum() = 0;
+ virtual uint8_t MakeChecksum() = 0;
 
 };
 

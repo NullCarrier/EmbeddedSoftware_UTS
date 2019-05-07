@@ -38,7 +38,7 @@
 }
 
 
-bool TFIFO::FIFO_Get(uint8_t &dataPtr)
+bool TFIFO::FIFO_Get(uint8_t* const dataPtr)
 {
 
 
@@ -48,7 +48,7 @@ bool TFIFO::FIFO_Get(uint8_t &dataPtr)
 
   NbBytes--; // decrement one whenever the Buffer has been retrieved
 
-  dataPtr = Buffer[Start]; // place the retrieved byte
+  *dataPtr = Buffer[Start]; // place the retrieved byte
 
   Start++; // removing one data, then increment Start index
 

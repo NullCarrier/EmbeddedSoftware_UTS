@@ -21,7 +21,7 @@
 // involve mask for all registers
 #include "MK70F12.h"
 
-#include "Cpu.h";
+#include "Cpu.h"
 
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256
@@ -65,7 +65,7 @@ class TFIFO
  *  @return bool - TRUE if data is successfully retrieved from the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
- bool FIFO_Get(uint8_t &dataPtr);
+ bool FIFO_Get(uint8_t* const dataPtr);
 
 };
 

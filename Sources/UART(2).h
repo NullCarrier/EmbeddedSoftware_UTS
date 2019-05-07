@@ -42,7 +42,7 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  *  @note Assumes that UART_Init has been called.
  */
 
- bool UART_InChar(uint8_t &dataPtr);
+ bool UART_InChar(uint8_t* const dataPtr);
 
 /*! @brief Put a byte in the transmit FIFO if it is not full.
  *

@@ -15,7 +15,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-       if (UART_InChar(rxData))
+       if (UART_InChar(&rxData))
        {
          switch (nbBytesPacket)
          {
@@ -56,8 +56,14 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  bool PacketVer2_t::Packet_Put()
 {
  Packet_Checksum = MakeChecksum();
- return UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
-      UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
+
+ if ( UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
+    UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum) )
+ {
+  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
+  return true;
+ }
+
 }
 
 
@@ -70,7 +76,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  }
 
 
- uint8_t&& PacketVer2_t::MakeChecksum()
+ uint8_t PacketVer2_t::MakeChecksum()
 {
   return Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 }

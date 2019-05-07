@@ -100,7 +100,7 @@ class PacketVer2_t : public Packet_t
  *
  *  @return uint8_t&&  a rvalue reference to anonymous variable holding checksum
  */
-   uint8_t&& MakeChecksum() override;
+   uint8_t MakeChecksum() override;
 
 };
 

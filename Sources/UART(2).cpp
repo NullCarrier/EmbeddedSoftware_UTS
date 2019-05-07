@@ -82,26 +82,15 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
-bool UART_InChar(uint8_t &dataPtr)
+bool UART_InChar(uint8_t* const dataPtr)
 {
  return RxFIFO.FIFO_Get(dataPtr); // retrieve data from FIFO and send it to Packet module
-/*
- if(success)
- UART2_C2 |= UART_C2_RIE_MASK; // Disarm the receive interrupt
-*/
 }
 
 
  bool UART_OutChar(const uint8_t data)
 {
- bool success;
-
- success =  TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
-
- if (success)
- UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
-
- return success;
+ return TxFIFO.FIFO_Put(data); // Packet module requires to send data to FIFO
 }
 
 
@@ -141,13 +130,12 @@ void __attribute__ ((interrupt)) UART_ISR(void)
  {
   if (UART2_S1 & UART_S1_TDRE_MASK)
   {
-	uint8_t data;
-   if (!TxFIFO.FIFO_Get(data) )
+
+   if (!TxFIFO.FIFO_Get( (uint8_t*) &UART2_D ) )
    {
 	UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
    }
 
-    UART2_D = data;
   }
 
  }
