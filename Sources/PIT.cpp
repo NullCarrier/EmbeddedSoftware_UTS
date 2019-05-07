@@ -1,17 +1,26 @@
+/*! @file PIT.cpp
+ *
+ *  @brief Routines for controlling Periodic Interrupt Timer (PIT) on the TWR-K70F120M.
+ *
+ *  This contains the functions for operating the periodic interrupt timer (PIT).
+ *
+ *  @author Chao Li
+ *  @date 7/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
+ */
 #include "PIT.h"
-
-#include "LEDs.h"
 
 
 namespace PIT{
 
 using F = void (void*); // a function type, not a pointer
 
-static F* userFunc;
-static void* userArgu;
+// Local function pointer
+static F* UserFunc;
+static void* UserArgu;
 
 
- bool PIT_t::PIT_Init(const uint32_t &moduleClk)
+ bool PIT_t::PIT_Init()
 {
 
  __DI();//Disable interrupt
@@ -31,7 +40,7 @@ static void* userArgu;
  //initialize the timer: 500ms
  PIT_LDVAL0 = 0xBEBC1F;
 
- this->PIT_Set(500, false); // period 500ms
+ this->PIT_Set(500 ,false); // period 500ms
 
  // Initialize NVIC
  // Vector =84, IRQ=68
@@ -44,8 +53,9 @@ static void* userArgu;
  //Enable timer0
  this->PIT_Enable(true);
 
- userFunc = userFunction;
- userArgu = userArguments;
+ // Initialize the local usefunction
+ UserFunc = userFunction;
+ UserArgu = userArguments;
 
  __EI();// Enable the interrupt
 
@@ -53,9 +63,9 @@ static void* userArgu;
 }
 
 
-void PIT_t::PIT_Set(const uint32_t &p, bool restart)
+void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
 {
- period = p ; // set a new value for period in sec
+  period = newPeriod;
 
  if (restart)
  {
@@ -63,7 +73,7 @@ void PIT_t::PIT_Set(const uint32_t &p, bool restart)
   this->PIT_Enable(false);
 
   //reload the timer
-  PIT_LDVAL0 = (period / (1 / moduleClk) ) - 1;
+  //PIT_LDVAL0 = ( (period/1000) / (1/moduleClk) ) - 1;
 
   //Enable timer0
   this->PIT_Enable(true);
@@ -89,10 +99,10 @@ void PIT_t::PIT_Enable(const bool enable)
 }
 
 
-PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
-moduleClk(mClock) , userFunction(userFunc), userArguments(userArgu)
+PIT_t::PIT_t(const uint32_t mClock, const uint32_t T, F* userFunc, void* userArgu):
+moduleClk(mClock) , period(T),userFunction(userFunc), userArguments(userArgu)
 {
-  this->PIT_Init(moduleClk);
+  this->PIT_Init();
 }
 
 void __attribute__ ((interrupt)) PIT_ISR(void)
@@ -102,8 +112,8 @@ void __attribute__ ((interrupt)) PIT_ISR(void)
   PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
  // then call callback function
-  if (userFunc)
-  userFunc(userArgu);
+  if (UserFunc)
+  UserFunc(UserArgu);
  }
 
 }

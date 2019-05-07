@@ -6,7 +6,7 @@
  *  This contains the functions for operating the UART (serial port).
  *
  *  @author Chao Li
- *  @date 02/05/2019
+ *  @date 07/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -16,7 +16,7 @@
 // new types
 #include "type_cpp.h"
 
-// _EI() _DI()
+// _EI() _DI(),
 #include "PE_Types.h"
 
 // include FIFO module

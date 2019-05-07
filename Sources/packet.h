@@ -1,11 +1,11 @@
-/*! @file
+/*! @file packet.h
  *
  *  @brief Routines to implement packet encoding and decoding for the serial port.
  *
  *  This contains the functions for implementing the "Tower to PC Protocol" 5-byte packets.
  *
  *  @author : Chao Li
- *  @date 25/04/2019
+ *  @date 07/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -110,22 +110,20 @@ class PacketVer2_t : public Packet_t
 };
 
 
-class HandlePacketVer2
-{
-  public:
-    enum Command
-    {
-     CMD_STARTUP = 0x04,
-     CMD_TOWERVERSION = 0x09,
-     CMD_TOWERNUMBER = 0x0B,
-     CMD_TOWERMODE = 0x0D,
-     CMD_ACK_STARTUP = 0x84,
-     CMD_ACK_TOWERVERSION = 0x89,
-     CMD_ACK_TOWERNUMBER = 0x8B,
-     CMD_ACK_TOWERMODE = 0x8D,
-     CMD_MYTOWERNUMBER = 0x9434
-    };
+namespace HandlePacket{
 
+ enum Command
+ {
+  CMD_STARTUP = 0x04,
+  CMD_TOWERVERSION = 0x09,
+  CMD_TOWERNUMBER = 0x0B,
+  CMD_TOWERMODE = 0x0D,
+  CMD_ACK_STARTUP = 0x84,
+  CMD_ACK_TOWERVERSION = 0x89,
+  CMD_ACK_TOWERNUMBER = 0x8B,
+  CMD_ACK_TOWERMODE = 0x8D,
+  CMD_MYTOWERNUMBER = 0x9434
+ };
   /*! @brief To handle startup packet
    *  @param packet the PacketVert2 object
    *  @return void
@@ -186,7 +184,7 @@ class HandlePacketVer2
   */
   static void HandleCommandPacket(PacketVer2_t &packet);
 
-};
+}
 
 
 // Acknowledgment bit mask

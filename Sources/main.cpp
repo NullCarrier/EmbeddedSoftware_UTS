@@ -40,7 +40,7 @@
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
-void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
+void HandlePacket::HandleStartupPacket(PacketVer2_t &packet)
 {
  // Assgin value for startup command according to packet protocol
 
@@ -50,7 +50,7 @@ void HandlePacketVer2::HandleStartupPacket(PacketVer2_t &packet)
 
 }
 
-void HandlePacketVer2::HandleTowerVersionPacket(PacketVer2_t &packet)
+void HandlePacket::HandleTowerVersionPacket(PacketVer2_t &packet)
 {
   // Assgin value for towerversion command according to packet protocol
 
@@ -61,7 +61,7 @@ void HandlePacketVer2::HandleTowerVersionPacket(PacketVer2_t &packet)
    packet.PacketVer2_t::Packet_Put(); // send it to FIFO
 }
 
-void HandlePacketVer2::HandleTowerNumberPacket(PacketVer2_t &packet)
+void HandlePacket::HandleTowerNumberPacket(PacketVer2_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
 
@@ -73,7 +73,7 @@ void HandlePacketVer2::HandleTowerNumberPacket(PacketVer2_t &packet)
 
 }
 
-void HandlePacketVer2::HandleTowerModePacket(PacketVer2_t &packet)
+void HandlePacket::HandleTowerModePacket(PacketVer2_t &packet)
 {
 
   	Packet_Parameter1 = 0x01;  // Parameter 1
@@ -85,7 +85,7 @@ void HandlePacketVer2::HandleTowerModePacket(PacketVer2_t &packet)
 
 
 // Handling packet protocol (Tower to PC)
-void HandlePacketVer2::HandleCommandPacket(PacketVer2_t &packet)
+void HandlePacket::HandleCommandPacket(PacketVer2_t &packet)
 {
     switch (Packet_Command)
     {
@@ -110,74 +110,74 @@ void HandlePacketVer2::HandleCommandPacket(PacketVer2_t &packet)
 
 }
 
-void HandlePacketVer2::InitResponsePacket(PacketVer2_t &packet)
+void HandlePacket::InitResponsePacket(PacketVer2_t &packet)
 {
   // Send tower startup packet
   HandleStartupPacket(packet);
 
   // Send tower version packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
+  Packet_Command = HandlePacket::CMD_TOWERVERSION;
   HandleTowerVersionPacket(packet);
 
   // Send tower number packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
+  Packet_Command = HandlePacket::CMD_TOWERNUMBER;
   HandleTowerNumberPacket(packet);
 
   // Send tower mode packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
+  Packet_Command = HandlePacket::CMD_TOWERMODE;
   HandleTowerModePacket(packet);
 }
 
-void HandlePacketVer2::HandleACKStartupPacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKStartupPacket(PacketVer2_t &packet)
 {
   // Send tower startup packet
-  Packet_Command = HandlePacketVer2::CMD_STARTUP;
+  Packet_Command = HandlePacket::CMD_STARTUP;
   InitResponsePacket(packet);
 
   // Send ack tower startup packet
-  Packet_Command = HandlePacketVer2::CMD_ACK_STARTUP; // to modify the packet command ID
+  Packet_Command = HandlePacket::CMD_ACK_STARTUP; // to modify the packet command ID
   HandleStartupPacket(packet); // to send ack pakcet
 }
 
-void HandlePacketVer2::HandleACKTowerVersionPacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKTowerVersionPacket(PacketVer2_t &packet)
 {
   // Send tower version packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
+  Packet_Command = HandlePacket::CMD_TOWERVERSION;
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower version packet
-  Packet_Command = HandlePacketVer2::CMD_ACK_TOWERVERSION;
+  Packet_Command = HandlePacket::CMD_ACK_TOWERVERSION;
 
   HandleTowerVersionPacket(packet);
 }
 
-void HandlePacketVer2::HandleACKTowerNumberPacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKTowerNumberPacket(PacketVer2_t &packet)
 {
-  // Send tower number packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
+  // Send tower number pacHandlePacketket
+  Packet_Command = HandlePacket::CMD_TOWERNUMBER;
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower version packet
-  Packet_Command = HandlePacketVer2::CMD_ACK_TOWERNUMBER;
+  Packet_Command = HandlePacket::CMD_ACK_TOWERNUMBER;
 
   HandleTowerNumberPacket(packet);
 }
 
-void HandlePacketVer2::HandleACKTowerModePacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKTowerModePacket(PacketVer2_t &packet)
 {
   // Send tower mode packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
+  Packet_Command = HandlePacket::CMD_TOWERMODE;
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower mode packet
-  Packet_Command = HandlePacketVer2::CMD_ACK_TOWERMODE;
+  Packet_Command = HandlePacket::CMD_ACK_TOWERMODE;
 
   HandleTowerModePacket(packet);
 }
-
+#if 0
 /*! @brief Overload function of InitResponsePacket
  *
  *  @param packet the PacketVert2 object
@@ -205,21 +205,22 @@ static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter
   Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
   HandlePacketVer2::HandleTowerModePacket(packet);
 }
+#endif
 
 namespace CallBack{
 
-LED_t ledPIT(LED_t::LED_GREEN);
-LED_t ledRTC(LED_t::LED_BLUE);
+LED_t LedPIT(LED_t::LED_GREEN);
+LED_t LedRTC(LED_t::LED_BLUE);
 
 //function description
  void PITCallback(void* argu)
  {
-  ledPIT.LEDs_Toggle();
+  LedPIT.LEDs_Toggle();
  }
 
  void RTCCalback(void* argu)
  {
-  ledRTC.LEDs_On();
+  LedRTC.LEDs_On();
  }
 
 }
@@ -233,7 +234,7 @@ int main(void)
 
   PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PITCallback, 0); // initialize PIT module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PITCallback, 0); // initialize PIT module
 
 
    __DI();//Disable interrupt
@@ -248,7 +249,7 @@ int main(void)
   for (;;)
   {
     if ( packet.PacketVer2_t::Packet_Get())
-    HandlePacketVer2::HandleCommandPacket(packet);
+    HandlePacket::HandleCommandPacket(packet);
 
     UART_ISR();
   }

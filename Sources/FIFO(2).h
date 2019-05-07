@@ -1,11 +1,11 @@
-/*! @file
+/*! @file FIFO(2).h
  *
  *  @brief Routines to implement a FIFO buffer.
  *
  *  This contains the structure and "methods" for accessing a byte-wide FIFO.
  *
  *  @author Chao Li
- *  @date 02/04/2019
+ *  @date 07/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -39,15 +39,6 @@ class TFIFO
   uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
 
   public:
-
-/*! @brief Initialize the FIFO before first use.
- *
- *  @param fifo A pointer to the FIFO that needs initializing.
- *  @return bool - TRUE if the FIFO was successfully initialised
- */
-      TFIFO()
-      {
-      }
 
 /*! @brief Put one character into the FIFO.
  *

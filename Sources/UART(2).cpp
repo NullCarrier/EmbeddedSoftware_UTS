@@ -1,11 +1,11 @@
-/*! @file
+/*! @file UART(2).cpp
  *
  *  @brief I/O routines for UART communications on the TWR-K70F120M.
  *
  *  This contains the functions for operating the UART (serial port).
  *
  *  @author Chao Li
- *  @date 02/04/2019
+ *  @date 07/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -90,7 +90,7 @@ bool UART_InChar(uint8_t* const dataPtr)
 
  bool UART_OutChar(const uint8_t data)
 {
- if( TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
+ if (TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 }
 
@@ -143,14 +143,4 @@ void __attribute__ ((interrupt)) UART_ISR(void)
 
 }
 
-/*
-//function description
-static void SendData(uint8_t * const dataPtr)
-{
-  if (!(TxFIFO.FIFO_Get(dataPtr)) )
-
-  UART2_C2 &= ~UART_C2_TIE_MASK; // disarm the output device
-
-}
-*/
 
