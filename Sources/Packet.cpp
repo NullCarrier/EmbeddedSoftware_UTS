@@ -13,19 +13,19 @@
 #include "packet.h"
 
 // define the static varibale
-TPacket PacketVer2_t::s_Packet;
+TPacket Packet_t::s_Packet;
 
 // define the global variable
 const uint8_t PACKET_ACK_MASK = 0b10000000;
 
- bool PacketVer2_t::Packet_Get()
+ bool Packet_t::PacketGet()
 {
   // local variable for holding temp value
  uint8_t rxData{0};
  static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
- if (UART_InChar(&rxData))
+ if (this->UART_t::InChar(&rxData))
  {
   switch (nbBytesPacket)
   {
@@ -63,16 +63,17 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 }
 
 
- bool PacketVer2_t::Packet_Put()
+ bool Packet_t::PacketPut()
 {
  Packet_Checksum = MakeChecksum();
 
- return UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
- UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
+ return this->UART_t::OutChar(Packet_Command)&& this->UART_t::OutChar(Packet_Parameter1)&&
+ this->UART_t::OutChar(Packet_Parameter2)&& this->UART_t::OutChar(Packet_Parameter3)&& this->UART_t::OutChar(Packet_Checksum);
+
 }
 
 
- void PacketVer2_t::SwitchPacket()
+ void Packet_t::SwitchPacket()
  {
    EnterCritical(); //Start critical section
 
@@ -85,7 +86,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  }
 
 
- uint8_t PacketVer2_t::MakeChecksum()
+ uint8_t Packet_t::MakeChecksum()
 {
   return Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 }

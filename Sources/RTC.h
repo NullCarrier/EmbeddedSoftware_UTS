@@ -20,6 +20,8 @@
 // _EI() _DI()
 #include "PE_Types.h"
 
+#include "Cpu.h"
+
 namespace RTC{
 
 class RTC_t
@@ -37,11 +39,13 @@ class RTC_t
 
   RTC_t(F* uF, void* userArgu);
 
+  RTC_t() = default;
+
   void RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec);
 
   void RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec);
-
-  void __attribute__ ((interrupt)) RTC_ISR(void);
+  
+  bool RTC_Init();
 };
 
 /*! @brief Initializes the RTC before first use.
@@ -52,7 +56,8 @@ class RTC_t
  *  @param userArguments is a pointer to the user arguments to use with the user callback function.
  *  @return bool - TRUE if the RTC was successfully initialized.
  */
-bool RTC_Init();
+
+  void __attribute__ ((interrupt)) RTC_ISR(void);
 
 }
 

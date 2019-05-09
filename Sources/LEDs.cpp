@@ -1,4 +1,4 @@
-/*! @file
+/*! @file LEDS.cpp
  *
  *  @brief Routines to access the LEDs on the TWR-K70F120M.
  *

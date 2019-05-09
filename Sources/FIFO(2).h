@@ -31,7 +31,7 @@
  */
 class TFIFO
 {
-  private:
+  protected:
 
   uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
   uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
@@ -47,7 +47,7 @@ class TFIFO
  *  @return bool - TRUE if data is successfully stored in the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
- bool FIFO_Put(const uint8_t data);
+ bool Put(const uint8_t data);
 
  /*! @brief Get one character from the FIFO.
  *
@@ -56,7 +56,7 @@ class TFIFO
  *  @return bool - TRUE if data is successfully retrieved from the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
- bool FIFO_Get(uint8_t* const dataPtr);
+ bool Get(uint8_t* const dataPtr);
 
 };
 

@@ -13,7 +13,7 @@
 #include "FIFO(2).h"
 
 
- bool TFIFO::FIFO_Put(const uint8_t data)
+ bool TFIFO::Put(const uint8_t data)
 {
 
 
@@ -38,7 +38,7 @@
 }
 
 
-bool TFIFO::FIFO_Get(uint8_t* const dataPtr)
+bool TFIFO::Get(uint8_t* const dataPtr)
 {
 
 

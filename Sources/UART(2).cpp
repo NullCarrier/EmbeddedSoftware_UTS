@@ -36,7 +36,7 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
-bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
+bool UART_t::Init()
 {
   __DI();//Disable interrupt
 
@@ -82,15 +82,21 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
-bool UART_InChar(uint8_t* const dataPtr)
+bool UART_t::InChar(uint8_t* const dataPtr)
 {
- return RxFIFO.FIFO_Get(dataPtr); // retrieve data from FIFO and send it to Packet module
+ return this->TFIFO::Get(dataPtr); // retrieve data from FIFO and send it to Packet module
+}
+
+UART_t::UART_t(const uint32_t rate, const uint32_t clock):
+baudRate{rate}, moduleClk{clock}
+{
+ this->Init();
 }
 
 
- bool UART_OutChar(const uint8_t data)
+ bool UART_t::OutChar(const uint8_t data)
 {
- if (TxFIFO.FIFO_Put(data)) // Packet module requires to send data to FIFO
+ if (this->TFIFO::Put(data)) // Packet module requires to send data to FIFO
  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 }
 
@@ -115,14 +121,14 @@ void UART_Poll(void)
 }
 #endif
 
-void __attribute__ ((interrupt)) UART_ISR(void)
+void __attribute__ ((interrupt)) UART_t::UART_ISR(void)
 {
   // receiving data condition
  if (UART2_C2 & UART_C2_RIE_MASK)
  {
   if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
   {
-   RxFIFO.FIFO_Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+   this->TFIFO::Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
   }
  }
 
@@ -132,7 +138,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
   if (UART2_S1 & UART_S1_TDRE_MASK)
   {
 
-   if (!TxFIFO.FIFO_Get( (uint8_t*) &UART2_D ) )
+   if (!this->TFIFO::Get( (uint8_t*) &UART2_D ) )
    {
 	UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
    }

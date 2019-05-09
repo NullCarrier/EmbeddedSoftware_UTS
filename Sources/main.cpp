@@ -37,80 +37,90 @@
 
 #include "PIT.h"
 
+#include "RTC.h"
+
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
-void HandlePacket::HandleStartupPacket(PacketVer2_t &packet)
+void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
  // Assgin value for startup command according to packet protocol
-
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
 
-  packet.PacketVer2_t::Packet_Put(); //send it to FIFO
+  packet.Packet_t::PacketPut(); //send it to FIFO
 
 }
 
-void HandlePacket::HandleTowerVersionPacket(PacketVer2_t &packet)
+void HandlePacket::HandleTowerVersionPacket(Packet_t &packet)
 {
   // Assgin value for towerversion command according to packet protocol
 
-   Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
-   Packet_Parameter2 = 0x01; // Parameter 2
-   Packet_Parameter3 = 0x0;  // Parameter 3
+  Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
+  Packet_Parameter2 = 0x01; // Parameter 2
+  Packet_Parameter3 = 0x0;  // Parameter 3
 
-   packet.PacketVer2_t::Packet_Put(); // send it to FIFO
+  packet.Packet_t::PacketPut(); // send it to FIFO
 }
 
-void HandlePacket::HandleTowerNumberPacket(PacketVer2_t &packet)
+void HandlePacket::HandleTowerNumberPacket(Packet_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
 
-	Packet_Parameter1 = 0x01;  // Parameter 1
-	Packet_Parameter2 = 0x94; // Parameter 2
-	Packet_Parameter3 = 0x34; // Parameter 3
+  Packet_Parameter1 = 0x01;  // Parameter 1
+  Packet_Parameter2 = 0x94; // Parameter 2
+  Packet_Parameter3 = 0x34; // Parameter 3
 
-	packet.PacketVer2_t::Packet_Put(); //send it to FIFO
+  packet.Packet_t::PacketPut(); //send it to FIFO
 
 }
 
-void HandlePacket::HandleTowerModePacket(PacketVer2_t &packet)
+void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 {
+  Packet_Parameter1 = 0x01;  // Parameter 1
+  Packet_Parameter2 = 0x01; // Parameter 2
+  Packet_Parameter3 = 0x00; // Parameter 3
 
-  	Packet_Parameter1 = 0x01;  // Parameter 1
-  	Packet_Parameter2 = 0x01; // Parameter 2
-  	Packet_Parameter3 = 0x00; // Parameter 3
-
-  	packet.PacketVer2_t::Packet_Put(); //send it to FIFO
+  packet.Packet_t::PacketPut(); //send it to FIFO
 }
 
+void HandlePacket::SetTimePacket(Packet_t &packet)
+{
+ RTC::RTC_t rtc();
+
+ rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+
+ packet.Packet_t::PacketPut(); //send it to FIFO
+}
 
 // Handling packet protocol (Tower to PC)
-void HandlePacket::HandleCommandPacket(PacketVer2_t &packet)
+void HandlePacket::HandleCommandPacket(Packet_t &packet)
 {
-    switch (Packet_Command)
-    {
+    switch (Packet_Command){
+
   // for specific command. Startup needs to send 3 packets
-    case CMD_STARTUP: InitResponsePacket(packet);
+    case CMD_STARTUP: InitResponsePacket(Packet);
                       break;
-	case CMD_ACK_STARTUP: HandleACKStartupPacket(packet);
+	case CMD_ACK_STARTUP: HandleACKStartupPacket(Packet);
 	                      break;
-    case CMD_TOWERVERSION: HandleTowerVersionPacket(packet);//only responce once for version
+    case CMD_TOWERVERSION: HandleTowerVersionPacket(Packet);//only responce once for version
                            break;
-	case CMD_ACK_TOWERVERSION: HandleACKTowerVersionPacket(packet);
+	case CMD_ACK_TOWERVERSION: HandleACKTowerVersionPacket(Packet);
 	                           break;
-    case CMD_TOWERNUMBER: HandleTowerNumberPacket(packet);//only responce once for number
+    case CMD_TOWERNUMBER: HandleTowerNumberPacket(Packet);//only responce once for number
                           break;
-	case CMD_ACK_TOWERNUMBER: HandleACKTowerNumberPacket(packet);
+	case CMD_ACK_TOWERNUMBER: HandleACKTowerNumberPacket(Packet);
 	                          break;
-    case CMD_TOWERMODE: HandleTowerModePacket(packet);
+    case CMD_TOWERMODE: HandleTowerModePacket(Packet);
                         break;
-	case CMD_ACK_TOWERMODE: HandleACKTowerModePacket(packet);
+	case CMD_ACK_TOWERMODE: HandleACKTowerModePacket(Packet);
 	                        break;
+	case CMD_SETTIME: SetTimePacket(Packet);
+                      break;
     }
 
 }
 
-void HandlePacket::InitResponsePacket(PacketVer2_t &packet)
+void HandlePacket::InitResponsePacket(Packet_t &packet)
 {
   // Send tower startup packet
   HandleStartupPacket(packet);
@@ -128,7 +138,7 @@ void HandlePacket::InitResponsePacket(PacketVer2_t &packet)
   HandleTowerModePacket(packet);
 }
 
-void HandlePacket::HandleACKStartupPacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKStartupPacket(Packet_t &packet)
 {
   // Send tower startup packet
   Packet_Command = HandlePacket::CMD_STARTUP;
@@ -139,7 +149,7 @@ void HandlePacket::HandleACKStartupPacket(PacketVer2_t &packet)
   HandleStartupPacket(packet); // to send ack pakcet
 }
 
-void HandlePacket::HandleACKTowerVersionPacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
 {
   // Send tower version packet
   Packet_Command = HandlePacket::CMD_TOWERVERSION;
@@ -152,7 +162,7 @@ void HandlePacket::HandleACKTowerVersionPacket(PacketVer2_t &packet)
   HandleTowerVersionPacket(packet);
 }
 
-void HandlePacket::HandleACKTowerNumberPacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKTowerNumberPacket(Packet_t &packet)
 {
   // Send tower number pacHandlePacketket
   Packet_Command = HandlePacket::CMD_TOWERNUMBER;
@@ -165,7 +175,7 @@ void HandlePacket::HandleACKTowerNumberPacket(PacketVer2_t &packet)
   HandleTowerNumberPacket(packet);
 }
 
-void HandlePacket::HandleACKTowerModePacket(PacketVer2_t &packet)
+void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 {
   // Send tower mode packet
   Packet_Command = HandlePacket::CMD_TOWERMODE;
@@ -177,6 +187,7 @@ void HandlePacket::HandleACKTowerModePacket(PacketVer2_t &packet)
 
   HandleTowerModePacket(packet);
 }
+
 #if 0
 /*! @brief Overload function of InitResponsePacket
  *
@@ -207,10 +218,15 @@ static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter
 }
 #endif
 
+static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+
 namespace CallBack{
 
 LED_t LedPIT(LED_t::LED_GREEN);
-LED_t LedRTC(LED_t::LED_BLUE);
+LED_t LedRTC(LED_t::LED_YELLOW);
+static RTC::RTC_t Rtc(RTCCallback, 0); // Initialize RTC module
+
+//LED_t LedRTC(LED_t::LED_BLUE);
 
 //function description
  void PITCallback(void* argu)
@@ -218,9 +234,20 @@ LED_t LedRTC(LED_t::LED_BLUE);
   LedPIT.LEDs_Toggle();
  }
 
- void RTCCalback(void* argu)
+ void RTCCallback(void* argu)
  {
-  LedRTC.LEDs_On();
+  uint8_t hours, mins, sec;
+
+  LedRTC.LEDs_Toggle();
+
+  Rtc.RTC_Get(hours, mins, sec);
+
+  Packet_Parameter1 = hours;  // Parameter 1: hours
+  Packet_Parameter2 = mins; // Parameter 2: mins
+  Packet_Parameter3 = sec; // Parameter 3: sec
+
+  Packet.Packet_t::PacketPut(); //send it to FIFO
+
  }
 
 }
@@ -232,9 +259,8 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  PacketVer2_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PITCallback, 0); // initialize PIT module
+ PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PITCallback, 0); // Initialize PIT module
 
 
    __DI();//Disable interrupt
@@ -248,10 +274,10 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( packet.PacketVer2_t::Packet_Get())
-    HandlePacket::HandleCommandPacket(packet);
+    if ( Packet.Packet_t::PacketGet())
+    HandlePacket::HandleCommandPacket(Packet);
 
-    UART_ISR();
+    Packet.UART_t::UART_ISR();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
@@ -277,15 +303,6 @@ int main(void)
 **
 ** ###################################################################
 */
-
-
-
-
-
-
-
-
-
 
 
 
