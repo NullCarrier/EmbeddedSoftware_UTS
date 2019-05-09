@@ -18,9 +18,8 @@
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
 
-// declare the object called RxFIFO, TxFIFO
-static TFIFO RxFIFO;
-static TFIFO TxFIFO;
+uint32_t UART_t::baudRate;
+uint32_t UART_t::moduleClk;
 
 // This function is only used to obtain BRFA
 // Baud rate = UART module clock / (16* (SBR[12:0]+BRFD) )
@@ -87,10 +86,11 @@ bool UART_t::InChar(uint8_t* const dataPtr)
  return this->TFIFO::Get(dataPtr); // retrieve data from FIFO and send it to Packet module
 }
 
-UART_t::UART_t(const uint32_t rate, const uint32_t clock):
-baudRate{rate}, moduleClk{clock}
+
+void UART_t::Module(const uint32_t rate, const uint32_t clock)
 {
- this->Init();
+  baudRate = rate;
+  moduleClk = clock;
 }
 
 
@@ -121,7 +121,7 @@ void UART_Poll(void)
 }
 #endif
 
-void __attribute__ ((interrupt)) UART_t::UART_ISR(void)
+void __attribute__ ((interrupt)) UART_t::ISR(void)
 {
   // receiving data condition
  if (UART2_C2 & UART_C2_RIE_MASK)

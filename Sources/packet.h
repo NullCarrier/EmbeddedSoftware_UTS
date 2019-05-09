@@ -78,10 +78,10 @@ class Packet_t : public UART_t
  *  @param moduleClk The module clock rate in Hz.
  *  @return None
  */
-   Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
-     UART_t::UART_t(baudRate, moduleClk)
-      {
-      }
+   Packet_t(const uint32_t baudRate, const uint32_t moduleClk)
+   {
+	 Module(baudRate, moduleClk);
+   }
   /*! @brief Attempts to get a packet from the received data.
  *
  *  @return bool - TRUE if a valid packet was received.

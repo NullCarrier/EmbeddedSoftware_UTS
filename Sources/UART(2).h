@@ -27,13 +27,14 @@
 
 class UART_t: public TFIFO
 {
+ private:
+  static uint32_t baudRate;
+  static uint32_t moduleClk;
+
  protected:
-  uint32_t baudRate;
-  uint32_t moduleClk;
+  static void Module(const uint32_t baudRate, const uint32_t moduleClk);
 
  public:
-
-  UART_t(const uint32_t rate, const uint32_t clock);
 
   bool Init();
 
@@ -41,7 +42,7 @@ class UART_t: public TFIFO
 
   bool OutChar(const uint8_t data);
 
-  void __attribute__ ((interrupt)) UART_ISR(void);
+  void __attribute__ ((interrupt)) ISR(void);
 };
 
 /*! @brief Sets up the UART interface before first use.
