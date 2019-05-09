@@ -35,36 +35,45 @@
     <FLASHsize>1M</FLASHsize>
   </PROCESSOR>
   <PATHS>
-    <LinkerCommandFile>Project\Project_Settings\Linker_Files\ProcessorExpert.ld</LinkerCommandFile>
+    <LinkerCommandFile>C:\Users\12199434\Logs\08\Project_Settings\Linker_Files\ProcessorExpert.ld</LinkerCommandFile>
     <IncludePaths>
-      <Path>Project\Static_Code\IO_Map\</Path>
-      <Path>Project\Sources\</Path>
-      <Path>Project\Generated_Code\</Path>
+      <Path>C:\Users\12199434\Logs\08\Static_Code\PDD\</Path>
+      <Path>C:\Users\12199434\Logs\08\Static_Code\IO_Map\</Path>
+      <Path>C:\Users\12199434\Logs\08\Sources\</Path>
+      <Path>C:\Users\12199434\Logs\08\Generated_Code\</Path>
     </IncludePaths>
     <SourceCodePaths>
-      <Path>Project\Generated_Code\</Path>
-      <Path>Project\Project_Settings\Startup_Code\</Path>
-      <Path>Project\Sources\</Path>
+      <Path>C:\Users\12199434\Logs\08\Generated_Code\</Path>
+      <Path>C:\Users\12199434\Logs\08\Project_Settings\Startup_Code\</Path>
+      <Path>C:\Users\12199434\Logs\08\Sources\</Path>
     </SourceCodePaths>
   </PATHS>
   <FILES>
     <GeneratedCs>
-      <PathName>Project\Generated_Code\Cpu.c</PathName>
-      <PathName>Project\Generated_Code\Vectors.c</PathName>
-      <PathName>Project\Project_Settings\Startup_Code\startup.c</PathName>
-      <PathName>Project\Sources\main.c</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\Cpu.c</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\PE_LDD.c</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\Vectors.c</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Project_Settings\Startup_Code\startup.c</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\Events.c</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\main.c</PathName>
     </GeneratedCs>
     <GeneratedHs>
-      <PathName>Project\Generated_Code\Cpu.h</PathName>
-      <PathName>Project\Generated_Code\IO_Map.h</PathName>
-      <PathName>Project\Generated_Code\PE_Const.h</PathName>
-      <PathName>Project\Generated_Code\PE_Error.h</PathName>
-      <PathName>Project\Generated_Code\PE_Types.h</PathName>
-      <PathName>Project\Sources\FIFO.h</PathName>
-      <PathName>Project\Sources\UART.h</PathName>
-      <PathName>Project\Sources\packet.h</PathName>
-      <PathName>Project\Sources\types.h</PathName>
-      <PathName>Project\Static_Code\IO_Map\MK70F12.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\Cpu.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\IO_Map.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\PE_Const.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\PE_Error.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\PE_LDD.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Generated_Code\PE_Types.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\Events.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\FIFO(2).h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\Flash.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\LEDs.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\Packet(2).h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\UART(2).h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\packet.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Sources\types.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Static_Code\IO_Map\MK70F12.h</PathName>
+      <PathName>C:\Users\12199434\Logs\08\Static_Code\PDD\PDD_Types.h</PathName>
     </GeneratedHs>
   </FILES>
   <OPTIONS>

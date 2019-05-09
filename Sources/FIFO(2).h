@@ -14,6 +14,7 @@
 
 // new types
 #include "type_cpp.h"
+
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256
 
