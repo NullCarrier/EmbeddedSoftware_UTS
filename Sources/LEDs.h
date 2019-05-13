@@ -1,4 +1,4 @@
-/*! @file
+/*! @file LEDs.h
  *
  *  @brief Routines to access the LEDs on the TWR-K70F120M.
  *
@@ -13,7 +13,7 @@
 #define LEDS_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
 
 
  class LED_t

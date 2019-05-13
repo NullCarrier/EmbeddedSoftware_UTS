@@ -14,9 +14,9 @@
 #define NB_BYTES 8
 
 // declare array to keep track of flash memory
-static int flashSector0[NB_BYTES];
+static bool FlashSector0[NB_BYTES];
 
-static TFCCOB commandObject;
+static TFCCOB CommandObject;
 
 inline bool Flash_Init(void)
 {
@@ -35,10 +35,10 @@ static bool FlashAllocateByte(volatile uint16union_t** variable)
 {
   for (uint64_t i = 0; i < NB_BYTES; i++)
   {
-	if (flashSector0[i] == 0)
+	if (FlashSector0[i] == 0)
 	{
 	 *variable = (uint16union_t *) (FLASH_DATA_START + i);
-	  flashSector0[i] = 1;
+	  FlashSector0[i] = 1;
 	  return true;
 	}
   }
@@ -57,12 +57,12 @@ static bool FlashAllocateHalfWord(volatile uint16union_t** variable)
 {
   for (uint64_t i = 0; i < NB_BYTES;i++)
   {
-	if ((flashSector0[i] == 0)&& fmod(i, 2)==0 )
+	if ((FlashSector0[i] == 0)&& fmod(i, 2)==0 )
 	{
 	 *variable = (uint16union_t *) (FLASH_DATA_START + i);
 
-     flashSector0[i] = 1;
-	 flashSector0[++i] = 1;
+     FlashSector0[i] = 1;
+	 FlashSector0[++i] = 1;
 	 return true;
 	}
   }
@@ -139,7 +139,7 @@ bool Flash_Write32(volatile uint32_t* const address, const uint32_t &data)
 
   phrase.l = static_cast<uint64_t> (data);
 
-  return commandObject.WritePhrase(FLASH_DATA_START, phrase);
+  return CommandObject.WritePhrase(FLASH_DATA_START, phrase);
 }
 
 
@@ -162,6 +162,12 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
  return Flash_Write16((uint16_t *)address, data2Bytes.l);
 }
 
+/*! @brief Writes the command into FCCOB register and launch the command
+ *
+ *  @param commonCommandObject the TFCCOB object contains parameter of fccob register
+ *  @return bool - TRUE if Command was written successfully
+ *  @note Assumes Flash has been initialized.
+ */
  bool LaunchCommand(TFCCOB &commonCommandObject)
 {
   while (1)
@@ -170,7 +176,7 @@ bool Flash_Write8(volatile uint8_t* const address, const uint8_t &data)
 	{
 	  if ((FTFE_FSTAT & FTFE_FSTAT_ACCERR_MASK) || (FTFE_FSTAT & FTFE_FSTAT_FPVIOL_MASK))
 	  {
-	       FTFE_FSTAT |= 0x30; // clear the old errors
+        FTFE_FSTAT = 0x30; // clear the old errors
 	  }
       else
 	  {
@@ -295,6 +301,6 @@ static bool ModifyPhrase(const uint32_t address, const uint64union_t phrase)
 
 bool Flash_Erase()
 {
-  return commandObject.TFCCOB::EraseSector(static_cast<uint32_t> (FLASH_DATA_START));
+  return CommandObject.TFCCOB::EraseSector(static_cast<uint32_t> (FLASH_DATA_START));
 }
 

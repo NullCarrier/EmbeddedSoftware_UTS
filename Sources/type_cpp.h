@@ -1,5 +1,5 @@
 
-/*! @file
+/*! @file type_cpp.h
  *
  *  @brief Declares new types.
  *
