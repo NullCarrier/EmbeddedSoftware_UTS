@@ -25,7 +25,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
- if (this->UART_t::InChar(&rxData))
+ if (UART_InChar(&rxData))
  {
   switch (nbBytesPacket)
   {
@@ -67,8 +67,8 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 {
  Packet_Checksum = MakeChecksum();
 
- return this->UART_t::OutChar(Packet_Command)&& this->UART_t::OutChar(Packet_Parameter1)&&
- this->UART_t::OutChar(Packet_Parameter2)&& this->UART_t::OutChar(Packet_Parameter3)&& this->UART_t::OutChar(Packet_Checksum);
+ return UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
+ UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
 
 }
 

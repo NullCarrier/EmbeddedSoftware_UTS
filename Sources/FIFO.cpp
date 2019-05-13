@@ -1,4 +1,4 @@
-/*! @file
+/*! @file FIFO.cpp
  *
  *  @brief Routines to implement a FIFO buffer.
  *
@@ -10,7 +10,7 @@
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
-#include "FIFO(2).h"
+#include "FIFO.h"
 
 
  bool TFIFO::Put(const uint8_t data)
@@ -42,7 +42,7 @@ bool TFIFO::Get(uint8_t* const dataPtr)
 {
 
 
- if(NbBytes != 0) // can not retrieve if buffer is empty
+ if (NbBytes != 0) // can not retrieve if buffer is empty
  {
   EnterCritical(); //Start critical section
 

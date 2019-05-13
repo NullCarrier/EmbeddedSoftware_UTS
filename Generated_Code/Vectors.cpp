@@ -44,7 +44,7 @@
 **     mail: support@freescale.com
 ** ###################################################################*/
 /*!
-** @file Vectors.c
+** @file Vectors.cpp
 ** @version 01.04
 ** @brief
 **
@@ -55,9 +55,11 @@
 */
 
   #include "Cpu.h"
-  #include "UART(2).h"
+  #include "UART.h"
   #include "PIT.h"
   #include "RTC.h"
+  #include "FTM.h"
+
   /* ISR prototype */
   extern uint32_t __SP_INIT;
   extern
@@ -139,7 +141,7 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x3E  0x000000F8   -   ivINT_UART0_ERR                unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x3F  0x000000FC   -   ivINT_UART1_RX_TX              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x40  0x00000100   -   ivINT_UART1_ERR                unused by PE */
-    (tIsrFunc)&UART_t::ISR,               /* 0x41  0x00000104   -   ivINT_UART2_RX_TX              unused by PE */
+    (tIsrFunc)&UART_ISR,               /* 0x41  0x00000104   -   ivINT_UART2_RX_TX              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x42  0x00000108   -   ivINT_UART2_ERR                unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x43  0x0000010C   -   ivINT_UART3_RX_TX              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x44  0x00000110   -   ivINT_UART3_ERR                unused by PE */
@@ -152,7 +154,7 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4B  0x0000012C   -   ivINT_CMP0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4C  0x00000130   -   ivINT_CMP1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4D  0x00000134   -   ivINT_CMP2                     unused by PE */
-    (tIsrFunc)&Cpu_Interrupt,          /* 0x4E  0x00000138   -   ivINT_FTM0                     unused by PE */
+    (tIsrFunc)&FTM::FTM0_ISR,          /* 0x4E  0x00000138   -   ivINT_FTM0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4F  0x0000013C   -   ivINT_FTM1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x50  0x00000140   -   ivINT_FTM2                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x51  0x00000144   -   ivINT_CMT                      unused by PE */

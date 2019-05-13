@@ -43,10 +43,10 @@ bool RTC_t::RTC_Init()
  //The interrupt source is enabled in the NVIC
  // vector num = 83, IRQ = 67
  // Clear any pending interrupts on UART2
- NVICICPR2 = NVIC_ICPR_CLRPEND(1 << 3);
+ NVICICPR2 = (1 << 3);
 
  // Enable interrupts from UART2 module
- NVICISER2 = NVIC_ISER_SETENA(1 << 3);
+ NVICISER2 = (1 << 3);
 
  // Enable RTC ?
  RTC_SR |= RTC_SR_TCE_MASK;

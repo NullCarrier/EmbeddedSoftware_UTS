@@ -15,6 +15,9 @@
 // new types
 #include "type_cpp.h"
 
+// _EI() _DI(),
+#include "PE_Types.h"
+
 #include "MK70F12.h"
 
 namespace FTM{
@@ -57,18 +60,20 @@ typedef struct
     TTimerOutputAction outputAction;
     TTimerInputDetection inputDetection;
   } ioType;
-  F *callbackFunction;
-  void *callbackArguments;
 } TFTMChannel;
 
-  FTM_t();
+  FTM_t(F* callbackFunc, void* callbackArgu);
 
-  bool FTM_Set();
+  bool Init();
 
-  void __attribute__ ((interrupt)) FTM0_ISR(void);
+  bool Set() const;
+
+  bool StartTimer() const;
 
  private:
   TFTMChannel aFTMChannel;
+  F *callbackFunction;
+  void *callbackArguments;
 };
 
 
@@ -77,7 +82,9 @@ typedef struct
  *  Enables the FTM as a free running 16-bit counter.
  *  @return bool - TRUE if the FTM was successfully initialized.
  */
-bool FTM_Init();
+
+
+void __attribute__ ((interrupt)) FTM0_ISR(void);
 
 }
 

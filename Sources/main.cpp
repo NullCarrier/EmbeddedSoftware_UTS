@@ -140,38 +140,71 @@ void HandlePacket::InitResponsePacket(Packet_t &packet)
   HandleStartupPacket(packet);
 
   // Send tower version packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_TOWERVERSION;
+
+  ExitCritical(); //End critical section
+
   HandleTowerVersionPacket(packet);
 
   // Send tower number packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_TOWERNUMBER;
+
+  ExitCritical(); //End critical section
+
   HandleTowerNumberPacket(packet);
 
   // Send tower mode packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_TOWERMODE;
+
+  ExitCritical(); //End critical section
+
   HandleTowerModePacket(packet);
 }
 
 void HandlePacket::HandleACKStartupPacket(Packet_t &packet)
 {
   // Send tower startup packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_STARTUP;
+
+  ExitCritical(); //End critical section
+
   InitResponsePacket(packet);
 
   // Send ack tower startup packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_ACK_STARTUP; // to modify the packet command ID
+
+  ExitCritical(); //End critical section
+
   HandleStartupPacket(packet); // to send ack pakcet
 }
 
 void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
 {
   // Send tower version packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_TOWERVERSION;
+
+  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower version packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_ACK_TOWERVERSION;
+
+  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 }
@@ -179,12 +212,20 @@ void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
 void HandlePacket::HandleACKTowerNumberPacket(Packet_t &packet)
 {
   // Send tower number pacHandlePacketket
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_TOWERNUMBER;
+
+  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower version packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_ACK_TOWERNUMBER;
+
+  ExitCritical(); //End critical section
 
   HandleTowerNumberPacket(packet);
 }
@@ -192,12 +233,20 @@ void HandlePacket::HandleACKTowerNumberPacket(Packet_t &packet)
 void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 {
   // Send tower mode packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_TOWERMODE;
+
+  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower mode packet
+  EnterCritical(); //Start critical section
+
   Packet_Command = HandlePacket::CMD_ACK_TOWERMODE;
+
+  ExitCritical(); //End critical section
 
   HandleTowerModePacket(packet);
 }
@@ -298,7 +347,7 @@ int main(void)
     if ( Packet.Packet_t::PacketGet())
     HandlePacket::HandleCommandPacket(Packet);
 
-    Packet.UART_t::ISR();
+    UART_ISR();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

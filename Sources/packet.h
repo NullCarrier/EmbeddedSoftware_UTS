@@ -20,7 +20,7 @@
 
 #include "Cpu.h"
 
-#include "UART(2).h"
+#include "UART.h"
 
 // Packet structure
  const uint8_t PACKET_NB_BYTES = 5;
@@ -67,7 +67,7 @@ typedef union
 #define Packet_Parameter23 Packet_t::s_Packet.packetStruct.parameters.combined23.parameter23
 #define Packet_Checksum    Packet_t::s_Packet.packetStruct.checksum
 
-class Packet_t : public UART_t
+class Packet_t
 {
   public:
    static TPacket s_Packet; /*!< The static variable packet with TPacket type */
@@ -80,7 +80,7 @@ class Packet_t : public UART_t
  */
    Packet_t(const uint32_t baudRate, const uint32_t moduleClk)
    {
-	 Module(baudRate, moduleClk);
+     UART_Init(baudRate, moduleClk);
    }
   /*! @brief Attempts to get a packet from the received data.
  *
