@@ -65,10 +65,18 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  bool Packet_t::PacketPut()
 {
- Packet_Checksum = MakeChecksum();
+ bool success;
 
- return UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
- UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
+  EnterCritical(); //Start critical section
+
+  Packet_Checksum = MakeChecksum();
+
+  success = UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
+  UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
+
+  ExitCritical(); //End critical section
+
+  return success;
 
 }
 

@@ -42,6 +42,90 @@
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
+
+namespace HandlePacket
+{
+
+ enum Command{
+  CMD_STARTUP = 0x04,
+  CMD_TOWERVERSION = 0x09,
+  CMD_TOWERNUMBER = 0x0B,
+  CMD_SETTIME = 0x0C,
+  CMD_TOWERMODE = 0x0D,
+  CMD_ACK_STARTUP = 0x84,
+  CMD_ACK_TOWERVERSION = 0x89,
+  CMD_ACK_TOWERNUMBER = 0x8B,
+  CMD_ACK_TOWERMODE = 0x8D,
+  CMD_MYTOWERNUMBER = 0x9434
+ };
+  /*! @brief To handle startup packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleStartupPacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement startup packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKStartupPacket(Packet_t &packet);
+
+  /*! @brief To handle tower version packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerVersionPacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement tower version packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerVersionPacket(Packet_t &packet);
+
+  /*! @brief To handle tower number packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerNumberPacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement tower number packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerNumberPacket(Packet_t &packet);
+
+  /*! @brief To handle tower mode packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerModePacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement tower mode packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerModePacket(Packet_t &packet);
+
+  /*! @brief To send 4 packets initially and the repsonse for startup protocol
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void InitResponsePacket(Packet_t &packet);
+
+ /*! @brief To decide how to send packet depending on packet command ID
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleCommandPacket(Packet_t &packet);
+
+ /*! @brief To handle set time packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void SetTimePacket(Packet_t &packet);
+
+
+
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
  // Assgin value for startup command according to packet protocol
@@ -251,35 +335,7 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
-#if 0
-/*! @brief Overload function of InitResponsePacket
- *
- *  @param packet the PacketVert2 object
- *  @param Parameter2 the reference to hold the vaule read from flash memory
- *  @param Parameter3 the reference to hold the vaule read from flash memory
- */
-static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter2, volatile uint8_t &Parameter3)
-{
-  // Send tower startup packet
-  Packet_Command = HandlePacketVer2::CMD_STARTUP;
-  HandlePacketVer2::HandleStartupPacket(packet);
-
-  // Send tower version packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
-  HandlePacketVer2::HandleTowerVersionPacket(packet);
-
-  // Send tower number packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
-  Packet_Parameter1 = 0x01;
-  Packet_Parameter2 = Parameter2;
-  Packet_Parameter3 = Parameter3;
-  packet.PacketVer2_t::Packet_Put(); //send it to FIFO
-
-  // Send tower mode packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
-  HandlePacketVer2::HandleTowerModePacket(packet);
 }
-#endif
 
 static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
@@ -292,12 +348,12 @@ LED_t LedRTC(LED_t::LED_YELLOW);
 //LED_t LedRTC(LED_t::LED_BLUE);
 
 //function description
- void PITCallback(void* argu)
+ void PIT(void* argu)
  {
   LedPIT.LEDs_Toggle();
  }
 
- void RTCCallback(void* argu)
+ void RTC(void* argu)
  {
 
   uint8_t hours, mins, sec;
@@ -307,15 +363,11 @@ LED_t LedRTC(LED_t::LED_YELLOW);
 
   rtc.RTC_Get(hours, mins, sec);
 
-  EnterCritical(); //Start critical section
-
   Packet_Parameter1 = hours;  // Parameter 1: hours
   Packet_Parameter2 = mins; // Parameter 2: mins
   Packet_Parameter3 = sec; // Parameter 3: sec
 
-  ExitCritical(); //End critical section
-
-  Packet.Packet_t::PacketPut(); //send it to FIFO
+  //Packet.Packet_t::PacketPut(); //send it to FIFO
 
  }
 
@@ -329,8 +381,8 @@ int main(void)
   /* Write your local variable definition here */
 
 
- PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PITCallback, 0); // Initialize PIT module
- RTC::RTC_t Rtc(CallBack::RTCCallback, 0); // Initialize RTC module
+ PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
+ //RTC::RTC_t Rtc(CallBack::RTC, 0); // Initialize RTC module
 
 
  __DI();//Disable interrupt

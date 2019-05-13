@@ -109,7 +109,7 @@ void __attribute__ ((interrupt)) PIT_ISR(void)
 {
  if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
  {
-  PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
+  PIT_TFLG0 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
  // then call callback function
   if (UserFunc)

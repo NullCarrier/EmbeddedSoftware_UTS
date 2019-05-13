@@ -24,6 +24,8 @@ bool RTC_t::RTC_Init()
 {
  __DI();//Disable interrupt
 
+ SIM_SCGC6 |= SIM_SCGC6_RTC_MASK; //Enable clock gate
+
  RTC_CR |= RTC_CR_SC16P_MASK; // Required load capacitances 16pf
 
  RTC_CR |= RTC_CR_SC2P_MASK; // Required load capacitances 2pf
@@ -31,14 +33,16 @@ bool RTC_t::RTC_Init()
  RTC_CR |= RTC_CR_OSCE_MASK; //32.768kHz is enabled
 
  // Wait for startup time for osc
- for(uint32_t count; count < 60e6; count++)
-    ;
+/* for(uint32_t count; count < 60e6; count++)
+    ;*/
 
  RTC_LR &= ~RTC_LR_CRL_MASK; //Lock the control register
 
  RTC_IER |= RTC_IER_TSIE_MASK; // Enable the sec interrupt
 
- SIM_SCGC6 |= SIM_SCGC6_RTC_MASK; //Enable clock gate
+
+ // Enable RTC ?
+ RTC_SR |= RTC_SR_TCE_MASK;
 
  //The interrupt source is enabled in the NVIC
  // vector num = 83, IRQ = 67
@@ -48,8 +52,6 @@ bool RTC_t::RTC_Init()
  // Enable interrupts from UART2 module
  NVICISER2 = (1 << 3);
 
- // Enable RTC ?
- RTC_SR |= RTC_SR_TCE_MASK;
 
  // Initialize the local usefunction
  UserFunc = userFunction;
@@ -83,6 +85,8 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
  EnterCritical(); //Start critical section
 
  uint32_t timeValue = RTC_TSR;
+
+ //uint32_t timeValue % 86400
 
  hours = timeValue / 3600;
 

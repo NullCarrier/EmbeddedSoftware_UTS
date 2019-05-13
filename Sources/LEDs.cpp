@@ -28,13 +28,13 @@
   PORTA_PCR28 |= PORT_PCR_DSE_MASK;
   PORTA_PCR29 |= PORT_PCR_DSE_MASK;
   PORTA_PCR10 |= PORT_PCR_DSE_MASK;
-
+/* Important issues need to fix
   // configure 4 pins as output
   GPIOA_PDDR = LEDALL;
 
   // Reset all LED
   GPIOA_PSOR = LEDALL;
-
+*/
   return true;
 }
 
