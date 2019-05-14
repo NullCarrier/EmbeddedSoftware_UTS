@@ -9,10 +9,10 @@
  *  Copyright (c) Chao Li. All rights reserved.
  */
 #include "LEDs.h"
-#include "MK70F12.h"
 
 
- bool LED_t::LEDsInit()
+
+ bool LED_t::Init()
 {
   // Enable the clock gating for PortA
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
@@ -28,27 +28,35 @@
   PORTA_PCR28 |= PORT_PCR_DSE_MASK;
   PORTA_PCR29 |= PORT_PCR_DSE_MASK;
   PORTA_PCR10 |= PORT_PCR_DSE_MASK;
-/* Important issues need to fix
-  // configure 4 pins as output
-  GPIOA_PDDR = LEDALL;
 
-  // Reset all LED
+  // configure 4 pins as output
+  GPIOA_PDDR = GPIO_PDDR_PDD(11);
+  GPIOA_PDDR = GPIO_PDDR_PDD(28);
+  GPIOA_PDDR = GPIO_PDDR_PDD(29);
+  GPIOA_PDDR = GPIO_PDDR_PDD(10);
+
+ /*  // Reset all LED
   GPIOA_PSOR = LEDALL;
-*/
+ */
   return true;
 }
 
-void LED_t::LEDs_On() const
+void LED_t::Color(TLED color)
+{
+  m_color |= color;
+}
+
+void LED_t::On() const
 {
   GPIOA_PCOR = m_color;
 }
 
-void LED_t::LEDs_Off() const
+void LED_t::Off() const
 {
   GPIOA_PSOR = m_color;
 }
 
-void LED_t::LEDs_Toggle() const
+void LED_t::Toggle() const
 {
   GPIOA_PTOR = m_color;
 }

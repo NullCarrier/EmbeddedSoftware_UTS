@@ -15,6 +15,8 @@
 // new types
 #include "type_cpp.h"
 
+#include "MK70F12.h"
+
 
  class LED_t
  {
@@ -32,21 +34,21 @@
  *  @param color The color of the LED to turn on.
  *  @note Assumes that LEDs_Init has been called.
  */
- void LEDs_On() const;
+ void On() const;
 
  /*! @brief Turns off an LED.
  *
  *  @param color THe color of the LED to turn off.
  *  @note Assumes that LEDs_Init has been called.
  */
- void LEDs_Off() const;
+ void Off() const;
 
  /*! @brief Toggles an LED.
  *
  *  @param color THe color of the LED to toggle.
  *  @note Assumes that LEDs_Init has been called.
  */
- void LEDs_Toggle() const;
+ void Toggle() const;
 
  /*! @brief constructor to Initialise the color
  *
@@ -63,11 +65,12 @@
   *
   *  @return bool - TRUE if the LEDs were successfully initialized.
 */
-  bool LEDsInit(void);
+  bool Init(void);
+
+  void Color(TLED color);
 
   private:
     TLED m_color; /*!< The member color with TLED type */
-    const int LEDALL = LED_ORANGE | LED_YELLOW | LED_GREEN | LED_BLUE;/*!< The const member LED_ALL */
  };
 
 

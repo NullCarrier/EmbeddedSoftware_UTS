@@ -124,31 +124,24 @@ namespace HandlePacket
   */
   static void SetTimePacket(Packet_t &packet);
 
-
+}
 
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
  // Assgin value for startup command according to packet protocol
-  EnterCritical(); //Start critical section
 
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
 
-  ExitCritical(); //End critical section
-
   packet.Packet_t::PacketPut(); //send it to FIFO
-
 }
 
 void HandlePacket::HandleTowerVersionPacket(Packet_t &packet)
 {
   // Assgin value for towerversion command according to packet protocol
-  EnterCritical(); //Start critical section
 
   Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
   Packet_Parameter2 = 0x01; // Parameter 2
   Packet_Parameter3 = 0x0;  // Parameter 3
-
-  ExitCritical(); //End critical section
 
   packet.Packet_t::PacketPut(); // send it to FIFO
 }
@@ -156,13 +149,9 @@ void HandlePacket::HandleTowerVersionPacket(Packet_t &packet)
 void HandlePacket::HandleTowerNumberPacket(Packet_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
-  EnterCritical(); //Start critical section
-
   Packet_Parameter1 = 0x01;  // Parameter 1
   Packet_Parameter2 = 0x94; // Parameter 2
   Packet_Parameter3 = 0x34; // Parameter 3
-
-  ExitCritical(); //End critical section
 
   packet.Packet_t::PacketPut(); //send it to FIFO
 
@@ -170,13 +159,10 @@ void HandlePacket::HandleTowerNumberPacket(Packet_t &packet)
 
 void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 {
-  EnterCritical(); //Start critical section
 
   Packet_Parameter1 = 0x01;  // Parameter 1
   Packet_Parameter2 = 0x01; // Parameter 2
   Packet_Parameter3 = 0x00; // Parameter 3
-
-  ExitCritical(); //End critical section
 
   packet.Packet_t::PacketPut(); //send it to FIFO
 }
@@ -187,7 +173,7 @@ void HandlePacket::SetTimePacket(Packet_t &packet)
 
  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
- packet.Packet_t::PacketPut(); //send it to FIFO
+ packet.Packet_t::PacketPut(CMD_SETTIME, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 // Handling packet protocol (Tower to PC)
@@ -224,30 +210,15 @@ void HandlePacket::InitResponsePacket(Packet_t &packet)
   HandleStartupPacket(packet);
 
   // Send tower version packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_TOWERVERSION;
-
-  ExitCritical(); //End critical section
-
   HandleTowerVersionPacket(packet);
 
   // Send tower number packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_TOWERNUMBER;
-
-  ExitCritical(); //End critical section
-
   HandleTowerNumberPacket(packet);
 
   // Send tower mode packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_TOWERMODE;
-
-  ExitCritical(); //End critical section
-
   HandleTowerModePacket(packet);
 }
 
@@ -335,22 +306,17 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
-}
 
 static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 namespace CallBack{
 
-LED_t LedPIT(LED_t::LED_GREEN);
-LED_t LedRTC(LED_t::LED_YELLOW);
+LED_t Led(LED_t::LED_GREEN);
 
-
-//LED_t LedRTC(LED_t::LED_BLUE);
-
-//function description
+ //function description
  void PIT(void* argu)
  {
-  LedPIT.LEDs_Toggle();
+  Led.Toggle();
  }
 
  void RTC(void* argu)
@@ -359,15 +325,12 @@ LED_t LedRTC(LED_t::LED_YELLOW);
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
 
-  LedRTC.LEDs_Toggle();
+  Led.Color(LED_t::LED_YELLOW);
+  Led.Toggle();
 
   rtc.RTC_Get(hours, mins, sec);
 
-  Packet_Parameter1 = hours;  // Parameter 1: hours
-  Packet_Parameter2 = mins; // Parameter 2: mins
-  Packet_Parameter3 = sec; // Parameter 3: sec
-
-  //Packet.Packet_t::PacketPut(); //send it to FIFO
+  Packet.Packet_t::PacketPut(CMD_SETTIME, hours, mins, sec); //send it to FIFO
 
  }
 
@@ -381,11 +344,11 @@ int main(void)
   /* Write your local variable definition here */
 
 
- PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
- //RTC::RTC_t Rtc(CallBack::RTC, 0); // Initialize RTC module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
+  RTC::RTC_t Rtc(CallBack::RTC, 0); // Initialize RTC module
 
 
- __DI();//Disable interrupt
+  __DI();//Disable interrupt
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();

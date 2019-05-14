@@ -33,8 +33,8 @@ bool RTC_t::RTC_Init()
  RTC_CR |= RTC_CR_OSCE_MASK; //32.768kHz is enabled
 
  // Wait for startup time for osc
-/* for(uint32_t count; count < 60e6; count++)
-    ;*/
+ for(uint32_t count; count < 60e6; count++)
+    ;
 
  RTC_LR &= ~RTC_LR_CRL_MASK; //Lock the control register
 
@@ -82,19 +82,19 @@ void RTC_t::RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec)
 
 void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 {
- EnterCritical(); //Start critical section
+  EnterCritical(); //Start critical section
 
- uint32_t timeValue = RTC_TSR;
+  uint32_t timeValue = RTC_TSR;
 
- //uint32_t timeValue % 86400
+  uint32_t timeValueDay = timeValue % 86400;
 
- hours = timeValue / 3600;
+  hours = timeValueDay / 3600;
 
- mins = (timeValue % 3600) / 60;
+  mins = (timeValueDay % 3600) / 60;
 
- sec = timeValue % 3600 % 60;
+  sec = timeValueDay % 3600 % 60;
 
- ExitCritical(); //End critical section
+  ExitCritical(); //End critical section
 
 }
 

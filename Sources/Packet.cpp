@@ -21,41 +21,51 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  bool Packet_t::PacketGet()
 {
   // local variable for holding temp value
- uint8_t rxData{0};
- static unsigned nbBytesPacket{1};
+  uint8_t rxData{0};
+  static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
- if (UART_InChar(&rxData))
- {
-  switch (nbBytesPacket)
-  {
-   case 1: Packet_Command = rxData; // assign data to Packet
-            nbBytesPacket++;
-            break;
-   case 2: Packet_Parameter1 = rxData;
-            nbBytesPacket++;
-            break;
-   case 3: Packet_Parameter2 = rxData;
-            nbBytesPacket++;
-            break;
-   case 4: Packet_Parameter3 = rxData;
-            nbBytesPacket++;
-            break;
-   case 5: Packet_Checksum = rxData;
-    if (Packet_Checksum == MakeChecksum())
-    {
-      // checksum is good, then check it out
-      nbBytesPacket = 1;
-      return true;
-    }
-    else
-    {
-     // checksum is not good , then discarding first byte, going back to case 4
-      SwitchPacket();
-      nbBytesPacket--;
-    }
+  if (UART_InChar(&rxData)){
 
-   }
+  switch (nbBytesPacket){
+
+  case 1:
+  Packet_Command = rxData; // assign data to Packet
+  nbBytesPacket++;
+  break;
+
+  case 2:
+  Packet_Parameter1 = rxData;
+  nbBytesPacket++;
+  break;
+
+  case 3:
+  Packet_Parameter2 = rxData;
+  nbBytesPacket++;
+  break;
+
+  case 4:
+  Packet_Parameter3 = rxData;
+  nbBytesPacket++;
+  break;
+
+  case 5:
+  Packet_Checksum = rxData;
+
+  if (Packet_Checksum == MakeChecksum()){
+
+  // checksum is good, then check it out
+  nbBytesPacket = 1;
+  return true;
+  }
+  else{
+
+     // checksum is not good , then discarding first byte, going back to case 4
+  SwitchPacket();
+  nbBytesPacket--;
+  }
+
+  }
 
   }
 
@@ -63,21 +73,12 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 }
 
 
- bool Packet_t::PacketPut()
+ bool Packet_t::PacketPut(uint8_t &Command, uint8_t &Parameter1, uint8_t &Parameter2, uint8_t &Parameter3)
 {
- bool success;
-
-  EnterCritical(); //Start critical section
-
   Packet_Checksum = MakeChecksum();
 
-  success = UART_OutChar(Packet_Command)&& UART_OutChar(Packet_Parameter1)&&
-  UART_OutChar(Packet_Parameter2)&& UART_OutChar(Packet_Parameter3)&& UART_OutChar(Packet_Checksum);
-
-  ExitCritical(); //End critical section
-
-  return success;
-
+  return UART_OutChar(Command)&& UART_OutChar(Parameter1)&&
+  UART_OutChar(Parameter2)&& UART_OutChar(Parameter3)&& UART_OutChar(Checksum);
 }
 
 
@@ -94,9 +95,17 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  }
 
 
- uint8_t Packet_t::MakeChecksum()
+ uint8_t&& Packet_t::MakeChecksum()
 {
-  return Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
+  bool success;
+
+  EnterCritical(); //Start critical section
+
+  success = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
+
+  ExitCritical(); //End critical section
+
+  return success;
 }
 
 
