@@ -35,15 +35,12 @@
   GPIOA_PDDR = GPIO_PDDR_PDD(29);
   GPIOA_PDDR = GPIO_PDDR_PDD(10);
 
- /*  // Reset all LED
-  GPIOA_PSOR = LEDALL;
- */
   return true;
 }
 
-void LED_t::Color(TLED color)
+void LED_t::Color(int color)
 {
-  m_color |= color;
+  m_color = color;
 }
 
 void LED_t::On() const

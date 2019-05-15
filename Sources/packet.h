@@ -92,7 +92,7 @@ class Packet_t
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-   bool PacketPut(uint8_t &Command, uint8_t &Parameter1, uint8_t &Parameter2, uint8_t &Parameter3);
+   bool PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3);
 
   /*! @brief to handle error condition by discarding first byte and adding the new byte
  *
@@ -104,7 +104,7 @@ class Packet_t
  *
  *  @return uint8_t&&  a rvalue reference to anonymous variable holding checksum
  */
-   uint8_t&& MakeChecksum();
+   uint8_t MakeChecksum();
 
 };
 

@@ -129,42 +129,24 @@ namespace HandlePacket
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
  // Assgin value for startup command according to packet protocol
-
-  Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
-
-  packet.Packet_t::PacketPut(); //send it to FIFO
+  packet.Packet_t::PacketPut(CMD_STARTUP, 0, 0, 0); //send it to FIFO
 }
 
 void HandlePacket::HandleTowerVersionPacket(Packet_t &packet)
 {
-  // Assgin value for towerversion command according to packet protocol
-
-  Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
-  Packet_Parameter2 = 0x01; // Parameter 2
-  Packet_Parameter3 = 0x0;  // Parameter 3
-
-  packet.Packet_t::PacketPut(); // send it to FIFO
+  // Assgin value for towerversion command according to packet protoco
+  packet.Packet_t::PacketPut(CMD_TOWERVERSION, 0x76, 0x01, 0); // send it to FIFO
 }
 
 void HandlePacket::HandleTowerNumberPacket(Packet_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
-  Packet_Parameter1 = 0x01;  // Parameter 1
-  Packet_Parameter2 = 0x94; // Parameter 2
-  Packet_Parameter3 = 0x34; // Parameter 3
-
-  packet.Packet_t::PacketPut(); //send it to FIFO
-
+  packet.Packet_t::PacketPut(CMD_TOWERNUMBER, 0x01, 0x94, 0x34); //send it to FIFO
 }
 
 void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 {
-
-  Packet_Parameter1 = 0x01;  // Parameter 1
-  Packet_Parameter2 = 0x01; // Parameter 2
-  Packet_Parameter3 = 0x00; // Parameter 3
-
-  packet.Packet_t::PacketPut(); //send it to FIFO
+  packet.Packet_t::PacketPut(CMD_TOWERMODE, 0x01, 0x01, 0); //send it to FIFO
 }
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
@@ -311,11 +293,12 @@ static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejc
 
 namespace CallBack{
 
-LED_t Led(LED_t::LED_GREEN);
+LED_t Led;
 
  //function description
  void PIT(void* argu)
  {
+  Led.Color(LED_t::GREEN);
   Led.Toggle();
  }
 
@@ -325,12 +308,12 @@ LED_t Led(LED_t::LED_GREEN);
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
 
-  Led.Color(LED_t::LED_YELLOW);
+  Led.Color(LED_t::YELLOW);
   Led.Toggle();
 
   rtc.RTC_Get(hours, mins, sec);
 
-  Packet.Packet_t::PacketPut(CMD_SETTIME, hours, mins, sec); //send it to FIFO
+  Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
 
  }
 

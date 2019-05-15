@@ -65,20 +65,20 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   nbBytesPacket--;
   }
 
-  }
+ }
 
-  }
+}
 
   return false;
 }
 
 
- bool Packet_t::PacketPut(uint8_t &Command, uint8_t &Parameter1, uint8_t &Parameter2, uint8_t &Parameter3)
+ bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
 {
-  Packet_Checksum = MakeChecksum();
+ uint8_t checksum = MakeChecksum();
 
-  return UART_OutChar(Command)&& UART_OutChar(Parameter1)&&
-  UART_OutChar(Parameter2)&& UART_OutChar(Parameter3)&& UART_OutChar(Checksum);
+  return UART_OutChar(command)&& UART_OutChar(parameter1)&&
+  UART_OutChar(parameter2)&& UART_OutChar(parameter3)&& UART_OutChar(checksum);
 }
 
 
@@ -95,17 +95,17 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
  }
 
 
- uint8_t&& Packet_t::MakeChecksum()
+ uint8_t Packet_t::MakeChecksum()
 {
-  bool success;
+  uint8_t PacketChecksum;
 
   EnterCritical(); //Start critical section
 
-  success = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
+  PacketChecksum = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 
   ExitCritical(); //End critical section
 
-  return success;
+  return PacketChecksum;
 }
 
 

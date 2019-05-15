@@ -21,12 +21,12 @@
  class LED_t
  {
   public:
-    typedef enum
-  {
-  LED_ORANGE = (1 << 11),
-  LED_YELLOW = (1 << 28),
-  LED_GREEN = (1 << 29),
-  LED_BLUE = (1 << 10)
+  typedef enum{
+
+  ORANGE = (1 << 11),
+  YELLOW = (1 << 28),
+  GREEN = (1 << 29),
+  BLUE = (1 << 10)
   } TLED;
 
  /*! @brief Turns an LED on.
@@ -57,9 +57,14 @@
  */
  LED_t(TLED color)
  {
-   if (LEDsInit() )
+   if (Init())
    m_color = color;
+
+  // Reset all LED
+  GPIOA_PSOR = ORANGE | YELLOW | GREEN | BLUE;
  }
+
+ LED_t() = default;
 
  /*! @brief Sets up the LEDs before first use.
   *
@@ -67,10 +72,10 @@
 */
   bool Init(void);
 
-  void Color(TLED color);
+  void Color(int color);
 
   private:
-    TLED m_color; /*!< The member color with TLED type */
+    int m_color; /*!< The member color with int type */
  };
 
 

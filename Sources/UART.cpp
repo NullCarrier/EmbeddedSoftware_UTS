@@ -36,7 +36,7 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
   float sbr_Fraction = fmod(sbr, static_cast<int>(sbr)); // fmod will return reminder
                                                 // using reminder to obtain fractional part of SBR
 
- return static_cast<uint8_t> (sbr_Fraction * 2 * DIVISIOR); //multiplying sbr_fracion by 32,
+ return (uint8_t) (sbr_Fraction * 2 * DIVISIOR); //multiplying sbr_fracion by 32,
                                                       // and typecast it into uint8_t
 }
 
