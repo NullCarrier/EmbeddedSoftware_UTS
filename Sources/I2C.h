@@ -12,15 +12,27 @@
 #define I2C_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
 
-typedef struct
+namespace I2C{
+
+class TI2C_t
 {
+  using F = void (void*);
+
+  private:
+
   uint8_t primarySlaveAddress;
   uint32_t baudRate;
-  void (*readCompleteCallbackFunction)(void*);  /*!< The user's read complete callback function. */
-  void* readCompleteCallbackArguments;          /*!< The user's read complete callback function arguments. */
-} TI2CModule;
+  F* readCompleteCallbackFunction;  /*!< The user's read complete callback function. */
+  void* readCompleteCallbackArguments; /*!< The user's read complete callback function arguments. */
+
+  public:
+
+  bool Init(const uint32_t moduleClk) const;
+
+
+};
 
 /*! @brief Sets up the I2C before first use.
  *
@@ -69,4 +81,5 @@ void I2C_IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8
  */
 void __attribute__ ((interrupt)) I2C_ISR(void);
 
+}
 #endif
