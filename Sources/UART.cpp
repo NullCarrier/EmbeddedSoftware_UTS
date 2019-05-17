@@ -86,7 +86,7 @@ bool UART_t::Init() const
 }
 
 
-bool UART_t::InChar()
+bool UART_t::InChar(uint8_t &rxData)
 {
   return this->TFIFO::Get(rxData); // retrieve data from FIFO and send it to Packet module
 }

@@ -27,7 +27,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-  if (Uart.UART_t::InChar(rxData)){
+  if (Uart.InChar(rxData)){
 
   switch (nbBytesPacket){
 
@@ -79,8 +79,8 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 {
   uint8_t checksum = MakeChecksum();
 
-  return Uart.UART_t::OutChar(command)&& Uart.UART_t::OutChar(parameter1)&&
-  Uart.UART_t::OutChar(parameter2)&& Uart.UART_t::OutChar(parameter3)&& Uart.UART_t::OutChar(checksum);
+  return Uart.OutChar(command)&& Uart.OutChar(parameter1)&&
+  Uart.OutChar(parameter2)&& Uart.OutChar(parameter3)&& Uart.OutChar(checksum);
 }
 
 

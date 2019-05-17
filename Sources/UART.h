@@ -33,13 +33,14 @@ class UART_t: public TFIFO
   uint32_t moduleClk;
   bool Init() const;
 
-  public:
+  protected:
   UART_t(const uint32_t rate, const uint32_t clock):
   baudRate{rate}, moduleClk{clock}
   {
    this->Init();
   }
 
+  public:
   UART_t():TFIFO()
   {
   }
