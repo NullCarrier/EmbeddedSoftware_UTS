@@ -26,13 +26,37 @@
 #include "MK70F12.h"
 
 
+class UART_t: public TFIFO
+{
+  private:
+  uint32_t baudRate;
+  uint32_t moduleClk;
+  bool Init() const;
+
+  public:
+  UART_t(const uint32_t rate, const uint32_t clock):
+  baudRate{rate}, moduleClk{clock}
+  {
+   this->Init();
+  }
+
+  UART_t():TFIFO()
+  {
+  }
+
+  bool InChar(uint8_t &rxData);
+
+  bool OutChar(const uint8_t txData);
+};
+
+
 /*! @brief Sets up the UART interface before first use.
  *
  *  @param baudRate The desired baud rate in bits/sec.
  *  @param moduleClk The module clock rate in Hz.
  *  @return bool - TRUE if the UART was successfully initialized.
  */
-bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
+//bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
 
 /*! @brief Get a character from the receive FIFO if it is not empty.
  *
@@ -41,7 +65,7 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk);
  *  @note Assumes that UART_Init has been called.
  */
 
-bool UART_InChar(uint8_t* const dataPtr);
+//bool UART_InChar(uint8_t* const dataPtr);
 
 /*! @brief Put a byte in the transmit FIFO if it is not full.
  *
@@ -50,14 +74,14 @@ bool UART_InChar(uint8_t* const dataPtr);
  *  @note Assumes that UART_Init has been called.
  */
 
- bool UART_OutChar(const uint8_t data);
+ //bool UART_OutChar(const uint8_t data);
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.
  *
  *  @return void
  *  @note Assumes that UART_Init has been called.
  */
-void UART_Poll(void);
+//void UART_Poll(void);
 
 /*! @brief Interrupt service routine for the UART.
  *

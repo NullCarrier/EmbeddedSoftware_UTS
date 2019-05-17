@@ -70,7 +70,7 @@ typedef union
 class Packet_t
 {
   public:
-   static TPacket s_Packet; /*!< The static variable packet with TPacket type */
+  static TPacket s_Packet; /*!< The static variable packet with TPacket type */
 
   /*! @brief Initializes the packets by calling the initialization routines of the supporting software modules.
  *
@@ -78,9 +78,9 @@ class Packet_t
  *  @param moduleClk The module clock rate in Hz.
  *  @return None
  */
-   Packet_t(const uint32_t baudRate, const uint32_t moduleClk)
+   Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
+    UART_t::UART_t(baudRate, moduleClk)
    {
-     UART_Init(baudRate, moduleClk);
    }
   /*! @brief Attempts to get a packet from the received data.
  *

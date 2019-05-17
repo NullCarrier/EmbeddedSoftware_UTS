@@ -289,7 +289,7 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 }
 
 
-static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 namespace CallBack{
 

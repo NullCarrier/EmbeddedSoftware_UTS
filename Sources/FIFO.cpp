@@ -15,10 +15,9 @@
 
  bool TFIFO::Put(const uint8_t data)
 {
-
   EnterCritical(); //Start critical section
 
-  if(NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
+  if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
   {
 
   NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
@@ -38,7 +37,7 @@
 }
 
 
-bool TFIFO::Get(uint8_t* const dataPtr)
+bool TFIFO::Get(uint8_t &dataRef)
 {
 
   EnterCritical(); //Start critical section
@@ -48,7 +47,7 @@ bool TFIFO::Get(uint8_t* const dataPtr)
 
   NbBytes--; // decrement one whenever the Buffer has been retrieved
 
-  *dataPtr = Buffer[Start]; // place the retrieved byte
+  dataRef = Buffer[Start]; // place the retrieved byte
 
   Start++; // removing one data, then increment Start index
 

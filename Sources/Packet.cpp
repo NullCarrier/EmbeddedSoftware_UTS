@@ -15,6 +15,8 @@
 // define the static varibale
 TPacket Packet_t::s_Packet;
 
+extern UART_t Uart;
+
 // define the global variable
 const uint8_t PACKET_ACK_MASK = 0b10000000;
 
@@ -25,7 +27,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-  if (UART_InChar(&rxData)){
+  if (Uart.UART_t::InChar(rxData)){
 
   switch (nbBytesPacket){
 
@@ -75,10 +77,10 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
 {
- uint8_t checksum = MakeChecksum();
+  uint8_t checksum = MakeChecksum();
 
-  return UART_OutChar(command)&& UART_OutChar(parameter1)&&
-  UART_OutChar(parameter2)&& UART_OutChar(parameter3)&& UART_OutChar(checksum);
+  return Uart.UART_t::OutChar(command)&& Uart.UART_t::OutChar(parameter1)&&
+  Uart.UART_t::OutChar(parameter2)&& Uart.UART_t::OutChar(parameter3)&& Uart.UART_t::OutChar(checksum);
 }
 
 

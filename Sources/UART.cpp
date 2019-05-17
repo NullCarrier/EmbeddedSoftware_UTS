@@ -14,12 +14,11 @@
 // include fmod()
 #include <cmath>
 
-
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
 
-static TFIFO RxFIFO;
-static TFIFO TxFIFO;
+
+UART_t Uart;
 
 
 /*! @brief Calculate the fractional part of number
@@ -41,7 +40,7 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
-bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
+bool UART_t::Init() const
 {
   __DI();//Disable interrupt
 
@@ -87,21 +86,22 @@ bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
-bool UART_InChar(uint8_t* const dataPtr)
+bool UART_t::InChar()
 {
-  return RxFIFO.Get(dataPtr); // retrieve data from FIFO and send it to Packet module
+  return this->TFIFO::Get(rxData); // retrieve data from FIFO and send it to Packet module
 }
 
 
- bool UART_OutChar(const uint8_t data)
+ bool UART_t::OutChar(const uint8_t txData)
 {
-  if (TxFIFO.Put(data)) // Packet module requires to send data to FIFO
-
+  if (this->TFIFO::Put(txData)) // Packet module requires to send data to FIFO
+  {
   EnterCritical(); //Start critical section
 
   UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 
   ExitCritical(); //End critical section
+  }
 }
 
 
@@ -132,7 +132,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
  {
    if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
   {
-   RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+   Uart.TFIFO::Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
   }
  }
 
@@ -141,8 +141,8 @@ void __attribute__ ((interrupt)) UART_ISR(void)
  {
   if (UART2_S1 & UART_S1_TDRE_MASK)
   {
-
-   if (!TxFIFO.Get( (uint8_t*) &UART2_D ) )
+   uint8_t data{0};
+   if (!Uart.TFIFO::Get(data) )
    {
 	EnterCritical(); //Start critical section
 
@@ -150,7 +150,8 @@ void __attribute__ ((interrupt)) UART_ISR(void)
 
 	ExitCritical(); //End critical section
    }
-
+   else
+   UART2_D = data;
   }
 
  }
