@@ -30,10 +30,7 @@
   PORTA_PCR10 |= PORT_PCR_DSE_MASK;
 
   // configure 4 pins as output
-  GPIOA_PDDR = GPIO_PDDR_PDD(11);
-  GPIOA_PDDR = GPIO_PDDR_PDD(28);
-  GPIOA_PDDR = GPIO_PDDR_PDD(29);
-  GPIOA_PDDR = GPIO_PDDR_PDD(10);
+  GPIOA_PDDR = ORANGE | YELLOW | GREEN | BLUE;
 
   return true;
 }

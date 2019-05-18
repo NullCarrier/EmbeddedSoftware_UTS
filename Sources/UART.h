@@ -26,7 +26,7 @@
 #include "MK70F12.h"
 
 
-class UART_t: public TFIFO
+class UART_t
 {
   private:
   uint32_t baudRate;
@@ -39,11 +39,12 @@ class UART_t: public TFIFO
   {
    this->Init();
   }
-
+#if 0
+  protected:
+  uint8_t txData;
+  uint8_t &rxData;
+#endif
   public:
-  UART_t():TFIFO()
-  {
-  }
 
   bool InChar(uint8_t &rxData);
 

@@ -27,7 +27,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   static unsigned nbBytesPacket{1};
 
     //whenever the UART_Inchar has been called , incrementing  NbBytes_Packet
-  if (Uart.InChar(rxData)){
+  if (this->InChar(rxData)){
 
   switch (nbBytesPacket){
 
@@ -54,7 +54,9 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   case 5:
   Packet_Checksum = rxData;
 
+  EnterCritical(); //Start critical section
   if (Packet_Checksum == MakeChecksum()){
+  ExitCritical(); //End critical section
 
   // checksum is good, then check it out
   nbBytesPacket = 1;
@@ -77,10 +79,18 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
 {
+  bool success;
+
+  EnterCritical(); //Start critical section
+
   uint8_t checksum = MakeChecksum();
 
-  return Uart.OutChar(command)&& Uart.OutChar(parameter1)&&
-  Uart.OutChar(parameter2)&& Uart.OutChar(parameter3)&& Uart.OutChar(checksum);
+  success =  this->OutChar(command)&& this->OutChar(parameter1)&&
+  this->OutChar(parameter2)&& this->OutChar(parameter3)&& this->OutChar(checksum);
+
+  ExitCritical(); //End critical section
+
+  return success;
 }
 
 
@@ -99,15 +109,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  uint8_t Packet_t::MakeChecksum()
 {
-  uint8_t PacketChecksum;
-
-  EnterCritical(); //Start critical section
-
-  PacketChecksum = Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
-
-  ExitCritical(); //End critical section
-
-  return PacketChecksum;
+  return Packet_Command^Packet_Parameter1^Packet_Parameter2^Packet_Parameter3;
 }
 
 
