@@ -14,6 +14,8 @@
 
  bool LED_t::Init()
 {
+  __DI();
+
   // Enable the clock gating for PortA
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
 
@@ -32,10 +34,11 @@
   // configure 4 pins as output
   GPIOA_PDDR = ORANGE | YELLOW | GREEN | BLUE;
 
+  __EI();
   return true;
 }
 
-void LED_t::Color(int color)
+void LED_t::Color(TLED color)
 {
   m_color = color;
 }

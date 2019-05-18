@@ -54,18 +54,27 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   Packet_Checksum = rxData;
 
   EnterCritical(); //Start critical section
+
   if (Packet_Checksum == MakeChecksum()){
-  ExitCritical(); //End critical section
 
   // checksum is good, then check it out
   nbBytesPacket = 1;
+
+  ExitCritical(); //End critical section
+
   return true;
   }
   else{
+  // checksum is not good , then discarding first byte, going back to case 4
+  EnterCritical(); //Start critical section
 
-     // checksum is not good , then discarding first byte, going back to case 4
   SwitchPacket();
-  nbBytesPacket--;
+
+  ExitCritical(); //End critical section
+
+  //nbBytesPacket--;
+  return false;
+
   }
 
  }
@@ -97,14 +106,14 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
  void Packet_t::SwitchPacket()
  {
-   EnterCritical(); //Start critical section
+
 
    Packet_Command = Packet_Parameter1;
    Packet_Parameter1 = Packet_Parameter2;
    Packet_Parameter2 = Packet_Parameter3;
    Packet_Parameter3 = Packet_Checksum;
 
-   ExitCritical(); //End critical section
+
  }
 
 

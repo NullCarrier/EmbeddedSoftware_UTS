@@ -129,24 +129,38 @@ namespace HandlePacket
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
  // Assgin value for startup command according to packet protocol
-  packet.Packet_t::PacketPut(CMD_STARTUP, 0, 0, 0); //send it to FIFO
+  Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter1, Packet_Parameter3); //send it to FIFO
 }
 
 void HandlePacket::HandleTowerVersionPacket(Packet_t &packet)
 {
   // Assgin value for towerversion command according to packet protoco
-  packet.Packet_t::PacketPut(CMD_TOWERVERSION, 0x76, 0x01, 0); // send it to FIFO
+  Packet_Parameter1 = 0x76;
+  Packet_Parameter2 = 0x01;
+  Packet_Parameter3 = 0;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); // send it to FIFO
 }
 
 void HandlePacket::HandleTowerNumberPacket(Packet_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
-  packet.Packet_t::PacketPut(CMD_TOWERNUMBER, 0x01, 0x94, 0x34); //send it to FIFO
+  Packet_Parameter1 = 0x01;
+  Packet_Parameter2 = 0x94;
+  Packet_Parameter3 = 0x34;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 {
-  packet.Packet_t::PacketPut(CMD_TOWERMODE, 0x01, 0x01, 0); //send it to FIFO
+  Packet_Parameter1 = 0x01;
+  Packet_Parameter2 = 0x01;
+  Packet_Parameter3 = 0;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 }
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
@@ -155,7 +169,7 @@ void HandlePacket::SetTimePacket(Packet_t &packet)
 
  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
- packet.Packet_t::PacketPut(CMD_SETTIME, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+ packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 // Handling packet protocol (Tower to PC)
@@ -211,18 +225,18 @@ void HandlePacket::HandleACKStartupPacket(Packet_t &packet)
 
   Packet_Command = HandlePacket::CMD_STARTUP;
 
-  ExitCritical(); //End critical section
-
   InitResponsePacket(packet);
+
+  ExitCritical(); //End critical section
 
   // Send ack tower startup packet
   EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_ACK_STARTUP; // to modify the packet command ID
 
-  ExitCritical(); //End critical section
-
   HandleStartupPacket(packet); // to send ack pakcet
+
+  ExitCritical(); //End critical section
 }
 
 void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
@@ -289,11 +303,11 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 }
 
 
-Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+
 
 namespace CallBack{
 
-LED_t Led;
+static LED_t Led;
 
  //function description
  void PIT(void* argu)
@@ -301,7 +315,7 @@ LED_t Led;
   Led.Color(LED_t::GREEN);
   Led.Toggle();
  }
-
+/*
  void RTC(void* argu)
  {
 
@@ -315,10 +329,11 @@ LED_t Led;
 
   Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
 
- }
+ } */
 
 }
 
+static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)

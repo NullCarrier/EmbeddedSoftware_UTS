@@ -32,9 +32,9 @@ bool RTC_t::RTC_Init()
 
  RTC_CR |= RTC_CR_OSCE_MASK; //32.768kHz is enabled
 
- // Wait for startup time for osc
+/* // Wait for startup time for osc
  for(uint32_t count; count < 60e6; count++)
-    ;
+    ; */
 
  RTC_LR &= ~RTC_LR_CRL_MASK; //Lock the control register
 

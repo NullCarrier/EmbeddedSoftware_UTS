@@ -28,11 +28,11 @@ static void* UserArgu;
  //enable clock gate
  SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
- //Disable timer0
- this->PIT_Enable(false);
-
  //enable timer module
- PIT_MCR &= ~PIT_MCR_MDIS_MASK ;
+ PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+
+ //Disable timer0
+ // this->PIT_Enable(false);
 
  //Freeze the timer
  PIT_MCR |= PIT_MCR_FRZ_MASK;

@@ -17,6 +17,10 @@
 
 #include "MK70F12.h"
 
+// _EI() _DI()
+#include "PE_Types.h"
+
+#include "Cpu.h"
 
  class LED_t
  {
@@ -67,7 +71,7 @@
 */
   bool Init(void);
 
-  void Color(int color);
+  void Color(TLED color);
 
   private:
     int m_color; /*!< The member color with int type */
