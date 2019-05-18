@@ -13,23 +13,23 @@
 
 // new types
 #include "type_cpp.h"
+#include "MK70F12.h"
 
 namespace I2C{
 
-class TI2C_t
+class I2C_t
 {
   using F = void (void*);
 
   private:
-
   uint8_t primarySlaveAddress;
   uint32_t baudRate;
+  uint32_t moduleClk;
   F* readCompleteCallbackFunction;  /*!< The user's read complete callback function. */
   void* readCompleteCallbackArguments; /*!< The user's read complete callback function arguments. */
 
   public:
-
-  bool Init(const uint32_t moduleClk) const;
+  bool Init() const;
 
 
 };
