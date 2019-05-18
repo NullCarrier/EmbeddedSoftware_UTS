@@ -328,7 +328,7 @@ int main(void)
 
 
   PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
-  RTC::RTC_t Rtc(CallBack::RTC, 0); // Initialize RTC module
+  //RTC::RTC_t Rtc(CallBack::RTC, 0); // Initialize RTC module
 
 
   __DI();//Disable interrupt

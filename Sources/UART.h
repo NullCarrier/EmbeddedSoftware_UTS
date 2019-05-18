@@ -31,14 +31,16 @@ class UART_t
   private:
   uint32_t baudRate;
   uint32_t moduleClk;
-  bool Init() const;
 
   protected:
+  bool Init() const;
+
   UART_t(const uint32_t rate, const uint32_t clock):
   baudRate{rate}, moduleClk{clock}
   {
    this->Init();
   }
+
 #if 0
   protected:
   uint8_t txData;

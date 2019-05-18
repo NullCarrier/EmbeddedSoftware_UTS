@@ -15,7 +15,6 @@
 // define the static varibale
 TPacket Packet_t::s_Packet;
 
-extern UART_t Uart;
 
 // define the global variable
 const uint8_t PACKET_ACK_MASK = 0b10000000;
@@ -87,6 +86,8 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
   success =  this->OutChar(command)&& this->OutChar(parameter1)&&
   this->OutChar(parameter2)&& this->OutChar(parameter3)&& this->OutChar(checksum);
+
+  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 
   ExitCritical(); //End critical section
 

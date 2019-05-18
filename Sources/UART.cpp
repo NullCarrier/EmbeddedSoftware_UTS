@@ -39,7 +39,7 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 }
 
 
-bool UART_Init(const uint32_t &baudRate, const uint32_t &moduleClk)
+bool UART_t::Init() const
 {
   __DI();//Disable interrupt
 
@@ -93,8 +93,7 @@ bool UART_t::InChar(uint8_t &rxData)
 
  bool UART_t::OutChar(const uint8_t txData)
 {
-  if (TxFIFO.Put(txData)) // Packet module requires to send data to FIFO
-  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
+  return TxFIFO.Put(txData); // Packet module requires to send data to FIFO
 }
 
 
