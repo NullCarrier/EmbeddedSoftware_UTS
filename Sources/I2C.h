@@ -30,8 +30,9 @@ class I2C_t
 
   public:
   bool Init() const;
-
-
+  void SelectSlaveDevice(const uint8_t slaveAddress);
+  void Write(const uint8_t registerAddress, const uint8_t data);
+  void PollRead(const uint8_t registerAddress, uint8_t &data, const uint8_t nbBytes);
 };
 
 /*! @brief Sets up the I2C before first use.
@@ -40,20 +41,20 @@ class I2C_t
  *  @param moduleClk The module clock in Hz.
  *  @return BOOL - TRUE if the I2C module was successfully initialized.
  */
-bool I2C_Init(const TI2CModule* const aI2CModule, const uint32_t moduleClk);
+//bool I2C_Init(const TI2CModule* const aI2CModule, const uint32_t moduleClk);
 
 /*! @brief Selects the current slave device
  *
  * @param slaveAddress The slave device address.
  */
-void I2C_SelectSlaveDevice(const uint8_t slaveAddress);
+//void I2C_SelectSlaveDevice(const uint8_t slaveAddress);
 
 /*! @brief Write a byte of data to a specified register
  *
  * @param registerAddress The register address.
  * @param data The 8-bit data to write.
  */
-void I2C_Write(const uint8_t registerAddress, const uint8_t data);
+//void I2C_Write(const uint8_t registerAddress, const uint8_t data);
 
 /*! @brief Reads data of a specified length starting from a specified register
  *
@@ -62,7 +63,7 @@ void I2C_Write(const uint8_t registerAddress, const uint8_t data);
  * @param data A pointer to store the bytes that are read.
  * @param nbBytes The number of bytes to read.
  */
-void I2C_PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
+//void I2C_PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
 
 /*! @brief Reads data of a specified length starting from a specified register
  *
