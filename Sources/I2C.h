@@ -12,8 +12,10 @@
 #define I2C_H
 
 // new types
-#include "type_cpp.h"
+#include "types.h"
 #include "MK70F12.h"
+#include "PE_Types.h"
+#include "Cpu.h"
 
 namespace I2C{
 
@@ -23,13 +25,16 @@ class I2C_t
 
   private:
   uint8_t primarySlaveAddress;
-  uint32_t baudRate;
+  //uint32_t baudRate;
   uint32_t moduleClk;
-  F* readCompleteCallbackFunction;  /*!< The user's read complete callback function. */
-  void* readCompleteCallbackArguments; /*!< The user's read complete callback function arguments. */
+  static F* readCompleteCallbackFunction;  /*!< The user's read complete callback function. */
+  static void* readCompleteCallbackArguments; /*!< The user's read complete callback function arguments. */
+
+  protected:
+  I2C_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu);
+  bool Init() const;
 
   public:
-  bool Init() const;
   void SelectSlaveDevice(const uint8_t slaveAddress);
   void Write(const uint8_t registerAddress, const uint8_t data);
   void PollRead(const uint8_t registerAddress, uint8_t &data, const uint8_t nbBytes);
@@ -51,7 +56,7 @@ class I2C_t
 
 /*! @brief Write a byte of data to a specified register
  *
- * @param registerAddress The register address.
+  * @param registerAddress The register address.
  * @param data The 8-bit data to write.
  */
 //void I2C_Write(const uint8_t registerAddress, const uint8_t data);
@@ -80,7 +85,7 @@ void I2C_IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8
  *  At the end of reception, the user callback function will be called.
  *  @note Assumes the I2C module has been initialized.
  */
-void __attribute__ ((interrupt)) I2C_ISR(void);
+void __attribute__ ((interrupt)) ISR(void);
 
 }
 #endif

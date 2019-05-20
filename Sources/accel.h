@@ -14,6 +14,11 @@
 // New types
 #include "types.h"
 
+// Inter-Integrated Circuit
+#include "I2C.h"
+
+namespace Accel{
+
 typedef enum
 {
   ACCEL_POLL,
@@ -43,13 +48,30 @@ typedef union
 
 #pragma pack(pop)
 
+ class Accel_t: public I2C_t
+ {
+  using F = void (void*);
+
+  private:
+  static F* dataReadyCallbackFunction;
+  static void* dataReadyCallbackArguments;
+
+
+  public:
+  Accel_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu):
+  I2C_t(clock, readCompleteCallbackFunc, readCompleteCallbackArgu)
+  {
+  }
+
+ };
+
 
 /*! @brief Initializes the accelerometer by calling the initialization routines of the supporting software modules.
  *
  *  @param accelSetup is a pointer to an accelerometer setup structure.
  *  @return bool - TRUE if the accelerometer module was successfully initialized.
  */
-bool Accel_Init(const TAccelSetup* const accelSetup);
+//bool Accel_Init(const TAccelSetup* const accelSetup);
 
 /*! @brief Reads X, Y and Z accelerations.
  *  @param data is a an array of 3 bytes where the X, Y and Z data are stored.
@@ -68,5 +90,7 @@ void Accel_SetMode(const TAccelMode mode);
  *  @note Assumes the accelerometer has been initialized.
  */
 void __attribute__ ((interrupt)) AccelDataReady_ISR(void);
+
+}
 
 #endif

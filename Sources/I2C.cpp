@@ -14,7 +14,12 @@
 
 namespace I2C{
 
- bool Init() const
+ using F = void (void*);
+
+ F* I2C_t::readCompleteCallbackFunction;
+ void* I2C_t::readCompleteCallbackArguments;
+
+ bool I2C_t::Init() const
  {
   __DI();//Disable interrupt;
 
@@ -82,12 +87,22 @@ namespace I2C{
   I2C0_D |= data; //initiate data transmitting
  }
 
+ I2C_t::I2C_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu):
+ moduleClk(clock)	 
+ {
+  this->Init();
+  //Assign callback function to static function pointers
+  readCompleteCallbackFunction = readCompleteCallbackFunc;
+
+  readCompleteCallbackArguments = readCompleteCallbackArgu;
+ }
+
 
  void I2C_t::PollRead(const uint8_t registerAddress, uint8_t &data, const uint8_t nbBytes)
  {
   I2C0_A2 |= (registerAddress << 1); //acquire data from specfic regAddress
 
-  if (nbBtytes != 1){   
+  if (nbBytes != 1){
 
   I2C0_SMB |= I2C0_SMB_FACK_MASK;//Enable TXAK 
 
