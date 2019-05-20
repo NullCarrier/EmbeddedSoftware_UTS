@@ -48,8 +48,11 @@ namespace I2C{
   //Repeat START
   I2C0_C1 |= I2C_C1_RSTA_MASK;
 
-  //Request baudRate
+  //Request baudRate: 100Kbps
 
+
+  //Determine wheter the bus is busy
+  //if (I2C0_S & I2C_S_BUSY_MASK)
 
   //NVIC
   //Vector = 40, IRQ = 24
@@ -71,12 +74,12 @@ namespace I2C{
 
  void I2C_t::Write(const uint8_t registerAddress, const uint8_t data)
  {
-  I2C0_RA |= (registerAddress << 1); // Write into 7-bit Address
+  I2C0_RA |= registerAddress; // Write into Address
 
   //Transfer complete? and whether receive ack bit
   if ( (I2C0_S & I2C0_S_TCF_MASK) || (I2C0_S & I2C0_S_RXAK_MASK) ){
-  //Generate STOP bit via selecting slave mode
-  I2C0_C1 &= ~I2C_C1_MST_MASK;
+
+  I2C0_C1 &= ~I2C_C1_MST_MASK; //Generate STOP bit via selecting slave mode
 
   }
   else if (I2C0_S & I2C0_S_SRW_MASK){
@@ -100,7 +103,7 @@ namespace I2C{
 
  void I2C_t::PollRead(const uint8_t registerAddress, uint8_t &data, const uint8_t nbBytes)
  {
-  I2C0_A2 |= (registerAddress << 1); //acquire data from specfic regAddress
+  I2C0_RA |= registerAddress ; //acquire data from specfic regAddress
 
   if (nbBytes != 1){
 

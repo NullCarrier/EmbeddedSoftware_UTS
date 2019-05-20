@@ -25,6 +25,7 @@ typedef enum
   ACCEL_INT
 } TAccelMode;
 
+#if 0
 typedef struct
 {
   uint32_t moduleClk;				/*!< The module clock rate in Hz. */
@@ -33,6 +34,7 @@ typedef struct
   void (*readCompleteCallbackFunction)(void*);	/*!< The user's read complete callback function. */
   void* readCompleteCallbackArguments;		/*!< The user's read complete callback function arguments. */
 } TAccelSetup;
+#endif
 
 #pragma pack(push)
 #pragma pack(1)
@@ -53,15 +55,17 @@ typedef union
   using F = void (void*);
 
   private:
+  uint8_t
+  TAccelData dataArray;
+  TAccelMode mode;
   static F* dataReadyCallbackFunction;
   static void* dataReadyCallbackArguments;
 
 
   public:
-  Accel_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu):
-  I2C_t(clock, readCompleteCallbackFunc, readCompleteCallbackArgu)
-  {
-  }
+  Accel_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu, F* dataReadyCallbackFunc, void* dataReadyCallbackArgu);
+  void ReadXYZ(uint8_t data[3]);
+  void SetMode(const TAccelMode mode);
 
  };
 
@@ -76,12 +80,12 @@ typedef union
 /*! @brief Reads X, Y and Z accelerations.
  *  @param data is a an array of 3 bytes where the X, Y and Z data are stored.
  */
-void Accel_ReadXYZ(uint8_t data[3]);
+//void Accel_ReadXYZ(uint8_t data[3]);
 
 /*! @brief Set the mode of the accelerometer.
  *  @param mode specifies either polled or interrupt driven operation.
  */
-void Accel_SetMode(const TAccelMode mode);
+//void Accel_SetMode(const TAccelMode mode);
 
 /*! @brief Interrupt service routine for the accelerometer.
  *
