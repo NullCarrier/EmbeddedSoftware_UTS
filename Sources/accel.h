@@ -21,8 +21,8 @@ namespace Accel{
 
 typedef enum
 {
-  ACCEL_POLL,
-  ACCEL_INT
+  POLL,
+  INT
 } TAccelMode;
 
 #if 0
@@ -50,17 +50,14 @@ typedef union
 
 #pragma pack(pop)
 
- class Accel_t: public I2C_t
+ class Accel_t: public I2C::I2C_t
  {
   using F = void (void*);
 
   private:
-  uint8_t
-  TAccelData dataArray;
   TAccelMode mode;
   static F* dataReadyCallbackFunction;
   static void* dataReadyCallbackArguments;
-
 
   public:
   Accel_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu, F* dataReadyCallbackFunc, void* dataReadyCallbackArgu);

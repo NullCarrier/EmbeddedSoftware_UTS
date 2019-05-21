@@ -25,7 +25,6 @@ class I2C_t
 
   private:
   uint8_t primarySlaveAddress;
-  //uint32_t baudRate;
   uint32_t moduleClk;
   static F* readCompleteCallbackFunction;  /*!< The user's read complete callback function. */
   static void* readCompleteCallbackArguments; /*!< The user's read complete callback function arguments. */
@@ -36,8 +35,10 @@ class I2C_t
 
   public:
   void SelectSlaveDevice(const uint8_t slaveAddress);
+
   void Write(const uint8_t registerAddress, const uint8_t data);
-  void PollRead(const uint8_t registerAddress, uint8_t &data, const uint8_t nbBytes);
+
+  void PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
 };
 
 /*! @brief Sets up the I2C before first use.
@@ -88,4 +89,5 @@ void I2C_IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8
 void __attribute__ ((interrupt)) ISR(void);
 
 }
+
 #endif
