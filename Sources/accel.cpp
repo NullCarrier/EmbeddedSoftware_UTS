@@ -195,6 +195,12 @@ void* Accel_t::dataReadyCallbackArguments;
  {
   __DI();//Disable interrupt;
 
+  /*
+  SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+
+  PORTB_PCR4 &= ~PORT_PCR_MUX_MASK;
+  */
+
   dataReadyCallbackFunction = dataReadyCallbackFunc;
   dataReadyCallbackArguments = dataReadyCallbackArgu;
 

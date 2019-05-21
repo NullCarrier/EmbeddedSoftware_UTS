@@ -135,8 +135,6 @@ namespace HandlePacket
 
   static void SetModePacket(Packet_t &packet);
 
-  static void SetAccelValuePacket(Packet_t &packet);
-
 }
 
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
@@ -198,7 +196,7 @@ void HandlePacket::SetModePacket(Packet_t &packet)
   packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
-
+/*
 void HandlePacket::SetAccelValuePacket(Packet_t &packet)
 {
   Accel::TAccelData data;
@@ -213,7 +211,7 @@ void HandlePacket::SetAccelValuePacket(Packet_t &packet)
 
   packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
-
+*/
 
 
 // Handling packet protocol (Tower to PC)
@@ -251,9 +249,6 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
   break;
   case CMD_MODE:
   SetModePacket(packet);
-  break;
-  case CMD_ACCEL_VALUE:
-  SetAccelValuePacket(packet);
   break;
 
   }

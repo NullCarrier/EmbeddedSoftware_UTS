@@ -47,13 +47,13 @@ namespace I2C{
 
   //Request baudRate: 100Kbps
   //Select ICR = 12, SCL = 64, MUL = 4
-  I2C0_F |= I2C_F_MULT(4);
+  I2C0_F |= 1 << 7;
   I2C0_F |= I2C_F_ICR(12);
 
   //NVIC
   //Vector = 40, IRQ = 24
-  NVICICPR0 |= (1 << (24 % 32) );
-  NVICISER0 |= (1 << (24 % 32) );
+  NVICICPR0 = (1 << (24 % 32) );
+  NVICISER0 = (1 << (24 % 32) );
 
   //Enable I2C interrupt
   I2C0_C1 |= I2C_C1_IICIE_MASK;
@@ -65,7 +65,7 @@ namespace I2C{
 
  void I2C_t::SelectSlaveDevice(const uint8_t slaveAddress)
  {
-  I2C0_RA = slaveAddress ; // Write into 7-bit Address
+  I2C0_RA = (slaveAddress << 1); // Write into 7-bit Address
   primarySlaveAddress = I2C0_RA;
  }
 
@@ -78,7 +78,7 @@ namespace I2C{
 
   do{
   // send the address of slave with R/W bit = 0
-  I2C0_D = (primarySlaveAddress & flag);
+  I2C0_D = primarySlaveAddress;
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave receives the address
@@ -109,41 +109,51 @@ namespace I2C{
  {
   const uint8_t wFlag = ~0x01;
   const uint8_t rFlag = ~0x00;
-  uint8_t count = nbBytes;
   uint8_t regAddress = registerAddress;
   uint8* dataPtr = data;
+
+  I2C0_C1 &= ~I2C_C1_TXAK_MASK; // Enable ACK signal
 
   // Generate start signal to initiate communication
   I2C0_C1 |= I2C_C1_MST_MASK;
 
+
+  primarySlaveAddress &= wFlag;
+
   // send the address of slave with R/W bit = 0
-  I2C0_D = (primarySlaveAddress & wFlag);
+  I2C0_D = primarySlaveAddress;
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave receives the address
   I2C0_D = registerAddress; // Send address of register to slave
   }
 
+  if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //Generate signal of repeat START
   I2C0_C1 |= I2C_C1_RSTA_MASK;
 
   // send the address of slave with R/W bit = 1
-  I2C0_D = (registerAddress & rFlag);
+  primarySlaveAddress &= rFlag;
+  I2C0_D = primarySlaveAddress;
 
-  while (count != 0){
+  }
+
+  for (uint8_t count = nbBytes; count != 0;count--){
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave transimits the data
   *dataPtr++ = I2C0_D;  // Reading data from slave
   //dataPtr++;
   }
-
-  count--;
+  else{
+  continue;
+  }
 
   regAddress += 2; // read data from next register
 
+  if (count != 1)
   // send the address of slave with R/W bit = 1
-  I2C0_D = (registerAddress & rFlag);
+  I2C0_D = regAddress;
 
   }
 
@@ -151,7 +161,6 @@ namespace I2C{
 
   //Generate STOP bit via selecting slave mode
   I2C0_C1 &= ~I2C_C1_MST_MASK;
-
  }
 
 
