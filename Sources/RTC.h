@@ -76,6 +76,11 @@ class RTC_t
 
 };
 
+
+
+}
+
+
 /*! @brief Interrupt service routine for the RTC.
  *
  *  The RTC has incremented one second.
@@ -84,7 +89,6 @@ class RTC_t
  */
  void __attribute__ ((interrupt)) RTC_ISR(void);
 
-}
 
 
 //void RTC_Set(const uint8_t hours, const uint8_t minutes, const uint8_t seconds);

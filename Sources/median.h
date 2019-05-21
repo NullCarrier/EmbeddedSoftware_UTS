@@ -11,8 +11,9 @@
 #ifndef MEDIAN_H
 #define MEDIAN_H
 
+
 // New types
-#include "types.h"
+#include "type_cpp.h"
 
 /*! @brief Median filters 3 bytes.
  *

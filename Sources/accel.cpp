@@ -33,11 +33,6 @@
 
 namespace Accel{
 
-// Accelerometer registers
-#define ADDRESS_OUT_X_MSB 0x01
-
-#define ADDRESS_INT_SOURCE 0x0C // system interrupt status reg
-
 
 static union
 {

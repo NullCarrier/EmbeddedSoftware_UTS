@@ -12,12 +12,21 @@
 #define ACCEL_H
 
 // New types
-#include "types.h"
+#include "type_cpp.h"
 
 // Inter-Integrated Circuit
 #include "I2C.h"
 
 namespace Accel{
+
+// Accelerometer registers
+#define ADDRESS_OUT_X_MSB 0x01
+
+#define ADDRESS_OUT_Y_MSB 0x03
+
+#define ADDRESS_OUT_Z_MSB 0x05
+
+#define ADDRESS_INT_SOURCE 0x0C // system interrupt status reg
 
 typedef enum
 {

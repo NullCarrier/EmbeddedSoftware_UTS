@@ -39,9 +39,16 @@
 
 #include "RTC.h"
 
+#include "I2C.h"
+
+#include "accel.h"
+
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
+static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
+
+static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 namespace HandlePacket
 {
@@ -50,8 +57,10 @@ namespace HandlePacket
   CMD_STARTUP = 0x04,
   CMD_TOWERVERSION = 0x09,
   CMD_TOWERNUMBER = 0x0B,
+  CMD_MODE = 0x0A,
   CMD_SETTIME = 0x0C,
   CMD_TOWERMODE = 0x0D,
+  CMD_ACCEL_VALUE = 0x10,
   CMD_ACK_STARTUP = 0x84,
   CMD_ACK_TOWERVERSION = 0x89,
   CMD_ACK_TOWERNUMBER = 0x8B,
@@ -124,6 +133,10 @@ namespace HandlePacket
   */
   static void SetTimePacket(Packet_t &packet);
 
+  static void SetModePacket(Packet_t &packet);
+
+  static void SetAccelValuePacket(Packet_t &packet);
+
 }
 
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
@@ -165,38 +178,85 @@ void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
- RTC::RTC_t rtc;
+  RTC::RTC_t rtc;
 
- rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
- packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
+
+
+void HandlePacket::SetModePacket(Packet_t &packet)
+{
+  Packet_Parameter1 = 0x01;
+
+  if (Packet_Parameter2 == 0)
+  Accelerometer.SetMode(Accel::POLL);
+  else
+  Accelerometer.SetMode(Accel::INT);
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+}
+
+
+void HandlePacket::SetAccelValuePacket(Packet_t &packet)
+{
+  Accel::TAccelData data;
+
+  data.axes.x = Packet_Parameter1;
+  data.axes.y = Packet_Parameter2;
+  data.axes.z = Packet_Parameter3;
+
+  Accelerometer.Write(ADDRESS_OUT_X_MSB, data.axes.x);
+  Accelerometer.Write(ADDRESS_OUT_Y_MSB, data.axes.x);
+  Accelerometer.Write(ADDRESS_OUT_Z_MSB, data.axes.x);
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+}
+
+
 
 // Handling packet protocol (Tower to PC)
 void HandlePacket::HandleCommandPacket(Packet_t &packet)
 {
-    switch (Packet_Command){
+  switch (Packet_Command){
 
   // for specific command. Startup needs to send 3 packets
-    case CMD_STARTUP: InitResponsePacket(packet);
-                      break;
-	case CMD_ACK_STARTUP: HandleACKStartupPacket(packet);
-	                      break;
-    case CMD_TOWERVERSION: HandleTowerVersionPacket(packet);//only responce once for version
-                           break;
-	case CMD_ACK_TOWERVERSION: HandleACKTowerVersionPacket(packet);
-	                           break;
-    case CMD_TOWERNUMBER: HandleTowerNumberPacket(packet);//only responce once for number
-                          break;
-	case CMD_ACK_TOWERNUMBER: HandleACKTowerNumberPacket(packet);
-	                          break;
-    case CMD_TOWERMODE: HandleTowerModePacket(packet);
-                        break;
-	case CMD_ACK_TOWERMODE: HandleACKTowerModePacket(packet);
-	                        break;
-	case CMD_SETTIME: SetTimePacket(packet);
-                      break;
-    }
+  case CMD_STARTUP:
+  InitResponsePacket(packet);
+  break;
+  case CMD_ACK_STARTUP:
+  HandleACKStartupPacket(packet);
+  break;
+  case CMD_TOWERVERSION:
+  HandleTowerVersionPacket(packet);//only responce once for version
+  break;
+  case CMD_ACK_TOWERVERSION:
+  HandleACKTowerVersionPacket(packet);
+  break;
+  case CMD_TOWERNUMBER:
+  HandleTowerNumberPacket(packet);//only responce once for number
+  break;
+  case CMD_ACK_TOWERNUMBER:
+  HandleACKTowerNumberPacket(packet);
+  break;
+  case CMD_TOWERMODE:
+  HandleTowerModePacket(packet);
+  break;
+  case CMD_ACK_TOWERMODE:
+  HandleACKTowerModePacket(packet);
+  break;
+  case CMD_SETTIME:
+  SetTimePacket(packet);
+  break;
+  case CMD_MODE:
+  SetModePacket(packet);
+  break;
+  case CMD_ACCEL_VALUE:
+  SetAccelValuePacket(packet);
+  break;
+
+  }
 
 }
 
@@ -302,6 +362,18 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
+void Accel_Poll(Packet_t &packet)
+{
+  Accel::TAccelData data;
+  Accelerometer.ReadXYZ(data.bytes);
+
+  Packet_Parameter1 = data.axes.x;
+  Packet_Parameter2 = data.axes.y;
+  Packet_Parameter3 = data.axes.z;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+}
+
 
 
 
@@ -315,7 +387,7 @@ static LED_t Led;
   Led.Color(LED_t::GREEN);
   Led.Toggle();
  }
-/*
+
  void RTC(void* argu)
  {
 
@@ -329,11 +401,12 @@ static LED_t Led;
 
   Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
 
- } */
+ }
 
 }
 
-static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+
+
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -342,8 +415,8 @@ int main(void)
   /* Write your local variable definition here */
 
 
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
-  //RTC::RTC_t Rtc(CallBack::RTC, 0); // Initialize RTC module
+  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
+  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
 
   __DI();//Disable interrupt
@@ -357,10 +430,12 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( Packet.Packet_t::PacketGet())
+    if ( Packet.Packet_t::PacketGet()){
     HandlePacket::HandleCommandPacket(Packet);
-
+    Accel_Poll(Packet);
+    }
     UART_ISR();
+
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

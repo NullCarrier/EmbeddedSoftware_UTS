@@ -12,7 +12,7 @@
 #define I2C_H
 
 // new types
-#include "types.h"
+#include "type_cpp.h"
 #include "MK70F12.h"
 #include "PE_Types.h"
 #include "Cpu.h"

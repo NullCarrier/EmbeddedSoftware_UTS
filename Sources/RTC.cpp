@@ -32,14 +32,13 @@ bool RTC_t::RTC_Init()
 
  RTC_CR |= RTC_CR_OSCE_MASK; //32.768kHz is enabled
 
-/* // Wait for startup time for osc
- for(uint32_t count; count < 60e6; count++)
-    ; */
+ /* Wait for startup time for osc
+ for(uint64_t count; count < 600000; count++)
+    ;*/
 
  RTC_LR &= ~RTC_LR_CRL_MASK; //Lock the control register
 
  RTC_IER |= RTC_IER_TSIE_MASK; // Enable the sec interrupt
-
 
  // Enable RTC ?
  RTC_SR |= RTC_SR_TCE_MASK;
@@ -64,7 +63,7 @@ bool RTC_t::RTC_Init()
 
 void RTC_t::RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec)
 {
- EnterCritical(); //Start critical section
+ //EnterCritical(); //Start critical section
 
  uint32_t second = sec + mins*60 + hour * 3600; //Convert into seconds
 
@@ -76,13 +75,13 @@ void RTC_t::RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec)
 
  RTC_SR |= RTC_SR_TCE_MASK; //Enable time counter
 
- ExitCritical(); //End critical section
+ //ExitCritical(); //End critical section
 
 }
 
 void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 {
-  EnterCritical(); //Start critical section
+ // EnterCritical(); //Start critical section
 
   uint32_t timeValue = RTC_TSR;
 
@@ -94,7 +93,7 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 
   sec = timeValueDay % 3600 % 60;
 
-  ExitCritical(); //End critical section
+  //ExitCritical(); //End critical section
 
 }
 
@@ -105,11 +104,15 @@ userFunction(userFunc), userArguments(userArgu)
   assert(this->RTC_Init());
 }
 
+
+}
+
+
 void __attribute__ ((interrupt)) RTC_ISR()
 {
   // call callback function
-  if (UserFunc)
-  UserFunc (UserArgu);
+  if (RTC::UserFunc)
+  RTC::UserFunc (RTC::UserArgu);
 }
 
-}
+
