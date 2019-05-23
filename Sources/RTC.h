@@ -77,17 +77,19 @@ class RTC_t
 };
 
 
-
-}
-
-
 /*! @brief Interrupt service routine for the RTC.
  *
  *  The RTC has incremented one second.
  *  The user callback function will be called.
  *  @note Assumes the RTC has been initialized.
  */
- void __attribute__ ((interrupt)) RTC_ISR(void);
+ void __attribute__ ((interrupt)) ISR(void);
+
+
+}
+
+
+
 
 
 
