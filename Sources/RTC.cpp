@@ -78,7 +78,7 @@ void RTC_t::RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec)
 
 void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 {
- // EnterCritical(); //Start critical section
+ //
 
   uint32_t timeValue = RTC_TSR;
 
@@ -90,7 +90,7 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 
   sec = timeValueDay % 3600 % 60;
 
-  //ExitCritical(); //End critical section
+  //
 
 }
 

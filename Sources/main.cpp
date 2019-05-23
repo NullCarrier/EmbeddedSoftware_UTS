@@ -359,12 +359,13 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 
 void Accel_Poll(Packet_t &packet)
 {
-  Accel::TAccelData data;
+  static Accel::TAccelData data;
   Accelerometer.ReadXYZ(data.bytes);
 
-  Packet_Parameter1 = data.axes.x;
-  Packet_Parameter2 = data.axes.y;
-  Packet_Parameter3 = data.axes.z;
+  Packet_Command = 0x10;
+  Packet_Parameter1 = data.bytes[0];
+  Packet_Parameter2 = data.bytes[1];
+  Packet_Parameter3 = data.bytes[2];
 
   packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
@@ -394,8 +395,14 @@ static LED_t Led;
 
   rtc.RTC_Get(hours, mins, sec);
 
-  Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
+  //EnterCritical(); //Start critical section
 
+  //Packet_Command = HandlePacket::CMD_SETTIME;
+
+  //ExitCritical(); //End critical section
+
+  Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  //Accel_Poll(Packet);
  }
 
 }
@@ -426,8 +433,10 @@ int main(void)
   for (;;)
   {
     if ( Packet.Packet_t::PacketGet()){
+
     HandlePacket::HandleCommandPacket(Packet);
     Accel_Poll(Packet);
+
     }
     UART_ISR();
 

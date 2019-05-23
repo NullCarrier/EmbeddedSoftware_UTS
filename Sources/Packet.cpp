@@ -91,7 +91,7 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 
   EnterCritical(); //Start critical section
 
-  uint8_t checksum = MakeChecksum();
+  uint8_t checksum = command^parameter1^parameter2^parameter3;;
 
   success =  this->OutChar(command)&& this->OutChar(parameter1)&&
   this->OutChar(parameter2)&& this->OutChar(parameter3)&& this->OutChar(checksum);

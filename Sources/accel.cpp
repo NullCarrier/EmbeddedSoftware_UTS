@@ -1,11 +1,12 @@
-/*! @file
+/*! @file accel.cpp
  *
- *  @brief <Write your description here>.
+ *  @brief HAL for the accelerometer.
  *
- *  <Write your description here>.
+ *  This contains the functions for interfacing to the MMA8451Q accelerometer.
  *
- *  @author <Write your name here>
- *  @date <Write the date here>
+ *  @author Chao Li
+ *  @date 23/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 /*!

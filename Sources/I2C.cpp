@@ -1,11 +1,12 @@
-/*! @file
+/*! @file I2C.cpp
  *
  *  @brief I/O routines for the K70 I2C interface.
  *
  *  This contains the functions for operating the I2C (inter-integrated circuit) module.
  *
- *  @author PMcL
- *  @date 2015-09-17
+ *  @author Chao Li
+ *  @date 23/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 
@@ -108,20 +109,17 @@ namespace I2C{
  void I2C_t::PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes)
  {
   const uint8_t wFlag = ~0x01;
-  const uint8_t rFlag = ~0x00;
+  const uint8_t rFlag = 0x01;
   uint8_t regAddress = registerAddress;
   uint8* dataPtr = data;
 
-  I2C0_C1 &= ~I2C_C1_TXAK_MASK; // Enable ACK signal
+  I2C0_C1 &= ~I2C_C1_TXAK_MASK; // Send ACK signal to accel after receiving byte
 
-  // Generate start signal to initiate communication
-  I2C0_C1 |= I2C_C1_MST_MASK;
+  I2C0_C1 |= I2C_C1_MST_MASK; // Generate start signal to initiate communication
 
+  //primarySlaveAddress &= wFlag;
 
-  primarySlaveAddress &= wFlag;
-
-  // send the address of slave with R/W bit = 0
-  I2C0_D = primarySlaveAddress;
+  I2C0_D = primarySlaveAddress; // send the address of slave with R/W bit = 0
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave receives the address
@@ -133,7 +131,7 @@ namespace I2C{
   I2C0_C1 |= I2C_C1_RSTA_MASK;
 
   // send the address of slave with R/W bit = 1
-  primarySlaveAddress &= rFlag;
+  primarySlaveAddress |= rFlag;
   I2C0_D = primarySlaveAddress;
 
   }
@@ -142,19 +140,21 @@ namespace I2C{
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave transimits the data
-  *dataPtr++ = I2C0_D;  // Reading data from slave
-  //dataPtr++;
+  *dataPtr = I2C0_D;  // Reading data from slave
+  dataPtr++;
   }
   else{
+  // wait until receive ack bit
+  count++;
   continue;
   }
-
+/*
   regAddress += 2; // read data from next register
 
   if (count != 1)
   // send the address of slave with R/W bit = 1
   I2C0_D = regAddress;
-
+*/
   }
 
   I2C0_C1 |= I2C_C1_TXAK_MASK; // No ack signal

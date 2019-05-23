@@ -1,11 +1,12 @@
-/*! @file
+/*! @file accel.h
  *
  *  @brief HAL for the accelerometer.
  *
  *  This contains the functions for interfacing to the MMA8451Q accelerometer.
  *
- *  @author PMcL
- *  @date 2015-10-06
+ *  @author Chao Li
+ *  @date 23/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #ifndef ACCEL_H
@@ -69,8 +70,20 @@ typedef union
   static void* dataReadyCallbackArguments;
 
   public:
+  /*! @brief Initializes the accelerometer by calling the initialization routines of the supporting software modules.
+   *
+   *  @param clock
+   *  @return bool - TRUE if the accelerometer module was successfully initialized.
+  */
   Accel_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu, F* dataReadyCallbackFunc, void* dataReadyCallbackArgu);
+  /*! @brief Reads X, Y and Z accelerations.
+   *  @param data is a an array of 3 bytes where the X, Y and Z data are stored.
+   */
   void ReadXYZ(uint8_t data[3]);
+
+  /*! @brief Set the mode of the accelerometer.
+   *  @param mode specifies either polled or interrupt driven operation.
+   */
   void SetMode(const TAccelMode mode);
 
  };
