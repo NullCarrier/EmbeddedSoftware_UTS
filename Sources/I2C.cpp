@@ -47,9 +47,9 @@ namespace I2C{
   I2C0_C1 &= ~I2C_C1_TXAK_MASK;
 
   //Request baudRate: 100Kbps
-  //Select ICR = 12, SCL = 64, MUL = 4
-  I2C0_F |= 1 << 7;
-  I2C0_F |= I2C_F_ICR(12);
+  //Select ICR = 17, SCL = 128, MUL = 2
+  I2C0_F |= 1 << 6;
+  I2C0_F |= I2C_F_ICR(17);
 
   //NVIC
   //Vector = 40, IRQ = 24
@@ -73,6 +73,9 @@ namespace I2C{
  void I2C_t::Write(const uint8_t registerAddress, const uint8_t data)
  {
   const uint8_t flag = ~0x01;
+
+  // Send ACK signal to accel after receiving byte
+  I2C0_C1 &= ~I2C_C1_TXAK_MASK;
 
   // Generate start signal to initiate communication
   I2C0_C1 |= I2C_C1_MST_MASK;
@@ -106,6 +109,17 @@ namespace I2C{
  }
 
 
+ inline void TransmitCondition()
+ {
+  //Make sure bus is idle
+  while(I2C0_S & I2C_S_BUSY_MASK)
+   ;
+  //wait for transimission complete
+  while(I2C0_S & I2C_S_TCF_MASK)
+   ;
+ }
+
+
  void I2C_t::PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes)
  {
   const uint8_t wFlag = ~0x01;
@@ -113,51 +127,60 @@ namespace I2C{
   uint8_t regAddress = registerAddress;
   uint8* dataPtr = data;
 
-  I2C0_C1 &= ~I2C_C1_TXAK_MASK; // Send ACK signal to accel after receiving byte
+  // Send ACK signal to accel after receiving byte
+  I2C0_C1 &= ~I2C_C1_TXAK_MASK;
 
-  I2C0_C1 |= I2C_C1_MST_MASK; // Generate start signal to initiate communication
+  // Generate start signal to initiate communication
+  I2C0_C1 |= I2C_C1_MST_MASK;
 
-  //primarySlaveAddress &= wFlag;
+  // send the address of slave with R/W bit = 0
+  primarySlaveAddress &= wFlag;
+  I2C0_D = primarySlaveAddress;
 
-  I2C0_D = primarySlaveAddress; // send the address of slave with R/W bit = 0
+  TransmitCondition();
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave receives the address
   I2C0_D = registerAddress; // Send address of register to slave
   }
 
+  TransmitCondition();
+
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
+
   //Generate signal of repeat START
   I2C0_C1 |= I2C_C1_RSTA_MASK;
 
   // send the address of slave with R/W bit = 1
   primarySlaveAddress |= rFlag;
   I2C0_D = primarySlaveAddress;
-
   }
 
+  TransmitCondition();
+
+  //Master Rx mode
+  I2C0_C1 &= ~I2C_C1_TX_MASK;
+
+  //Dummy read
+  *dataPtr = I2C0_D;
+
+  //Reveiving data from slave
   for (uint8_t count = nbBytes; count != 0;count--){
 
   if (!(I2C0_S & I2C_S_RXAK_MASK)) {
   //slave transimits the data
-  *dataPtr = I2C0_D;  // Reading data from slave
-  dataPtr++;
+  *dataPtr++ = I2C0_D;  // Reading data from slave
   }
   else{
   // wait until receive ack bit
   count++;
   continue;
   }
-/*
-  regAddress += 2; // read data from next register
 
-  if (count != 1)
-  // send the address of slave with R/W bit = 1
-  I2C0_D = regAddress;
-*/
   }
 
-  I2C0_C1 |= I2C_C1_TXAK_MASK; // No ack signal
+  // No ack signal
+  I2C0_C1 |= I2C_C1_TXAK_MASK;
 
   //Generate STOP bit via selecting slave mode
   I2C0_C1 &= ~I2C_C1_MST_MASK;

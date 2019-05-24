@@ -48,7 +48,6 @@ const uint64_t BAUDRATE = 115200;
 
 static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
 
-static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 namespace HandlePacket
 {
@@ -133,6 +132,10 @@ namespace HandlePacket
   */
   static void SetTimePacket(Packet_t &packet);
 
+  /*! @brief To select Poll or Interrupt mode
+     *  @param packet the Packet_t object
+     *  @return void
+    */
   static void SetModePacket(Packet_t &packet);
 
 }
@@ -176,9 +179,9 @@ void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
-  RTC::RTC_t rtc;
+  //RTC::RTC_t rtc;
 
-  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+  RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
   packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
@@ -186,32 +189,15 @@ void HandlePacket::SetTimePacket(Packet_t &packet)
 
 void HandlePacket::SetModePacket(Packet_t &packet)
 {
-  Packet_Parameter1 = 0x01;
-
+  //Select mode
   if (Packet_Parameter2 == 0)
   Accelerometer.SetMode(Accel::POLL);
   else
   Accelerometer.SetMode(Accel::INT);
 
-  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+  //packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
-/*
-void HandlePacket::SetAccelValuePacket(Packet_t &packet)
-{
-  Accel::TAccelData data;
-
-  data.axes.x = Packet_Parameter1;
-  data.axes.y = Packet_Parameter2;
-  data.axes.z = Packet_Parameter3;
-
-  Accelerometer.Write(ADDRESS_OUT_X_MSB, data.axes.x);
-  Accelerometer.Write(ADDRESS_OUT_Y_MSB, data.axes.x);
-  Accelerometer.Write(ADDRESS_OUT_Z_MSB, data.axes.x);
-
-  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
-}
-*/
 
 
 // Handling packet protocol (Tower to PC)
@@ -357,22 +343,30 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
-void Accel_Poll(Packet_t &packet)
+void AsynchronousMode(Packet_t &packet)
 {
-  static Accel::TAccelData data;
+  //local variable for axis: x y z
+  Accel::TAccelData data;
+  static uint8_t dataX;
+  static uint8_t dataY;
+  static uint8_t dataZ;
+
+  //Read from accelerometer
   Accelerometer.ReadXYZ(data.bytes);
 
-  Packet_Command = 0x10;
-  Packet_Parameter1 = data.bytes[0];
-  Packet_Parameter2 = data.bytes[1];
-  Packet_Parameter3 = data.bytes[2];
+  //if data is different, then  packet should be sent
+  if ((dataX != data.axes.x) || (dataY != data.axes.y) || (dataZ != data.axes.z)){
 
-  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+  //To memorize previous value
+  dataX = data.axes.x;
+  dataY = data.axes.y;
+  dataZ = data.axes.z;
+
+  packet.Packet_t::PacketPut(HandlePacket::CMD_ACCEL_VALUE, dataX, dataY, dataZ); //send it to FIFO
+  }
 }
 
-
-
-
+/*
 namespace CallBack{
 
 static LED_t Led;
@@ -384,29 +378,24 @@ static LED_t Led;
   Led.Toggle();
  }
 
- void RTC(void* argu)
- {
+} */
 
+static LED_t Led;
+
+void RTCCallBack(void* argu)
+{
   uint8_t hours, mins, sec;
-  RTC::RTC_t rtc;
+  Packet_t txPacket;
+  //RTC::RTC_t rtc;
 
-  Led.Color(LED_t::YELLOW);
+  Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  rtc.RTC_Get(hours, mins, sec);
+  RTC_Get(hours, mins, sec);
 
-  //EnterCritical(); //Start critical section
-
-  //Packet_Command = HandlePacket::CMD_SETTIME;
-
-  //ExitCritical(); //End critical section
-
-  Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
-  //Accel_Poll(Packet);
- }
-
+  txPacket.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  AsynchronousMode(txPacket);
 }
-
 
 
 
@@ -415,13 +404,14 @@ int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
-
-
-  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
-  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
-
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
   __DI();//Disable interrupt
+  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
+  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+
+  RTC_Init(RTCCallBack, 0);
+
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -432,14 +422,10 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( Packet.Packet_t::PacketGet()){
+    if ( packet.Packet_t::PacketGet())
+    HandlePacket::HandleCommandPacket(packet);
 
-    HandlePacket::HandleCommandPacket(Packet);
-    Accel_Poll(Packet);
-
-    }
     UART_ISR();
-
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

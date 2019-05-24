@@ -23,10 +23,6 @@ namespace Accel{
 // Accelerometer registers
 #define ADDRESS_OUT_X_MSB 0x01
 
-#define ADDRESS_OUT_Y_MSB 0x03
-
-#define ADDRESS_OUT_Z_MSB 0x05
-
 #define ADDRESS_INT_SOURCE 0x0C // system interrupt status reg
 
 typedef enum
@@ -70,6 +66,8 @@ typedef union
   static void* dataReadyCallbackArguments;
 
   public:
+
+  bool Init();
   /*! @brief Initializes the accelerometer by calling the initialization routines of the supporting software modules.
    *
    *  @param clock

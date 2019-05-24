@@ -94,6 +94,7 @@ bool UART_t::InChar(uint8_t &rxData)
  bool UART_t::OutChar(const uint8_t txData)
 {
   return TxFIFO.Put(txData); // Packet module requires to send data to FIFO
+  UART2_C2 |= UART_C2_TIE_MASK; // Arm output device
 }
 
 

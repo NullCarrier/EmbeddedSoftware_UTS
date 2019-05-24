@@ -196,29 +196,48 @@ void* Accel_t::dataReadyCallbackArguments;
  {
   __DI();//Disable interrupt;
 
-  /*
-  SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
-
-  PORTB_PCR4 &= ~PORT_PCR_MUX_MASK;
-  */
-
+  //Assign value to function pointers
   dataReadyCallbackFunction = dataReadyCallbackFunc;
   dataReadyCallbackArguments = dataReadyCallbackArgu;
 
+  this->Init();
+  __EI(); //Enable interrupt
+ }
+
+
+
+ bool Accel_t::Init()
+ {
+
+  SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+
+  PORTB_PCR4 &= ~PORT_PCR_MUX_MASK;
+
+
   this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
+
+  mode = POLL; //Default mode
 
   CTRL_REG1_F_READ = 1; //Set F_Read bit for 8-bit resolution
 
-  __EI();//Enable interrupt
+
+
+
+
+  return true;
  }
+
+
+
+
 
 
  void Accel_t::ReadXYZ(uint8_t data[3])
  {
   if (mode == Accel::POLL)
   this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
-  //else
-  //I2C_IntRead(); // Reading in interrupt mode
+  else
+  I2C_IntRead(); // Reading in interrupt mode
  }
 
 

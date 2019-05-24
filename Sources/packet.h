@@ -82,6 +82,9 @@ class Packet_t: public UART_t
     UART_t::UART_t(baudRate, moduleClk)
    {
    }
+
+   Packet_t() = default;
+
   /*! @brief Attempts to get a packet from the received data.
  *
  *  @return bool - TRUE if a valid packet was received.
