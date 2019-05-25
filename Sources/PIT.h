@@ -28,7 +28,7 @@ class PIT_t
 
  private:
   uint32_t moduleClk; /*!<The module clock rate in Hz.*/
-  uint32_t period; /*!<set a period in nanosec */
+  //uint32_t period; /*!<set a period in nanosec */
   F* userFunction; /*!<a pointer to a user callback function.*/
   void* userArguments; /*!<a pointer to the user arguments to use with the user callback function.*/
 

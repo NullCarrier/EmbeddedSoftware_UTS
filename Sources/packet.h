@@ -83,8 +83,6 @@ class Packet_t: public UART_t
    {
    }
 
-   Packet_t() = default;
-
   /*! @brief Attempts to get a packet from the received data.
  *
  *  @return bool - TRUE if a valid packet was received.

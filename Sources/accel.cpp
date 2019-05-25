@@ -229,15 +229,12 @@ void* Accel_t::dataReadyCallbackArguments;
 
 
 
-
-
-
  void Accel_t::ReadXYZ(uint8_t data[3])
  {
   if (mode == Accel::POLL)
   this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
-  else
-  I2C_IntRead(); // Reading in interrupt mode
+  /*else
+  I2C_IntRead(); // Reading in interrupt mode */
  }
 
 

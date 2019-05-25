@@ -48,6 +48,7 @@ const uint64_t BAUDRATE = 115200;
 
 static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
 
+static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 namespace HandlePacket
 {
@@ -179,9 +180,9 @@ void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
-  //RTC::RTC_t rtc;
+  RTC::RTC_t rtc;
 
-  RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
   packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
@@ -343,7 +344,7 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
-void AsynchronousMode(Packet_t &packet)
+void SendAccelPacket(Packet_t &packet)
 {
   //local variable for axis: x y z
   Accel::TAccelData data;
@@ -357,7 +358,7 @@ void AsynchronousMode(Packet_t &packet)
   //if data is different, then  packet should be sent
   if ((dataX != data.axes.x) || (dataY != data.axes.y) || (dataZ != data.axes.z)){
 
-  //To memorize previous value
+  //To store previous value
   dataX = data.axes.x;
   dataY = data.axes.y;
   dataZ = data.axes.z;
@@ -366,7 +367,7 @@ void AsynchronousMode(Packet_t &packet)
   }
 }
 
-/*
+
 namespace CallBack{
 
 static LED_t Led;
@@ -376,26 +377,27 @@ static LED_t Led;
  {
   Led.Color(LED_t::GREEN);
   Led.Toggle();
+
+  SendAccelPacket(Packet);
  }
 
-} */
-
-static LED_t Led;
-
-void RTCCallBack(void* argu)
+/* void RTCCallBack(void* argu)
 {
   uint8_t hours, mins, sec;
-  Packet_t txPacket;
-  //RTC::RTC_t rtc;
+  RTC::RTC_t rtc;
 
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  RTC_Get(hours, mins, sec);
+  rtc.RTC_Get(hours, mins, sec);
 
-  txPacket.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
-  AsynchronousMode(txPacket);
+  Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  AsynchronousMode(Packet);
+} */
+
 }
+
+
 
 
 
@@ -404,15 +406,11 @@ int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
-  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
-  __DI();//Disable interrupt
-  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PIT, 0); // Initialize PIT module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
   //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
-  RTC_Init(RTCCallBack, 0);
-
-
+  __DI();//Disable interrupt
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
@@ -422,8 +420,8 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( packet.Packet_t::PacketGet())
-    HandlePacket::HandleCommandPacket(packet);
+    if ( Packet.Packet_t::PacketGet())
+    HandlePacket::HandleCommandPacket(Packet);
 
     UART_ISR();
   }
