@@ -37,9 +37,6 @@ namespace I2C{
   //Enable I2C0 module
   I2C0_C1 |= I2C_C1_IICEN_MASK;
 
-  //Select master mode
-  //I2C0_C1 |= I2C_C1_MST_MASK;
-
   //Transmit Mode
   I2C0_C1 |= I2C_C1_TX_MASK;
 
@@ -78,8 +75,7 @@ namespace I2C{
  }
 
 
-
- void I2C_t::Write(const uint8_t registerAddress, const uint8_t data)
+ void AddressCycle(const uint8_t slaveAddress, const uint8_t registerAddress)
  {
   const uint8_t flag = ~0x01;
 
@@ -90,11 +86,11 @@ namespace I2C{
   I2C0_C1 |= I2C_C1_MST_MASK;
 
   //Transmit Mode
-  I2C0_C1 |= I2C_C1_TX_MASK;
+  //I2C0_C1 |= I2C_C1_TX_MASK;
 
   do{
   // send the address of slave with R/W bit = 0
-  I2C0_D = primarySlaveAddress;
+  I2C0_D = slaveAddress & flag;
 
   if (RxACK() ){
   //slave receives the address
@@ -103,11 +99,18 @@ namespace I2C{
 
   }while (I2C0_S & I2C_S_RXAK_MASK);
 
-  if (data != 0){
-  I2C0_D = data;//Send data
-  }
+ }
 
-  if (RxACK() && (data != 0) )
+
+
+ void I2C_t::Write(const uint8_t registerAddress, const uint8_t data)
+ {
+
+  AddressCycle(primarySlaveAddress, registerAddress);
+
+  I2C0_D = data;//Send data
+
+  if (RxACK() )
   I2C0_C1 &= ~I2C_C1_MST_MASK; //Generate STOP bit via selecting slave mode
 
   }
@@ -126,7 +129,6 @@ namespace I2C{
 
  void I2C_t::PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes)
  {
-  const uint8_t wFlag = ~0x01;
   const uint8_t rFlag = 0x01;
   uint8* dataPtr = data;
 
@@ -157,7 +159,7 @@ namespace I2C{
   }
 */
 
-  this->Write(registerAddress, 0);
+  AddressCycle(primarySlaveAddress, registerAddress);
 
   if (RxACK() ){
 
@@ -172,8 +174,7 @@ namespace I2C{
 
   if (RxACK() ){
   //Master Rx mode
-  I2C0_C1 &= ~I2C_C1_TX_MASK;
-  }
+  //I2C0_C1 &= ~I2C_C1_TX_MASK;
 
   //Reveiving data from slave
   for (uint8_t count = nbBytes; count != 0;count--){
@@ -182,12 +183,26 @@ namespace I2C{
   *dataPtr++ = I2C0_D;  // Reading data from slav
   }
 
+  }
+
+  //End of transmission
   // No ack signal
   I2C0_C1 |= I2C_C1_TXAK_MASK;
-
   //Generate STOP bit via selecting slave mode
   I2C0_C1 &= ~I2C_C1_MST_MASK;
  }
+
+
+ void IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes)
+ {
+
+
+
+
+
+
+ }
+
 
 
 

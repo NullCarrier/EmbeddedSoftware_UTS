@@ -180,11 +180,11 @@ void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
-  RTC::RTC_t rtc;
+  //RTC::RTC_t rtc;
 
-  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+  //rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
-  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+  //packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 
@@ -363,17 +363,22 @@ void SendAccelPacket(Packet_t &packet)
   dataY = data.axes.y;
   dataZ = data.axes.z;
 
-  packet.Packet_t::PacketPut(HandlePacket::CMD_ACCEL_VALUE, dataX, dataY, dataZ); //send it to FIFO
+  Packet_Command = HandlePacket::CMD_ACCEL_VALUE;
+  Packet_Parameter1 = data.axes.x;
+  Packet_Parameter2 = data.axes.y;
+  Packet_Parameter3 = data.axes.z;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
   }
 }
 
 
-namespace CallBack{
+//namespace CallBack{
 
 static LED_t Led;
 
  //function description
- void PIT(void* argu)
+ void PITCallBack(void* argu)
  {
   Led.Color(LED_t::GREEN);
   Led.Toggle();
@@ -392,12 +397,9 @@ static LED_t Led;
   rtc.RTC_Get(hours, mins, sec);
 
   Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
-  AsynchronousMode(Packet);
 } */
 
-}
-
-
+//}
 
 
 
@@ -407,10 +409,14 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
+  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
   //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
   __DI();//Disable interrupt
+
+  PIT_Init(CPU_BUS_CLK_HZ, PITCallBack, 0);
+  PIT_Set(1e9, true);
+
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/

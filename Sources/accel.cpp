@@ -200,7 +200,9 @@ void* Accel_t::dataReadyCallbackArguments;
   dataReadyCallbackFunction = dataReadyCallbackFunc;
   dataReadyCallbackArguments = dataReadyCallbackArgu;
 
+  //Initialize Acceleromter
   this->Init();
+
   __EI(); //Enable interrupt
  }
 
@@ -208,11 +210,17 @@ void* Accel_t::dataReadyCallbackArguments;
 
  bool Accel_t::Init()
  {
-
+  //Enable clock gate of PORTB
   SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
 
-  PORTB_PCR4 &= ~PORT_PCR_MUX_MASK;
+  //PortB4
+  PORTB_PCR4 |= PORT_PCR_MUX(1);
 
+  //Disable accel
+  CTRL_REG1_ACTIVE = 0;
+
+  //Send data to accel
+  this->Write(ADDRESS_CTRL_REG1, CTRL_REG1);
 
   this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
 
@@ -220,21 +228,29 @@ void* Accel_t::dataReadyCallbackArguments;
 
   CTRL_REG1_F_READ = 1; //Set F_Read bit for 8-bit resolution
 
+  //1.56Hz for synchronous mode
+  CTRL_REG1_DR = DATE_RATE_1_56_HZ
 
+  //
+  CTRL_REG4_INT_EN_DRDY = mode;
 
+  //Enable accel
+  CTRL_REG1_ACTIVE = 1;
 
+  //Send info to regs inside accel
+  this->Write(ADDRESS_CTRL_REG1, CTRL_REG1);
+  this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
 
   return true;
  }
-
 
 
  void Accel_t::ReadXYZ(uint8_t data[3])
  {
   if (mode == Accel::POLL)
   this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
-  /*else
-  I2C_IntRead(); // Reading in interrupt mode */
+  else
+  this->IntRead(ADDRESS_OUT_X_MSB, data, 3); // Reading in interrupt mode
  }
 
 

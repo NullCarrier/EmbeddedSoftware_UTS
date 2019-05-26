@@ -110,7 +110,7 @@ typedef union
  *  The user callback function will be called.
  *  @note Assumes the accelerometer has been initialized.
  */
-void __attribute__ ((interrupt)) AccelDataReady_ISR(void);
+void __attribute__ ((interrupt)) DataReady_ISR(void);
 
 }
 

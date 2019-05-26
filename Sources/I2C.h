@@ -62,6 +62,8 @@ class I2C_t
    * @param nbBytes The number of bytes to read.
    */
   void PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
+
+  void IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
 };
 
 
