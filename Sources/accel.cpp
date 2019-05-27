@@ -5,12 +5,12 @@
  *  This contains the functions for interfacing to the MMA8451Q accelerometer.
  *
  *  @author Chao Li
- *  @date 23/05/2019
+ *  @date 27/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
 /*!
- *  @addtogroup <Your group here>
+ *  @addtogroup <Group08>
  *  @{
 */
 
@@ -207,6 +207,33 @@ void* Accel_t::dataReadyCallbackArguments;
  }
 
 
+ /*! @brief Put the accelerometer into standby mode.
+    * @param accel the object of class Accel_t
+   */
+ inline void AccelStandby(Accel_t &accel)
+ {
+  //Disable accel
+  CTRL_REG1_ACTIVE = 0;
+
+  //Send data to accel
+  accel.Write(ADDRESS_CTRL_REG1, CTRL_REG1);
+ }
+
+
+  /*! @brief Put the accelerometer into active mode.
+   *  @param accel the object of class Accel_t
+  */
+
+ inline void AccelActive(Accel_t &accel)
+ {
+  //Disable accel
+  CTRL_REG1_ACTIVE = 1;
+
+  //Send data to accel
+  accel.Write(ADDRESS_CTRL_REG1, CTRL_REG1);
+ }
+
+
 
  bool Accel_t::Init()
  {
@@ -216,11 +243,8 @@ void* Accel_t::dataReadyCallbackArguments;
   //PortB4
   PORTB_PCR4 |= PORT_PCR_MUX(1);
 
-  //Disable accel
-  CTRL_REG1_ACTIVE = 0;
-
-  //Send data to accel
-  this->Write(ADDRESS_CTRL_REG1, CTRL_REG1);
+  //Turn off Accel when configure reg
+  AccelStandby(*this);
 
   this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
 
@@ -229,17 +253,17 @@ void* Accel_t::dataReadyCallbackArguments;
   CTRL_REG1_F_READ = 1; //Set F_Read bit for 8-bit resolution
 
   //1.56Hz for synchronous mode
-  CTRL_REG1_DR = DATE_RATE_1_56_HZ
+  CTRL_REG1_DR = DATE_RATE_1_56_HZ;
 
-  //
+  //turn on/off interrupt resouces
   CTRL_REG4_INT_EN_DRDY = mode;
-
-  //Enable accel
-  CTRL_REG1_ACTIVE = 1;
 
   //Send info to regs inside accel
   this->Write(ADDRESS_CTRL_REG1, CTRL_REG1);
   this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
+
+  //turn on Accel
+  AccelActive(*this);
 
   return true;
  }
@@ -247,12 +271,33 @@ void* Accel_t::dataReadyCallbackArguments;
 
  void Accel_t::ReadXYZ(uint8_t data[3])
  {
-  if (mode == Accel::POLL)
-  this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
-  else
-  this->IntRead(ADDRESS_OUT_X_MSB, data, 3); // Reading in interrupt mode
- }
+  if (mode == Accel::POLL){
 
+  AccelStandby(*this); //Turn off Accel when configure reg
+
+  CTRL_REG4_INT_EN_DRDY = mode; //Disable interrupt
+
+  this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
+
+  AccelActive(*this);//turn on Accel
+
+  this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
+
+  }
+  else{
+
+  AccelStandby(*this); //Turn off Accel when configure reg
+
+  CTRL_REG4_INT_EN_DRDY = mode; //Enable interrupt
+
+  this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
+
+  AccelActive(*this);//turn on Accel
+
+  this->IntRead(ADDRESS_OUT_X_MSB, data, 3); // Reading in interrupt mode*/
+  }
+
+ }
 
  void Accel_t::SetMode(const TAccelMode mod)
  {

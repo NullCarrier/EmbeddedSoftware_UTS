@@ -35,7 +35,7 @@
 
 //#include "Flash.h"
 
-#include "PIT.h"
+//#include "PIT.h"
 
 #include "RTC.h"
 
@@ -46,9 +46,9 @@
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
-static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
-
 static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+
+static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
 
 namespace HandlePacket
 {
@@ -373,7 +373,7 @@ void SendAccelPacket(Packet_t &packet)
 }
 
 
-//namespace CallBack{
+namespace CallBack{
 
 static LED_t Led;
 
@@ -383,23 +383,23 @@ static LED_t Led;
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  SendAccelPacket(Packet);
  }
 
-/* void RTCCallBack(void* argu)
+ void RTC(void* argu)
 {
-  uint8_t hours, mins, sec;
-  RTC::RTC_t rtc;
+  //uint8_t hours, mins, sec;
+  //RTC::RTC_t rtc;
 
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  rtc.RTC_Get(hours, mins, sec);
+  //rtc.RTC_Get(hours, mins, sec);
 
-  Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
-} */
+  //Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  SendAccelPacket(Packet);
+}
 
-//}
+}
 
 
 
@@ -410,12 +410,12 @@ int main(void)
   /* Write your local variable definition here */
 
   //PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
-  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
   __DI();//Disable interrupt
 
-  PIT_Init(CPU_BUS_CLK_HZ, PITCallBack, 0);
-  PIT_Set(1e9, true);
+  //PIT_Init(CPU_BUS_CLK_HZ, PITCallBack, 0);
+  //PIT_Set(1e9, true);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -426,9 +426,10 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( Packet.Packet_t::PacketGet())
+    if ( Packet.Packet_t::PacketGet()){
     HandlePacket::HandleCommandPacket(Packet);
-
+    SendAccelPacket(Packet);
+    }
     UART_ISR();
   }
 

@@ -5,7 +5,7 @@
  *  This contains the functions for interfacing to the MMA8451Q accelerometer.
  *
  *  @author Chao Li
- *  @date 23/05/2019
+ *  @date 27/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -34,9 +34,9 @@ typedef enum
 #if 0
 typedef struct
 {
-  uint32_t moduleClk;				/*!< The module clock rate in Hz. */
-  void (*dataReadyCallbackFunction)(void*);	/*!< The user's data ready callback function. */
-  void* dataReadyCallbackArguments;		/*!< The user's data ready callback function arguments. */
+  uint32_t moduleClk;
+  void (*dataReadyCallbackFunction)(void*);
+  void* dataReadyCallbackArguments;
   void (*readCompleteCallbackFunction)(void*);	/*!< The user's read complete callback function. */
   void* readCompleteCallbackArguments;		/*!< The user's read complete callback function arguments. */
 } TAccelSetup;
@@ -47,10 +47,10 @@ typedef struct
 
 typedef union
 {
-  uint8_t bytes[3];				/*!< The accelerometer data accessed as an array. */
+  uint8_t bytes[3];	/*!< The accelerometer data accessed as an array. */
   struct
   {
-    uint8_t x, y, z;				/*!< The accelerometer data accessed as individual axes. */
+    uint8_t x, y, z; /*!< The accelerometer data accessed as individual axes. */
   } axes;
 } TAccelData;
 
@@ -61,19 +61,28 @@ typedef union
   using F = void (void*);
 
   private:
-  TAccelMode mode;
-  static F* dataReadyCallbackFunction;
-  static void* dataReadyCallbackArguments;
+  TAccelMode mode; /*!< The mode of accelerometer. */
+  static F* dataReadyCallbackFunction; /*!< The user's data ready callback function. */
+  static void* dataReadyCallbackArguments; /*!< The user's data ready callback function arguments. */
 
   public:
 
+  /*! @brief Initializes accelerometer via writing to configuration registers.
+   *
+   */
   bool Init();
+
   /*! @brief Initializes the accelerometer by calling the initialization routines of the supporting software modules.
    *
-   *  @param clock
+   *  @param clock  The module clock rate in Hz.
+   *  @param readCompleteCallbackFunc The user's read complete callback function.
+   *  @param readCompleteCallbackArgu The user's read complete callback arguments.
+   *  @param dataReadyCallbackFunc The user's data ready callback function.
+   *  @param dataReadyCallbackArgu The user's data ready callback function arguments.
    *  @return bool - TRUE if the accelerometer module was successfully initialized.
   */
   Accel_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu, F* dataReadyCallbackFunc, void* dataReadyCallbackArgu);
+
   /*! @brief Reads X, Y and Z accelerations.
    *  @param data is a an array of 3 bytes where the X, Y and Z data are stored.
    */

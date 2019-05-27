@@ -5,7 +5,7 @@
  *  This contains the functions for operating the I2C (inter-integrated circuit) module.
  *
  *  @author Chao Li
- *  @date 23/05/2019
+ *  @date 27/05/2019
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
@@ -31,14 +31,20 @@ class I2C_t
   static void* readCompleteCallbackArguments; /*!< The user's read complete callback function arguments. */
 
   protected:
-  /*! @brief Sets up the I2C before first use.
+  /*! @brief constructor for initializing I2C module
    *
    *  @param aI2CModule is a structure containing the operating conditions for the module.
    *  @param moduleClk The module clock in Hz.
    *  @return BOOL - TRUE if the I2C module was successfully initialized.
    */
   I2C_t(const uint32_t clock, F* readCompleteCallbackFunc, void* readCompleteCallbackArgu);
+
+  /*! @brief Sets up the I2C before first use.
+    *
+    *
+   */
   bool Init() const;
+
 
   public:
   /*! @brief Selects the current slave device
@@ -63,6 +69,13 @@ class I2C_t
    */
   void PollRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
 
+  /*! @brief Reads data of a specified length starting from a specified register
+   *
+   * Uses interrupts as the method of data reception.
+   * @param registerAddress The register address.
+   * @param data A pointer to store the bytes that are read.
+   * @param nbBytes The number of bytes to read.
+   */
   void IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
 };
 
@@ -105,7 +118,7 @@ class I2C_t
  * @param data A pointer to store the bytes that are read.
  * @param nbBytes The number of bytes to read.
  */
-void I2C_IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
+//void I2C_IntRead(const uint8_t registerAddress, uint8_t* const data, const uint8_t nbBytes);
 
 /*! @brief Interrupt service routine for the I2C.
  *
