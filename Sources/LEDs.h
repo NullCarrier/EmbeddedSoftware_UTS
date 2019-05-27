@@ -15,59 +15,69 @@
 // new types
 #include "type_cpp.h"
 
+#include "MK70F12.h"
+
+// _EI() _DI()
+#include "PE_Types.h"
+
+#include "Cpu.h"
 
  class LED_t
  {
   public:
-    typedef enum
-  {
-  LED_ORANGE = (1 << 11),
-  LED_YELLOW = (1 << 28),
-  LED_GREEN = (1 << 29),
-  LED_BLUE = (1 << 10)
+  typedef enum{
+
+  ORANGE = (1 << 11),
+  YELLOW = (1 << 28),
+  GREEN = (1 << 29),
+  BLUE = (1 << 10)
   } TLED;
 
  /*! @brief Turns an LED on.
  *
- *  @param color The color of the LED to turn on.
  *  @note Assumes that LEDs_Init has been called.
  */
- void LEDs_On() const;
+ void On() const;
 
  /*! @brief Turns off an LED.
  *
- *  @param color THe color of the LED to turn off.
+ *
  *  @note Assumes that LEDs_Init has been called.
  */
- void LEDs_Off() const;
+ void Off() const;
 
  /*! @brief Toggles an LED.
  *
- *  @param color THe color of the LED to toggle.
- *  @note Assumes that LEDs_Init has been called.
- */
- void LEDs_Toggle() const;
-
- /*! @brief constructor to Initialise the color
  *
- *  @param color THe color of the LED
  *  @note Assumes that LEDs_Init has been called.
  */
- LED_t(TLED color)
+ void Toggle() const;
+
+ /*! @brief constructor to Initialize the color
+ *
+ *
+ *  @note Assumes that LEDs_Init has been called.
+ */
+ LED_t()
  {
-   if (LEDsInit() )
-   m_color = color;
+  if (Init())
+  GPIOA_PSOR = ORANGE | YELLOW | GREEN | BLUE; // Reset all LED
  }
 
  /*! @brief Sets up the LEDs before first use.
   *
   *  @return bool - TRUE if the LEDs were successfully initialized.
 */
-  bool LEDsInit(void);
+  bool Init(void);
+
+  /*! @brief Assign color for LED depending on pins
+    *
+    *  @param color the color of LED
+  */
+  void Color(TLED color);
 
   private:
-    TLED m_color; /*!< The member color with TLED type */
-    const int LEDALL = LED_ORANGE | LED_YELLOW | LED_GREEN | LED_BLUE;/*!< The const member LED_ALL */
+    int m_color; /*!< The member color with int type */
  };
 
 

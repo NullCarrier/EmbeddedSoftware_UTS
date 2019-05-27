@@ -29,18 +29,19 @@ static void* UserArgu;
  SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
  //Disable timer0
- this->PIT_Enable(false);
+  this->PIT_Enable(false);
 
  //enable timer module
- PIT_MCR &= ~PIT_MCR_MDIS_MASK ;
+ PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+
 
  //Freeze the timer
  PIT_MCR |= PIT_MCR_FRZ_MASK;
 
  //initialize the timer: 500ms
- PIT_LDVAL0 = 0xBEBC1F;
+// PIT_LDVAL0 = 0xBEBC1F;
 
- this->PIT_Set(500 ,false); // period 500ms
+ this->PIT_Set(1000 ,true); // period 500ms
 
  // Initialize NVIC
  // Vector =84, IRQ=68
@@ -65,7 +66,7 @@ static void* UserArgu;
 
 void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
 {
-  period = newPeriod;
+  period = newPeriod * 1e6;
 
  if (restart)
  {
@@ -73,7 +74,7 @@ void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
   this->PIT_Enable(false);
 
   //reload the timer
-  //PIT_LDVAL0 = ( (period/1000) / (1/moduleClk) ) - 1;
+  PIT_LDVAL0 = ( period / ( ( 1/(float) moduleClk)*1e9) ) - 1;
 
   //Enable timer0
   this->PIT_Enable(true);
@@ -81,7 +82,7 @@ void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
  else
  {
   //reload the timer during running the timer
-  //PIT_LDVAL0 = ( (period*1e-3) / (1 / moduleClk) ) - 1;
+	 PIT_LDVAL0 = ( period / (( 1/ (float) moduleClk) *1e9) ) - 1;
  }
 
  // Enable timer0 interrupt

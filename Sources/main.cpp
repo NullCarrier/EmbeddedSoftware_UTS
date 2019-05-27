@@ -39,98 +39,206 @@
 
 #include "RTC.h"
 
+#include "I2C.h"
+
+#include "accel.h"
+
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
+
+static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
+
+static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
+
+namespace HandlePacket
+{
+
+ enum Command{
+  CMD_STARTUP = 0x04,
+  CMD_TOWERVERSION = 0x09,
+  CMD_TOWERNUMBER = 0x0B,
+  CMD_MODE = 0x0A,
+  CMD_SETTIME = 0x0C,
+  CMD_TOWERMODE = 0x0D,
+  CMD_ACCEL_VALUE = 0x10,
+  CMD_ACK_STARTUP = 0x84,
+  CMD_ACK_TOWERVERSION = 0x89,
+  CMD_ACK_TOWERNUMBER = 0x8B,
+  CMD_ACK_TOWERMODE = 0x8D,
+  CMD_MYTOWERNUMBER = 0x9434
+ };
+  /*! @brief To handle startup packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleStartupPacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement startup packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKStartupPacket(Packet_t &packet);
+
+  /*! @brief To handle tower version packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerVersionPacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement tower version packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerVersionPacket(Packet_t &packet);
+
+  /*! @brief To handle tower number packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerNumberPacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement tower number packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerNumberPacket(Packet_t &packet);
+
+  /*! @brief To handle tower mode packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleTowerModePacket(Packet_t &packet);
+
+  /*! @brief To handle acknowledgement tower mode packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleACKTowerModePacket(Packet_t &packet);
+
+  /*! @brief To send 4 packets initially and the repsonse for startup protocol
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void InitResponsePacket(Packet_t &packet);
+
+ /*! @brief To decide how to send packet depending on packet command ID
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void HandleCommandPacket(Packet_t &packet);
+
+ /*! @brief To handle set time packet
+   *  @param packet the PacketVert2 object
+   *  @return void
+  */
+  static void SetTimePacket(Packet_t &packet);
+
+  /*! @brief To select Poll or Interrupt mode
+     *  @param packet the Packet_t object
+     *  @return void
+    */
+  static void SetModePacket(Packet_t &packet);
+
+}
 
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
  // Assgin value for startup command according to packet protocol
-  EnterCritical(); //Start critical section
-
   Packet_Parameter1 = Packet_Parameter2 = Packet_Parameter3 = 0;
 
-  ExitCritical(); //End critical section
-
-  packet.Packet_t::PacketPut(); //send it to FIFO
-
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter1, Packet_Parameter3); //send it to FIFO
 }
 
 void HandlePacket::HandleTowerVersionPacket(Packet_t &packet)
 {
-  // Assgin value for towerversion command according to packet protocol
-  EnterCritical(); //Start critical section
+  // Assgin value for towerversion command according to packet protoco
+  Packet_Parameter1 = 0x76;
+  Packet_Parameter2 = 0x01;
+  Packet_Parameter3 = 0;
 
-  Packet_Parameter1 = 0x76; // Parameter 1,//Command: Tower Version: v1.0
-  Packet_Parameter2 = 0x01; // Parameter 2
-  Packet_Parameter3 = 0x0;  // Parameter 3
-
-  ExitCritical(); //End critical section
-
-  packet.Packet_t::PacketPut(); // send it to FIFO
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); // send it to FIFO
 }
 
 void HandlePacket::HandleTowerNumberPacket(Packet_t &packet)
 {
 // Assgin value for towernumber command according to packet protocol
-  EnterCritical(); //Start critical section
+  Packet_Parameter1 = 0x01;
+  Packet_Parameter2 = 0x94;
+  Packet_Parameter3 = 0x34;
 
-  Packet_Parameter1 = 0x01;  // Parameter 1
-  Packet_Parameter2 = 0x94; // Parameter 2
-  Packet_Parameter3 = 0x34; // Parameter 3
-
-  ExitCritical(); //End critical section
-
-  packet.Packet_t::PacketPut(); //send it to FIFO
-
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 {
-  EnterCritical(); //Start critical section
+  Packet_Parameter1 = 0x01;
+  Packet_Parameter2 = 0x01;
+  Packet_Parameter3 = 0;
 
-  Packet_Parameter1 = 0x01;  // Parameter 1
-  Packet_Parameter2 = 0x01; // Parameter 2
-  Packet_Parameter3 = 0x00; // Parameter 3
-
-  ExitCritical(); //End critical section
-
-  packet.Packet_t::PacketPut(); //send it to FIFO
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 }
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
- RTC::RTC_t rtc;
+  //RTC::RTC_t rtc;
 
- rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+  //rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
- packet.Packet_t::PacketPut(); //send it to FIFO
+  //packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
+
+
+void HandlePacket::SetModePacket(Packet_t &packet)
+{
+  //Select mode
+  if (Packet_Parameter2 == 0)
+  Accelerometer.SetMode(Accel::POLL);
+  else
+  Accelerometer.SetMode(Accel::INT);
+
+  //packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+}
+
+
 
 // Handling packet protocol (Tower to PC)
 void HandlePacket::HandleCommandPacket(Packet_t &packet)
 {
-    switch (Packet_Command){
+  switch (Packet_Command){
 
   // for specific command. Startup needs to send 3 packets
-    case CMD_STARTUP: InitResponsePacket(packet);
-                      break;
-	case CMD_ACK_STARTUP: HandleACKStartupPacket(packet);
-	                      break;
-    case CMD_TOWERVERSION: HandleTowerVersionPacket(packet);//only responce once for version
-                           break;
-	case CMD_ACK_TOWERVERSION: HandleACKTowerVersionPacket(packet);
-	                           break;
-    case CMD_TOWERNUMBER: HandleTowerNumberPacket(packet);//only responce once for number
-                          break;
-	case CMD_ACK_TOWERNUMBER: HandleACKTowerNumberPacket(packet);
-	                          break;
-    case CMD_TOWERMODE: HandleTowerModePacket(packet);
-                        break;
-	case CMD_ACK_TOWERMODE: HandleACKTowerModePacket(packet);
-	                        break;
-	case CMD_SETTIME: SetTimePacket(packet);
-                      break;
-    }
+  case CMD_STARTUP:
+  InitResponsePacket(packet);
+  break;
+  case CMD_ACK_STARTUP:
+  HandleACKStartupPacket(packet);
+  break;
+  case CMD_TOWERVERSION:
+  HandleTowerVersionPacket(packet);//only responce once for version
+  break;
+  case CMD_ACK_TOWERVERSION:
+  HandleACKTowerVersionPacket(packet);
+  break;
+  case CMD_TOWERNUMBER:
+  HandleTowerNumberPacket(packet);//only responce once for number
+  break;
+  case CMD_ACK_TOWERNUMBER:
+  HandleACKTowerNumberPacket(packet);
+  break;
+  case CMD_TOWERMODE:
+  HandleTowerModePacket(packet);
+  break;
+  case CMD_ACK_TOWERMODE:
+  HandleACKTowerModePacket(packet);
+  break;
+  case CMD_SETTIME:
+  SetTimePacket(packet);
+  break;
+  case CMD_MODE:
+  SetModePacket(packet);
+  break;
+
+  }
 
 }
 
@@ -140,30 +248,15 @@ void HandlePacket::InitResponsePacket(Packet_t &packet)
   HandleStartupPacket(packet);
 
   // Send tower version packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_TOWERVERSION;
-
-  ExitCritical(); //End critical section
-
   HandleTowerVersionPacket(packet);
 
   // Send tower number packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_TOWERNUMBER;
-
-  ExitCritical(); //End critical section
-
   HandleTowerNumberPacket(packet);
 
   // Send tower mode packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_TOWERMODE;
-
-  ExitCritical(); //End critical section
-
   HandleTowerModePacket(packet);
 }
 
@@ -174,18 +267,18 @@ void HandlePacket::HandleACKStartupPacket(Packet_t &packet)
 
   Packet_Command = HandlePacket::CMD_STARTUP;
 
-  ExitCritical(); //End critical section
-
   InitResponsePacket(packet);
+
+  ExitCritical(); //End critical section
 
   // Send ack tower startup packet
   EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_ACK_STARTUP; // to modify the packet command ID
 
-  ExitCritical(); //End critical section
-
   HandleStartupPacket(packet); // to send ack pakcet
+
+  ExitCritical(); //End critical section
 }
 
 void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
@@ -251,75 +344,63 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
-#if 0
-/*! @brief Overload function of InitResponsePacket
- *
- *  @param packet the PacketVert2 object
- *  @param Parameter2 the reference to hold the vaule read from flash memory
- *  @param Parameter3 the reference to hold the vaule read from flash memory
- */
-static void InitResponsePacket(PacketVer2_t &packet, volatile uint8_t &Parameter2, volatile uint8_t &Parameter3)
+void SendAccelPacket(Packet_t &packet)
 {
-  // Send tower startup packet
-  Packet_Command = HandlePacketVer2::CMD_STARTUP;
-  HandlePacketVer2::HandleStartupPacket(packet);
+  //local variable for axis: x y z
+  Accel::TAccelData data;
+  static uint8_t dataX;
+  static uint8_t dataY;
+  static uint8_t dataZ;
 
-  // Send tower version packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERVERSION;
-  HandlePacketVer2::HandleTowerVersionPacket(packet);
+  //Read from accelerometer
+  Accelerometer.ReadXYZ(data.bytes);
 
-  // Send tower number packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERNUMBER;
-  Packet_Parameter1 = 0x01;
-  Packet_Parameter2 = Parameter2;
-  Packet_Parameter3 = Parameter3;
-  packet.PacketVer2_t::Packet_Put(); //send it to FIFO
+  //if data is different, then  packet should be sent
+  if ((dataX != data.axes.x) || (dataY != data.axes.y) || (dataZ != data.axes.z)){
 
-  // Send tower mode packet
-  Packet_Command = HandlePacketVer2::CMD_TOWERMODE;
-  HandlePacketVer2::HandleTowerModePacket(packet);
+  //To store previous value
+  dataX = data.axes.x;
+  dataY = data.axes.y;
+  dataZ = data.axes.z;
+
+  Packet_Command = HandlePacket::CMD_ACCEL_VALUE;
+  Packet_Parameter1 = data.axes.x;
+  Packet_Parameter2 = data.axes.y;
+  Packet_Parameter3 = data.axes.z;
+
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+  }
 }
-#endif
 
-static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
 
 namespace CallBack{
 
-LED_t LedPIT(LED_t::LED_GREEN);
-LED_t LedRTC(LED_t::LED_YELLOW);
+static LED_t Led;
 
-
-//LED_t LedRTC(LED_t::LED_BLUE);
-
-//function description
- void PITCallback(void* argu)
+ //function description
+ void PITCallBack(void* argu)
  {
-  LedPIT.LEDs_Toggle();
+  Led.Color(LED_t::GREEN);
+  Led.Toggle();
+
  }
 
- void RTCCallback(void* argu)
- {
+ void RTC(void* argu)
+{
+  //uint8_t hours, mins, sec;
+  //RTC::RTC_t rtc;
 
-  uint8_t hours, mins, sec;
-  RTC::RTC_t rtc;
+  Led.Color(LED_t::GREEN);
+  Led.Toggle();
 
-  LedRTC.LEDs_Toggle();
+  //rtc.RTC_Get(hours, mins, sec);
 
-  rtc.RTC_Get(hours, mins, sec);
-
-  EnterCritical(); //Start critical section
-
-  Packet_Parameter1 = hours;  // Parameter 1: hours
-  Packet_Parameter2 = mins; // Parameter 2: mins
-  Packet_Parameter3 = sec; // Parameter 3: sec
-
-  ExitCritical(); //End critical section
-
-  Packet.Packet_t::PacketPut(); //send it to FIFO
-
- }
+  //Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  SendAccelPacket(Packet);
+}
 
 }
+
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -328,12 +409,10 @@ int main(void)
 {
   /* Write your local variable definition here */
 
+  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
+  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
- PIT::PIT_t pit(CPU_BUS_CLK_HZ, 500, CallBack::PITCallback, 0); // Initialize PIT module
- RTC::RTC_t Rtc(CallBack::RTCCallback, 0); // Initialize RTC module
-
-
- __DI();//Disable interrupt
+  __DI();//Disable interrupt
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -344,9 +423,10 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( Packet.Packet_t::PacketGet())
+    if ( Packet.Packet_t::PacketGet()){
     HandlePacket::HandleCommandPacket(Packet);
-
+    SendAccelPacket(Packet);
+    }
     UART_ISR();
   }
 

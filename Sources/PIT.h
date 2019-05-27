@@ -36,11 +36,10 @@ class PIT_t
 /*! @brief Constructor for initializing all member variables in PIT class
  *
  *  Enables the PIT and freezes the timer when debugging.
- *  @param moduleClk The module clock rate in Hz.
- *  @param period The desired value of the timer period in nanoseconds.
- *  @param userFunction is a pointer to a user callback function.
- *  @param userArguments is a pointer to the user arguments to use with the user callback function.
- *  @return bool - TRUE if the PIT was successfully initialized.
+ *  @param mClock The module clock rate in Hz.
+ *  @param T The desired value of the timer period in ms.
+ *  @param userFunc is a pointer to a user callback function.
+ *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
   PIT_t(const uint32_t mClock, const uint32_t T, F* userFunc, void* userArgu);
@@ -48,9 +47,7 @@ class PIT_t
 /*! @brief Sets up the PIT before first use.
  *
  *  Enables the PIT and freezes the timer when debugging.
- *  @param moduleClk The module clock rate in Hz.
- *  @param userFunction is a pointer to a user callback function.
- *  @param userArguments is a pointer to the user arguments to use with the user callback function.
+ *
  *  @return bool - TRUE if the PIT was successfully initialized.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
@@ -58,7 +55,7 @@ class PIT_t
 
 /*! @brief Sets the value of the desired period of the PIT.
  *
- *  @param period The desired value of the timer period in nanoseconds.
+ *  @param p The desired value of the timer period in nanoseconds.
  *  @param restart TRUE if the PIT is disabled, a new value set, and then enabled.
  *                 FALSE if the PIT will use the new value after a trigger event.
  *  @note The function will enable the timer and interrupts for the PIT.

@@ -10,7 +10,6 @@
  */
 
 #include "RTC.h"
-#include <cassert>
 
 namespace RTC{
 
@@ -22,23 +21,23 @@ static void* UserArgu;
 
 bool RTC_t::RTC_Init()
 {
- __DI();//Disable interrupt
 
- RTC_CR |= RTC_CR_SC16P_MASK; // Required load capacitances 16pf
+ SIM_SCGC6 |= SIM_SCGC6_RTC_MASK; //Enable clock gate
 
- RTC_CR |= RTC_CR_SC2P_MASK; // Required load capacitances 2pf
+ RTC_CR |= (RTC_CR_SC16P_MASK | RTC_CR_SC2P_MASK); // Required load capacitances 16pf and load capacitances 2pf
 
  RTC_CR |= RTC_CR_OSCE_MASK; //32.768kHz is enabled
 
- // Wait for startup time for osc
- for(uint32_t count; count < 60e6; count++)
+  //Wait for startup time for osc
+ for(uint64_t count; count < 600000; count++)
     ;
 
  RTC_LR &= ~RTC_LR_CRL_MASK; //Lock the control register
 
  RTC_IER |= RTC_IER_TSIE_MASK; // Enable the sec interrupt
 
- SIM_SCGC6 |= SIM_SCGC6_RTC_MASK; //Enable clock gate
+ // Enable time counter
+ RTC_SR |= RTC_SR_TCE_MASK;
 
  //The interrupt source is enabled in the NVIC
  // vector num = 83, IRQ = 67
@@ -48,49 +47,47 @@ bool RTC_t::RTC_Init()
  // Enable interrupts from UART2 module
  NVICISER2 = (1 << 3);
 
- // Enable RTC ?
- RTC_SR |= RTC_SR_TCE_MASK;
-
  // Initialize the local usefunction
  UserFunc = userFunction;
  UserArgu = userArguments;
 
- __EI();// Enable the interrupt
 
  return true;
 }
 
 void RTC_t::RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec)
 {
- EnterCritical(); //Start critical section
+ //EnterCritical(); //Start critical section
 
  uint32_t second = sec + mins*60 + hour * 3600; //Convert into seconds
 
  RTC_SR &= ~RTC_SR_TCE_MASK; //Disable time counter
 
- RTC_TPR = 0x00; // Write to Prescaler Register
+ //RTC_TPR = 0x00; // Write to Prescaler Register
 
  RTC_TSR = second;  // Write to time second Register
 
  RTC_SR |= RTC_SR_TCE_MASK; //Enable time counter
 
- ExitCritical(); //End critical section
+ //ExitCritical(); //End critical section
 
 }
 
 void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 {
- EnterCritical(); //Start critical section
+ // EnterCritical(); //Start critical section
 
- uint32_t timeValue = RTC_TSR;
+  uint32_t timeValue = RTC_TSR;
 
- hours = timeValue / 3600;
+  uint32_t timeValueDay = timeValue % 86400;
 
- mins = (timeValue % 3600) / 60;
+  hours = timeValueDay / 3600;
 
- sec = timeValue % 3600 % 60;
+  mins = (timeValueDay % 3600) / 60;
 
- ExitCritical(); //End critical section
+  sec = timeValueDay % 3600 % 60;
+
+  //ExitCritical(); //End critical section
 
 }
 
@@ -98,10 +95,14 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 RTC_t::RTC_t(F* userFunc, void* userArgu):
 userFunction(userFunc), userArguments(userArgu)
 {
-  assert(this->RTC_Init());
+  __DI();//Disable interrupt
+  this->RTC_Init();
+  __EI();// Enable the interrupt
 }
 
-void __attribute__ ((interrupt)) RTC_ISR()
+
+
+void __attribute__ ((interrupt)) ISR()
 {
   // call callback function
   if (UserFunc)
@@ -109,3 +110,6 @@ void __attribute__ ((interrupt)) RTC_ISR()
 }
 
 }
+
+
+

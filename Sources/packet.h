@@ -67,10 +67,10 @@ typedef union
 #define Packet_Parameter23 Packet_t::s_Packet.packetStruct.parameters.combined23.parameter23
 #define Packet_Checksum    Packet_t::s_Packet.packetStruct.checksum
 
-class Packet_t
+class Packet_t: public UART_t
 {
   public:
-   static TPacket s_Packet; /*!< The static variable packet with TPacket type */
+  static TPacket s_Packet; /*!< The static variable packet with TPacket type */
 
   /*! @brief Initializes the packets by calling the initialization routines of the supporting software modules.
  *
@@ -78,9 +78,9 @@ class Packet_t
  *  @param moduleClk The module clock rate in Hz.
  *  @return None
  */
-   Packet_t(const uint32_t baudRate, const uint32_t moduleClk)
+   Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
+    UART_t::UART_t(baudRate, moduleClk)
    {
-     UART_Init(baudRate, moduleClk);
    }
   /*! @brief Attempts to get a packet from the received data.
  *
@@ -92,7 +92,7 @@ class Packet_t
  *
  *  @return bool - TRUE if a valid packet was sent.
  */
-   bool PacketPut();
+   bool PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3);
 
   /*! @brief to handle error condition by discarding first byte and adding the new byte
  *
@@ -107,89 +107,6 @@ class Packet_t
    uint8_t MakeChecksum();
 
 };
-
-
-namespace HandlePacket
-{
-
- enum Command{
-  CMD_STARTUP = 0x04,
-  CMD_TOWERVERSION = 0x09,
-  CMD_TOWERNUMBER = 0x0B,
-  CMD_SETTIME = 0x0C,
-  CMD_TOWERMODE = 0x0D,
-  CMD_ACK_STARTUP = 0x84,
-  CMD_ACK_TOWERVERSION = 0x89,
-  CMD_ACK_TOWERNUMBER = 0x8B,
-  CMD_ACK_TOWERMODE = 0x8D,
-  CMD_MYTOWERNUMBER = 0x9434
- };
-  /*! @brief To handle startup packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleStartupPacket(Packet_t &packet);
-
-  /*! @brief To handle acknowledgement startup packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleACKStartupPacket(Packet_t &packet);
-
-  /*! @brief To handle tower version packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleTowerVersionPacket(Packet_t &packet);
-
-  /*! @brief To handle acknowledgement tower version packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleACKTowerVersionPacket(Packet_t &packet);
-
-  /*! @brief To handle tower number packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleTowerNumberPacket(Packet_t &packet);
-
-  /*! @brief To handle acknowledgement tower number packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleACKTowerNumberPacket(Packet_t &packet);
-
-  /*! @brief To handle tower mode packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleTowerModePacket(Packet_t &packet);
-
-  /*! @brief To handle acknowledgement tower mode packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleACKTowerModePacket(Packet_t &packet);
-
-  /*! @brief To send 4 packets initially and the repsonse for startup protocol
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void InitResponsePacket(Packet_t &packet);
-
- /*! @brief To decide how to send packet depending on packet command ID
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void HandleCommandPacket(Packet_t &packet);
-
- /*! @brief To handle set time packet
-   *  @param packet the PacketVert2 object
-   *  @return void
-  */
-  static void SetTimePacket(Packet_t &packet);
-}
 
 
 // Acknowledgment bit mask
