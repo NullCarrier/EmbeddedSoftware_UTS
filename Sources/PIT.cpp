@@ -21,22 +21,27 @@ static void* UserArgu;
 
 
  bool PIT_t::PIT_Init()
- {
+{
+
  __DI();//Disable interrupt
 
  //enable clock gate
  SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
  //Disable timer0
- this->PIT_Enable(false);
+  this->PIT_Enable(false);
 
  //enable timer module
  PIT_MCR &= ~PIT_MCR_MDIS_MASK;
 
+
  //Freeze the timer
  PIT_MCR |= PIT_MCR_FRZ_MASK;
 
- this->PIT_Set(1000 ,false); // period 1000ms
+ //initialize the timer: 500ms
+// PIT_LDVAL0 = 0xBEBC1F;
+
+ this->PIT_Set(1000 ,true); // period 500ms
 
  // Initialize NVIC
  // Vector =84, IRQ=68
@@ -56,31 +61,34 @@ static void* UserArgu;
  __EI();// Enable the interrupt
 
  return true;
- }
+}
 
 
- void PIT_t::PIT_Set(const uint32_t& period, bool restart)
+void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
+{
+  period = newPeriod * 1e6;
+
+ if (restart)
  {
-
-  if (restart){
-
   //disable timer0
   this->PIT_Enable(false);
 
-  //reload the timer, unit: ns
-  PIT_LDVAL0 = ( period * 1e6 / ((1/moduleClk)*1e9) ) - 1;
+  //reload the timer
+  PIT_LDVAL0 = ( period / ( ( 1/(float) moduleClk)*1e9) ) - 1;
 
   //Enable timer0
   this->PIT_Enable(true);
-  }
-  else{
-  //reload the timer during running the timer
-  PIT_LDVAL0 = ( period * 1e6 / ((1/moduleClk)*1e9) ) - 1;
-  }
-
-  // Enable timer0 interrupt
-  PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK;
  }
+ else
+ {
+  //reload the timer during running the timer
+	 PIT_LDVAL0 = ( period / (( 1/ (float) moduleClk) *1e9) ) - 1;
+ }
+
+ // Enable timer0 interrupt
+ PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK;
+
+}
 
 
 void PIT_t::PIT_Enable(const bool enable)
@@ -93,7 +101,7 @@ void PIT_t::PIT_Enable(const bool enable)
 
 
 PIT_t::PIT_t(const uint32_t mClock, const uint32_t T, F* userFunc, void* userArgu):
-moduleClk(mClock) , userFunction(userFunc), userArguments(userArgu)
+moduleClk(mClock) , period(T),userFunction(userFunc), userArguments(userArgu)
 {
   this->PIT_Init();
 }
@@ -102,7 +110,7 @@ void __attribute__ ((interrupt)) PIT_ISR(void)
 {
  if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
  {
-  PIT_TFLG0 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
+  PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
  // then call callback function
   if (UserFunc)

@@ -35,12 +35,12 @@ class RTC_t
  public:
 /*! @brief Initialize constructor for initializing userFunction and userArguments
  *
- *  @param userFunction is a pointer to a user callback function.
- *  @param userArguments is a pointer to the user arguments to use with the user callback function.
+ *  @param uF is a pointer to a user callback function.
+ *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  */
   RTC_t(F* uF, void* userArgu);
 
-/*! @brief Initialize constructor for initializing RTC object
+/*! @brief Default constructor for initializing RTC object
  *
  *
  */
@@ -48,9 +48,9 @@ class RTC_t
 
 /*! @brief Sets the value of the real time clock.
  *
- *  @param hours The desired value of the real time clock hours (0-23).
- *  @param minutes The desired value of the real time clock minutes (0-59).
- *  @param seconds The desired value of the real time clock seconds (0-59).
+ *  @param hour The desired value of the real time clock hours (0-23).
+ *  @param mins The desired value of the real time clock minutes (0-59).
+ *  @param sec The desired value of the real time clock seconds (0-59).
  *  @note Assumes that the RTC module has been initialized and all input parameters are in range.
  */
   void RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec);
@@ -58,8 +58,8 @@ class RTC_t
  /*! @brief Gets the value of the real time clock.
  *
  *  @param hours The address of a variable to store the real time clock hours.
- *  @param minutes The address of a variable to store the real time clock minutes.
- *  @param seconds The address of a variable to store the real time clock seconds.
+ *  @param mins The address of a variable to store the real time clock minutes.
+ *  @param sec The address of a variable to store the real time clock seconds.
  *  @note Assumes that the RTC module has been initialized.
  */
   void RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec);
@@ -68,8 +68,7 @@ class RTC_t
  *
  *  Sets up the control register for the RTC and locks it.
  *  Enables the RTC and sets an interrupt every second.
- *  @param userFunction is a pointer to a user callback function.
- *  @param userArguments is a pointer to the user arguments to use with the user callback function.
+ *
  *  @return bool - TRUE if the RTC was successfully initialized.
  */
   bool RTC_Init();
@@ -89,16 +88,5 @@ class RTC_t
 }
 
 
-
-
-
-
-//void RTC_Set(const uint8_t hours, const uint8_t minutes, const uint8_t seconds);
-
-
-//void RTC_Get(uint8_t* const hours, uint8_t* const minutes, uint8_t* const seconds);
-
-
-//void __attribute__ ((interrupt)) RTC_ISR(void);
 
 #endif

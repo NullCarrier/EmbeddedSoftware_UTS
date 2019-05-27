@@ -35,7 +35,7 @@
 
 //#include "Flash.h"
 
-//#include "PIT.h"
+#include "PIT.h"
 
 #include "RTC.h"
 
@@ -410,12 +410,9 @@ int main(void)
   /* Write your local variable definition here */
 
   //PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
-  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
   __DI();//Disable interrupt
-
-  //PIT_Init(CPU_BUS_CLK_HZ, PITCallBack, 0);
-  //PIT_Set(1e9, true);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();

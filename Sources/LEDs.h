@@ -35,28 +35,27 @@
 
  /*! @brief Turns an LED on.
  *
- *  @param color The color of the LED to turn on.
  *  @note Assumes that LEDs_Init has been called.
  */
  void On() const;
 
  /*! @brief Turns off an LED.
  *
- *  @param color THe color of the LED to turn off.
+ *
  *  @note Assumes that LEDs_Init has been called.
  */
  void Off() const;
 
  /*! @brief Toggles an LED.
  *
- *  @param color THe color of the LED to toggle.
+ *
  *  @note Assumes that LEDs_Init has been called.
  */
  void Toggle() const;
 
- /*! @brief constructor to Initialise the color
+ /*! @brief constructor to Initialize the color
  *
- *  @param color THe color of the LED
+ *
  *  @note Assumes that LEDs_Init has been called.
  */
  LED_t()
@@ -71,6 +70,10 @@
 */
   bool Init(void);
 
+  /*! @brief Assign color for LED depending on pins
+    *
+    *  @param color the color of LED
+  */
   void Color(TLED color);
 
   private:

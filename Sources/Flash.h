@@ -65,6 +65,7 @@ class TFCCOB final
 
 /*! @brief to write phrase into flash sector
  *  @param address The address of the data.
+ *  @param phase the 8 byte data
  *  @return bool - TRUE if the phrase was written successfully
  *  @note Assumes Flash has been initialized.
  */

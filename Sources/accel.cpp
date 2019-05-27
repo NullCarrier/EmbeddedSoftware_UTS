@@ -200,6 +200,8 @@ void* Accel_t::dataReadyCallbackArguments;
   dataReadyCallbackFunction = dataReadyCallbackFunc;
   dataReadyCallbackArguments = dataReadyCallbackArgu;
 
+  this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
+
   //Initialize Acceleromter
   this->Init();
 
@@ -209,7 +211,7 @@ void* Accel_t::dataReadyCallbackArguments;
 
  /*! @brief Put the accelerometer into standby mode.
     * @param accel the object of class Accel_t
-   */
+ */
  inline void AccelStandby(Accel_t &accel)
  {
   //Disable accel
@@ -220,10 +222,9 @@ void* Accel_t::dataReadyCallbackArguments;
  }
 
 
-  /*! @brief Put the accelerometer into active mode.
+ /*! @brief Put the accelerometer into active mode.
    *  @param accel the object of class Accel_t
-  */
-
+ */
  inline void AccelActive(Accel_t &accel)
  {
   //Disable accel
@@ -243,10 +244,10 @@ void* Accel_t::dataReadyCallbackArguments;
   //PortB4
   PORTB_PCR4 |= PORT_PCR_MUX(1);
 
+  this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
+
   //Turn off Accel when configure reg
   AccelStandby(*this);
-
-  this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
 
   mode = POLL; //Default mode
 

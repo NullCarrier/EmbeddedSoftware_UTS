@@ -96,23 +96,6 @@ typedef union
  };
 
 
-/*! @brief Initializes the accelerometer by calling the initialization routines of the supporting software modules.
- *
- *  @param accelSetup is a pointer to an accelerometer setup structure.
- *  @return bool - TRUE if the accelerometer module was successfully initialized.
- */
-//bool Accel_Init(const TAccelSetup* const accelSetup);
-
-/*! @brief Reads X, Y and Z accelerations.
- *  @param data is a an array of 3 bytes where the X, Y and Z data are stored.
- */
-//void Accel_ReadXYZ(uint8_t data[3]);
-
-/*! @brief Set the mode of the accelerometer.
- *  @param mode specifies either polled or interrupt driven operation.
- */
-//void Accel_SetMode(const TAccelMode mode);
-
 /*! @brief Interrupt service routine for the accelerometer.
  *
  *  The accelerometer has data ready.

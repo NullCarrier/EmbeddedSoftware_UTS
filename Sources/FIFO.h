@@ -53,7 +53,7 @@ class TFIFO
  /*! @brief Get one character from the FIFO.
  *
  *
- *  @param dataPtr A pointer to a memory location to place the retrieved byte.
+ *  @param dataRef A pointer to a memory location to place the retrieved byte.
  *  @return bool - TRUE if data is successfully retrieved from the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */

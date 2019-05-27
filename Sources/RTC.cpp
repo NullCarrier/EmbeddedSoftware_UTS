@@ -10,7 +10,6 @@
  */
 
 #include "RTC.h"
-#include <cassert>
 
 namespace RTC{
 
@@ -22,7 +21,6 @@ static void* UserArgu;
 
 bool RTC_t::RTC_Init()
 {
- __DI();//Disable interrupt
 
  SIM_SCGC6 |= SIM_SCGC6_RTC_MASK; //Enable clock gate
 
@@ -53,7 +51,6 @@ bool RTC_t::RTC_Init()
  UserFunc = userFunction;
  UserArgu = userArguments;
 
- __EI();// Enable the interrupt
 
  return true;
 }
@@ -78,7 +75,7 @@ void RTC_t::RTC_Set(const uint8_t hour, const uint8_t mins, const uint8_t sec)
 
 void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 {
- //
+ // EnterCritical(); //Start critical section
 
   uint32_t timeValue = RTC_TSR;
 
@@ -90,7 +87,7 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 
   sec = timeValueDay % 3600 % 60;
 
-  //
+  //ExitCritical(); //End critical section
 
 }
 
@@ -98,7 +95,9 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 RTC_t::RTC_t(F* userFunc, void* userArgu):
 userFunction(userFunc), userArguments(userArgu)
 {
-  assert(this->RTC_Init());
+  __DI();//Disable interrupt
+  this->RTC_Init();
+  __EI();// Enable the interrupt
 }
 
 
