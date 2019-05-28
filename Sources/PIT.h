@@ -20,7 +20,8 @@
 // involve mask for all registers
 #include "MK70F12.h"
 
-namespace PIT{
+namespace PIT
+{
 
 class PIT_t
 {
@@ -37,12 +38,11 @@ class PIT_t
  *
  *  Enables the PIT and freezes the timer when debugging.
  *  @param mClock The module clock rate in Hz.
- *  @param T The desired value of the timer period in ms.
  *  @param userFunc is a pointer to a user callback function.
  *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-  PIT_t(const uint32_t mClock, const uint32_t T, F* userFunc, void* userArgu);
+  PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
 
 /*! @brief Sets up the PIT before first use.
  *
@@ -51,22 +51,22 @@ class PIT_t
  *  @return bool - TRUE if the PIT was successfully initialized.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-  bool PIT_Init();
+  bool Init();
 
 /*! @brief Sets the value of the desired period of the PIT.
  *
- *  @param p The desired value of the timer period in nanoseconds.
+ *  @param newPeriod The desired value of the timer period in nanoseconds.
  *  @param restart TRUE if the PIT is disabled, a new value set, and then enabled.
  *                 FALSE if the PIT will use the new value after a trigger event.
  *  @note The function will enable the timer and interrupts for the PIT.
  */
-  void PIT_Set(const uint32_t& p, bool restart);
+  void Set(const uint32_t& newPeriod, bool restart);
 
 /*! @brief Enables or disables the PIT.
  *
  *  @param enable - TRUE if the PIT is to be enabled, FALSE if the PIT is to be disabled.
  */
-  void PIT_Enable(const bool enable);
+  void Enable(const bool enable);
 
 };
 
@@ -76,31 +76,9 @@ class PIT_t
  *  The user callback function will be called.
  *  @note Assumes the PIT has been initialized.
  */
-void __attribute__ ((interrupt)) PIT_ISR(void);
+void __attribute__ ((interrupt)) ISR(void);
 
 }
 
-/*! @brief Sets the value of the desired period of the PIT.
- *
- *  @param period The desired value of the timer period in nanoseconds.
- *  @param restart TRUE if the PIT is disabled, a new value set, and then enabled.
- *                 FALSE if the PIT will use the new value after a trigger event.
- *  @note The function will enable the timer and interrupts for the PIT.
- */
-//void PIT_Set(const uint32_t period, const bool restart);
-
-/*! @brief Enables or disables the PIT.
- *
- *  @param enable - TRUE if the PIT is to be enabled, FALSE if the PIT is to be disabled.
- */
-//void PIT_Enable(const bool enable);
-
-/*! @brief Interrupt service routine for the PIT.
- *
- *  The periodic interrupt timer has timed out.
- *  The user callback function will be called.
- *  @note Assumes the PIT has been initialized.
- */
-//void __attribute__ ((interrupt)) PIT_ISR(void);
 
 #endif

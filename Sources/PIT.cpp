@@ -11,87 +11,84 @@
 #include "PIT.h"
 
 
-namespace PIT{
-
-using F = void (void*); // a function type, not a pointer
-
-// Local function pointer
-static F* UserFunc;
-static void* UserArgu;
-
-
- bool PIT_t::PIT_Init()
+namespace PIT
 {
 
- __DI();//Disable interrupt
+  using F = void (void*); // a function type, not a pointer
 
- //enable clock gate
- SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
-
- //Disable timer0
-  this->PIT_Enable(false);
-
- //enable timer module
- PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+  // Local function pointer
+  static F* UserFunc;
+  static void* UserArgu;
 
 
- //Freeze the timer
- PIT_MCR |= PIT_MCR_FRZ_MASK;
+  bool PIT_t::Init()
+  {
 
- //initialize the timer: 500ms
-// PIT_LDVAL0 = 0xBEBC1F;
+    __DI();//Disable interrupt
 
- this->PIT_Set(1000 ,true); // period 500ms
+   //enable clock gate
+    SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
+
+   //Disable timer0
+    this->Enable(false);
+
+    //enable timer module
+    PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+
+    //Freeze the timer
+    PIT_MCR |= PIT_MCR_FRZ_MASK;
+
+    //initialize the timer: 500ms
+    PIT_LDVAL0 = 0xBEBC1F;
 
  // Initialize NVIC
  // Vector =84, IRQ=68
  // Clear any pending interrupts on PIT0
- NVICICPR2 = (1 << (68 % 32));
+    NVICICPR2 = (1 << (68 % 32));
 
  // Enable interrupts from PIT module
- NVICISER2 = (1 << (68 % 32));
+    NVICISER2 = (1 << (68 % 32));
 
  //Enable timer0
- this->PIT_Enable(true);
+    this->Enable(true);
 
  // Initialize the local usefunction
- UserFunc = userFunction;
- UserArgu = userArguments;
+    UserFunc = userFunction;
+    UserArgu = userArguments;
 
- __EI();// Enable the interrupt
+    __EI();// Enable the interrupt
 
- return true;
-}
+    return true;
+  }
 
 
-void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
+void PIT_t::Set(const uint32_t& newPeriod, bool restart)
 {
-  period = newPeriod * 1e6;
+  period = newPeriod * 1e6; // Convert into ns
 
- if (restart)
- {
+  if (restart)
+  {
   //disable timer0
-  this->PIT_Enable(false);
+   this->Enable(false);
 
   //reload the timer
-  PIT_LDVAL0 = ( period / ( ( 1/(float) moduleClk)*1e9) ) - 1;
+   PIT_LDVAL0 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
 
   //Enable timer0
-  this->PIT_Enable(true);
+   this->Enable(true);
  }
  else
  {
   //reload the timer during running the timer
-	 PIT_LDVAL0 = ( period / (( 1/ (float) moduleClk) *1e9) ) - 1;
+   PIT_LDVAL0 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
  }
 
  // Enable timer0 interrupt
  PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK;
-
 }
 
 
-void PIT_t::PIT_Enable(const bool enable)
+void PIT_t::Enable(const bool enable)
 {
  if (enable)
  PIT_TCTRL0 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
@@ -100,17 +97,17 @@ void PIT_t::PIT_Enable(const bool enable)
 }
 
 
-PIT_t::PIT_t(const uint32_t mClock, const uint32_t T, F* userFunc, void* userArgu):
-moduleClk(mClock) , period(T),userFunction(userFunc), userArguments(userArgu)
+PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
+moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
 {
-  this->PIT_Init();
+  this->Init();
 }
 
-void __attribute__ ((interrupt)) PIT_ISR(void)
+void __attribute__ ((interrupt)) ISR(void)
 {
  if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
  {
-  PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
+  PIT_TFLG0 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
  // then call callback function
   if (UserFunc)

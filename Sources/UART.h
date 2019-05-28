@@ -33,7 +33,6 @@ class UART_t
   uint32_t moduleClk;  /*!< moduleClk The module clock rate in Hz. */
 
   protected:
-
   /*! @brief Sets up the UART interface before first use.
    *
    *  @return bool - TRUE if the UART was successfully initialized.
@@ -58,7 +57,6 @@ class UART_t
   uint8_t &rxData;
 #endif
   public:
-
   /*! @brief Put a byte in the transmit FIFO if it is not full.
    *
    *  @param rxData The byte to be placed in the transmit FIFO.

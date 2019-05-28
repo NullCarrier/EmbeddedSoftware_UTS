@@ -356,19 +356,15 @@ void SendAccelPacket(Packet_t &packet)
   Accelerometer.ReadXYZ(data.bytes);
 
   //if data is different, then  packet should be sent
-  if ((dataX != data.axes.x) || (dataY != data.axes.y) || (dataZ != data.axes.z)){
+  if ((dataX != data.axes.x) || (dataY != data.axes.y) || (dataZ != data.axes.z))
+  {
 
-  //To store previous value
-  dataX = data.axes.x;
-  dataY = data.axes.y;
-  dataZ = data.axes.z;
+   //To store previous value
+   dataX = data.axes.x;
+   dataY = data.axes.y;
+   dataZ = data.axes.z;
 
-  Packet_Command = HandlePacket::CMD_ACCEL_VALUE;
-  Packet_Parameter1 = data.axes.x;
-  Packet_Parameter2 = data.axes.y;
-  Packet_Parameter3 = data.axes.z;
-
-  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+   packet.Packet_t::PacketPut(HandlePacket::CMD_ACCEL_VALUE, dataX, dataY, dataZ); //send it to FIFO
   }
 }
 
@@ -378,7 +374,7 @@ namespace CallBack{
 static LED_t Led;
 
  //function description
- void PITCallBack(void* argu)
+ void PIT(void* argu)
  {
   Led.Color(LED_t::GREEN);
   Led.Toggle();
@@ -387,15 +383,15 @@ static LED_t Led;
 
  void RTC(void* argu)
 {
-  //uint8_t hours, mins, sec;
-  //RTC::RTC_t rtc;
+  uint8_t hours, mins, sec;
+  RTC::RTC_t rtc;
 
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  //rtc.RTC_Get(hours, mins, sec);
+  rtc.RTC_Get(hours, mins, sec);
 
-  //Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
   SendAccelPacket(Packet);
 }
 
@@ -409,8 +405,10 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  //PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
-  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
+  pit.Set(1000, true);
+
+  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
   __DI();//Disable interrupt
 
@@ -423,11 +421,10 @@ int main(void)
   /* Write your code here */
   for (;;)
   {
-    if ( Packet.Packet_t::PacketGet()){
+    if ( Packet.Packet_t::PacketGet())
     HandlePacket::HandleCommandPacket(Packet);
-    SendAccelPacket(Packet);
-    }
-    UART_ISR();
+
+    //UART_ISR();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
