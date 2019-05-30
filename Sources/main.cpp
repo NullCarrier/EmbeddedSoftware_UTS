@@ -1,5 +1,5 @@
 /* ###################################################################
-**     Filename    : main.c
+**     Filename    : main.cpp
 **     Project     : Lab1
 **     Processor   : MK70FN1M0VMJ12
 **     Version     : Driver 01.01

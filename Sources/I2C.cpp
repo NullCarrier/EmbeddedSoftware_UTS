@@ -49,8 +49,8 @@ namespace I2C
 
     //NVIC
     //Vector = 40, IRQ = 24
-    NVICICPR0 = (1 << (24 % 32) );
-    NVICISER0 = (1 << (24 % 32) );
+   // NVICICPR0 = (1 << (24 % 32) );
+   // NVICISER0 = (1 << (24 % 32) );
 
     //Enable I2C interrupt
     I2C0_C1 |= I2C_C1_IICIE_MASK;
@@ -88,14 +88,14 @@ namespace I2C
   {
     const uint8_t flag = ~0x01;
 
+    //Transmit Mode
+    I2C0_C1 |= I2C_C1_TX_MASK;
+
     // Send ACK signal to accel after receiving byte
     I2C0_C1 &= ~I2C_C1_TXAK_MASK;
 
     // Generate start signal to initiate communication
     I2C0_C1 |= I2C_C1_MST_MASK;
-
-    //Transmit Mode
-    I2C0_C1 |= I2C_C1_TX_MASK;
 
     do
     {
@@ -149,15 +149,13 @@ namespace I2C
     //Send address to accelerometer
     AddressCycle(primarySlaveAddress, registerAddress);
 
-    if (InterruptFlag() )
-    {
       //Generate signal of repeat START
-      I2C0_C1 |= I2C_C1_RSTA_MASK;
+    I2C0_C1 |= I2C_C1_RSTA_MASK;
 
       // send the address of slave with R/W bit = 1
-      primarySlaveAddress |= rFlag;
-      I2C0_D = primarySlaveAddress;
-    }
+    primarySlaveAddress |= rFlag;
+    I2C0_D = primarySlaveAddress;
+
 
     if (InterruptFlag() )
     {
@@ -182,6 +180,7 @@ namespace I2C
 
     //Generate STOP bit via selecting slave mode
     I2C0_C1 &= ~I2C_C1_MST_MASK;
+    InterruptFlag();
   }
 
 

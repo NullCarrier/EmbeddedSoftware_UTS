@@ -24,12 +24,10 @@ namespace PIT
   bool PIT_t::Init()
   {
 
-    __DI();//Disable interrupt
-
    //enable clock gate
     SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
-   //Disable timer0
+   //Disable timer1
     this->Enable(false);
 
     //enable timer module
@@ -39,24 +37,26 @@ namespace PIT
     PIT_MCR |= PIT_MCR_FRZ_MASK;
 
     //initialize the timer: 500ms
-    PIT_LDVAL0 = 0xBEBC1F;
+    PIT_LDVAL1 = 0xBEBC1F;
 
  // Initialize NVIC
- // Vector =84, IRQ=68
+ // Vector =85, IRQ=69
  // Clear any pending interrupts on PIT0
-    NVICICPR2 = (1 << (68 % 32));
+    NVICICPR2 = (1 << (69 % 32));
 
  // Enable interrupts from PIT module
-    NVICISER2 = (1 << (68 % 32));
+    NVICISER2 = (1 << (69 % 32));
 
- //Enable timer0
+ //Enable timer1
     this->Enable(true);
 
  // Initialize the local usefunction
     UserFunc = userFunction;
     UserArgu = userArguments;
 
-    __EI();// Enable the interrupt
+    // Enable timer0 interrupt
+     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
+
 
     return true;
   }
@@ -68,46 +68,51 @@ void PIT_t::Set(const uint32_t& newPeriod, bool restart)
 
   if (restart)
   {
-  //disable timer0
+  //disable timer1
    this->Enable(false);
-
   //reload the timer
-   PIT_LDVAL0 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
+   PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
 
-  //Enable timer0
+  //Enable timer1
    this->Enable(true);
  }
  else
  {
   //reload the timer during running the timer
-   PIT_LDVAL0 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
+   PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
  }
 
- // Enable timer0 interrupt
- PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK;
+
 }
 
 
 void PIT_t::Enable(const bool enable)
 {
  if (enable)
- PIT_TCTRL0 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
+   PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
  else
- PIT_TCTRL0 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
+   PIT_TCTRL1 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
 }
 
 
 PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
 moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
 {
+
+  __DI(); //Disable interrupt
+
   this->Init();
+
+  __EI(); // Enable the interrupt
+
 }
+
 
 void __attribute__ ((interrupt)) ISR(void)
 {
- if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
+ if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
  {
-  PIT_TFLG0 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
+  PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
  // then call callback function
   if (UserFunc)

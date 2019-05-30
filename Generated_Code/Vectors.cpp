@@ -58,7 +58,6 @@
   #include "UART.h"
   #include "PIT.h"
   #include "RTC.h"
-  #include "FTM.h"
 
   /* ISR prototype */
   extern uint32_t __SP_INIT;
@@ -154,14 +153,14 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4B  0x0000012C   -   ivINT_CMP0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4C  0x00000130   -   ivINT_CMP1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4D  0x00000134   -   ivINT_CMP2                     unused by PE */
-    (tIsrFunc)&FTM::FTM0_ISR,          /* 0x4E  0x00000138   -   ivINT_FTM0                     unused by PE */
+    (tIsrFunc)&Cpu_Interrupt,          /* 0x4E  0x00000138   -   ivINT_FTM0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x4F  0x0000013C   -   ivINT_FTM1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x50  0x00000140   -   ivINT_FTM2                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x51  0x00000144   -   ivINT_CMT                      unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x52  0x00000148   -   ivINT_RTC                      unused by PE */
-    (tIsrFunc)&RTC::ISR,        /* 0x53  0x0000014C   -   ivINT_RTC_Seconds              unused by PE */
-    (tIsrFunc)&PIT::ISR,        /* 0x54  0x00000150   -   ivINT_PIT0                     unused by PE */
-    (tIsrFunc)&Cpu_Interrupt,          /* 0x55  0x00000154   -   ivINT_PIT1                     unused by PE */
+    (tIsrFunc)&RTC::ISR,         /* 0x53  0x0000014C   -   ivINT_RTC_Seconds              unused by PE */
+    (tIsrFunc)&Cpu_Interrupt,          /* 0x54  0x00000150   -   ivINT_PIT0                     unused by PE */
+    (tIsrFunc)&PIT::ISR,          /* 0x55  0x00000154   -   ivINT_PIT1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x56  0x00000158   -   ivINT_PIT2                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x57  0x0000015C   -   ivINT_PIT3                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x58  0x00000160   -   ivINT_PDB0                     unused by PE */

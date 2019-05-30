@@ -244,8 +244,6 @@ void* Accel_t::dataReadyCallbackArguments;
   //PortB4
   PORTB_PCR4 |= PORT_PCR_MUX(1);
 
-  this->SelectSlaveDevice(0x1D); // Assign address of accel as SA0 = 1
-
   //Turn off Accel when configure reg
   AccelStandby(*this);
 
@@ -263,6 +261,12 @@ void* Accel_t::dataReadyCallbackArguments;
   this->Write(ADDRESS_CTRL_REG1, CTRL_REG1);
   this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
 
+  //NVIC
+  // PortB
+  //Vector = 104, IRQ = 88
+   NVICICPR2 = (1 << (88 % 32) );
+   NVICISER2 = (1 << (88 % 32) );
+
   //turn on Accel
   AccelActive(*this);
 
@@ -272,7 +276,6 @@ void* Accel_t::dataReadyCallbackArguments;
 
  void Accel_t::ReadXYZ(uint8_t data[3])
  {
-  if (mode == Accel::POLL){
 
   AccelStandby(*this); //Turn off Accel when configure reg
 
@@ -282,23 +285,14 @@ void* Accel_t::dataReadyCallbackArguments;
 
   AccelActive(*this);//turn on Accel
 
-  this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
 
-  }
-  else{
-
-  AccelStandby(*this); //Turn off Accel when configure reg
-
-  CTRL_REG4_INT_EN_DRDY = mode; //Enable interrupt
-
-  this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
-
-  AccelActive(*this);//turn on Accel
-
-  this->IntRead(ADDRESS_OUT_X_MSB, data, 3); // Reading in interrupt mode*/
-  }
+ if (mode == Accel::POLL)
+   this->PollRead(ADDRESS_OUT_X_MSB, data, 3); //Reading in Poll mode
+ else
+   this->IntRead(ADDRESS_OUT_X_MSB, data, 3); // Reading in interrupt mode*/
 
  }
+
 
  void Accel_t::SetMode(const TAccelMode mod)
  {
