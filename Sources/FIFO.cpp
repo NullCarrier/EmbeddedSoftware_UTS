@@ -15,10 +15,11 @@
 
  bool TFIFO::Put(const uint8_t data)
 {
-  EnterCritical(); //Start critical section
+
 
   if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
   {
+	  EnterCritical(); //Start critical section
 
   NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
@@ -40,10 +41,12 @@
 bool TFIFO::Get(uint8_t &dataRef)
 {
 
-  EnterCritical(); //Start critical section
+
 
   if (NbBytes != 0) // can not retrieve if buffer is empty
   {
+
+	  EnterCritical(); //Start critical section
 
   NbBytes--; // decrement one whenever the Buffer has been retrieved
 

@@ -180,11 +180,11 @@ void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
-  //RTC::RTC_t rtc;
+//  RTC::RTC_t rtc;
 
-  //rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+//  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
-  //packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+//  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 
@@ -263,41 +263,32 @@ void HandlePacket::InitResponsePacket(Packet_t &packet)
 void HandlePacket::HandleACKStartupPacket(Packet_t &packet)
 {
   // Send tower startup packet
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_STARTUP;
 
   InitResponsePacket(packet);
 
-  ExitCritical(); //End critical section
-
   // Send ack tower startup packet
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_ACK_STARTUP; // to modify the packet command ID
 
   HandleStartupPacket(packet); // to send ack pakcet
 
-  ExitCritical(); //End critical section
 }
 
 void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
 {
   // Send tower version packet
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_TOWERVERSION;
 
-  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower version packet
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_ACK_TOWERVERSION;
 
-  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 }
@@ -305,20 +296,15 @@ void HandlePacket::HandleACKTowerVersionPacket(Packet_t &packet)
 void HandlePacket::HandleACKTowerNumberPacket(Packet_t &packet)
 {
   // Send tower number pacHandlePacketket
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_TOWERNUMBER;
-
-  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower version packet
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_ACK_TOWERNUMBER;
 
-  ExitCritical(); //End critical section
 
   HandleTowerNumberPacket(packet);
 }
@@ -326,20 +312,13 @@ void HandlePacket::HandleACKTowerNumberPacket(Packet_t &packet)
 void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 {
   // Send tower mode packet
-  EnterCritical(); //Start critical section
 
   Packet_Command = HandlePacket::CMD_TOWERMODE;
-
-  ExitCritical(); //End critical section
 
   HandleTowerVersionPacket(packet);
 
   // Send ack tower mode packet
-  EnterCritical(); //Start critical section
-
   Packet_Command = HandlePacket::CMD_ACK_TOWERMODE;
-
-  ExitCritical(); //End critical section
 
   HandleTowerModePacket(packet);
 }
@@ -379,8 +358,10 @@ static LED_t Led;
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
+  SendAccelPacket(Packet);
  }
 
+/*
  void RTC(void* argu)
 {
   uint8_t hours, mins, sec;
@@ -392,8 +373,8 @@ static LED_t Led;
   rtc.RTC_Get(hours, mins, sec);
 
   Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
-  SendAccelPacket(Packet);
-}
+
+}*/
 
 }
 
@@ -408,7 +389,7 @@ int main(void)
   PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
   pit.Set(1000, true);
 
-  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
   __DI();//Disable interrupt
 
@@ -424,7 +405,7 @@ int main(void)
     if ( Packet.Packet_t::PacketGet())
     HandlePacket::HandleCommandPacket(Packet);
 
-    //UART_ISR();
+    UART_ISR();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

@@ -156,11 +156,11 @@ namespace I2C
     primarySlaveAddress |= rFlag;
     I2C0_D = primarySlaveAddress;
 
-
     if (InterruptFlag() )
     {
       //Master Rx mode
       I2C0_C1 &= ~I2C_C1_TX_MASK;
+      *dataPtr = I2C0_D; // Dummy read
 
       //Reveiving data from slave
       for (uint8_t count = nbBytes; count != 0;count--)
@@ -178,9 +178,11 @@ namespace I2C
 
     }
 
+    InterruptFlag();
+
     //Generate STOP bit via selecting slave mode
     I2C0_C1 &= ~I2C_C1_MST_MASK;
-    InterruptFlag();
+
   }
 
 
@@ -208,15 +210,15 @@ namespace I2C
      I2C0_C1 &= ~I2C_C1_TX_MASK;
 
   //Reveiving data from slave
-  for (uint8_t count = nbBytes; count != 0;count--){
+      for (uint8_t count = nbBytes; count != 0;count--){
 
-  if (count == 1) // last bytes to be read
-  //Generate STOP bit via selecting slave mode
-  I2C0_C1 &= ~I2C_C1_MST_MASK;
-  else if (count == nbBytes - 1) // 2nd to last bytes to be read
-  I2C0_C1 |= I2C_C1_TXAK_MASK; //Set TXACK
+        if (count == 1) // last bytes to be read
+        //Generate STOP bit via selecting slave mode
+        I2C0_C1 &= ~I2C_C1_MST_MASK;
+       else if (count == nbBytes - 1) // 2nd to last bytes to be read
+       I2C0_C1 |= I2C_C1_TXAK_MASK; //Set TXACK
 
-  *dataPtr++ = I2C0_D; // Reading data from slav
+        *dataPtr++ = I2C0_D; // Reading data from slav
 
   }
 

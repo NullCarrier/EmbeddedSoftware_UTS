@@ -76,10 +76,9 @@ bool UART_t::Init() const
   NVICISER1 = NVIC_ISER_SETENA(1 << 17);
 
  //Set priority?
+  UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
 
   __EI();// Enable the interrupt
-
-  UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
 
   return true;
 }
@@ -124,7 +123,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
  {
    if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
   {
-   RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+    RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
   }
  }
 
@@ -134,6 +133,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
   if (UART2_S1 & UART_S1_TDRE_MASK)
   {
    uint8_t data{0};
+
    if (!TxFIFO.Get(data) )
    {
 	EnterCritical(); //Start critical section

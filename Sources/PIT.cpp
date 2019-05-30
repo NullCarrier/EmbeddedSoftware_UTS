@@ -27,11 +27,11 @@ namespace PIT
    //enable clock gate
     SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
-   //Disable timer1
-    this->Enable(false);
-
     //enable timer module
     PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+
+    //Disable timer1
+    this->Enable(false);
 
     //Freeze the timer
     PIT_MCR |= PIT_MCR_FRZ_MASK;
@@ -55,7 +55,7 @@ namespace PIT
     UserArgu = userArguments;
 
     // Enable timer0 interrupt
-     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
+    PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
 
 
     return true;
@@ -70,6 +70,7 @@ void PIT_t::Set(const uint32_t& newPeriod, bool restart)
   {
   //disable timer1
    this->Enable(false);
+
   //reload the timer
    PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
 

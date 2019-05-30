@@ -31,46 +31,38 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
   switch (nbBytesPacket){
 
   case 1:
-  Packet_Command = rxData; // assign data to Packet
-  nbBytesPacket++;
+    Packet_Command = rxData; // assign data to Packet
+    nbBytesPacket++;
   break;
 
   case 2:
-  Packet_Parameter1 = rxData;
-  nbBytesPacket++;
+    Packet_Parameter1 = rxData;
+    nbBytesPacket++;
   break;
 
   case 3:
-  Packet_Parameter2 = rxData;
-  nbBytesPacket++;
+    Packet_Parameter2 = rxData;
+    nbBytesPacket++;
   break;
 
   case 4:
-  Packet_Parameter3 = rxData;
-  nbBytesPacket++;
+    Packet_Parameter3 = rxData;
+    nbBytesPacket++;
   break;
 
   case 5:
-  Packet_Checksum = rxData;
-
-  //EnterCritical(); //Start critical section
+    Packet_Checksum = rxData;
 
   if (Packet_Checksum == MakeChecksum()){
 
   // checksum is good, then check it out
   nbBytesPacket = 1;
 
-  //ExitCritical(); //End critical section
-
   return true;
   }
   else{
   // checksum is not good , then discarding first byte, going back to case 4
-  //EnterCritical(); //Start critical section
-
   SwitchPacket();
-
-  //ExitCritical(); //End critical section
 
   //nbBytesPacket--;
   return false;

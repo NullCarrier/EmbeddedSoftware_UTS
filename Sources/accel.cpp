@@ -245,7 +245,7 @@ void* Accel_t::dataReadyCallbackArguments;
   PORTB_PCR4 |= PORT_PCR_MUX(1);
 
   //Turn off Accel when configure reg
-  AccelStandby(*this);
+  //AccelStandby(*this);
 
   mode = POLL; //Default mode
 
@@ -259,7 +259,7 @@ void* Accel_t::dataReadyCallbackArguments;
 
   //Send info to regs inside accel
   this->Write(ADDRESS_CTRL_REG1, CTRL_REG1);
-  this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
+  //this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
 
   //NVIC
   // PortB
@@ -268,7 +268,7 @@ void* Accel_t::dataReadyCallbackArguments;
    NVICISER2 = (1 << (88 % 32) );
 
   //turn on Accel
-  AccelActive(*this);
+ // AccelActive(*this);
 
   return true;
  }
@@ -277,13 +277,13 @@ void* Accel_t::dataReadyCallbackArguments;
  void Accel_t::ReadXYZ(uint8_t data[3])
  {
 
-  AccelStandby(*this); //Turn off Accel when configure reg
+ // AccelStandby(*this); //Turn off Accel when configure reg
 
-  CTRL_REG4_INT_EN_DRDY = mode; //Disable interrupt
+/*  CTRL_REG4_INT_EN_DRDY = mode; //Disable interrupt
 
   this->Write(ADDRESS_CTRL_REG4, CTRL_REG4);
 
-  AccelActive(*this);//turn on Accel
+  AccelActive(*this);//turn on Accel */
 
 
  if (mode == Accel::POLL)
