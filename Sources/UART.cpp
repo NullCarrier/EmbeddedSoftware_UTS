@@ -119,34 +119,33 @@ void UART_Poll(void)
 void __attribute__ ((interrupt)) UART_ISR(void)
 {
   // receiving data condition
-  if (UART2_C2 & UART_C2_RIE_MASK)
- {
-   if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
-  {
-    RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
-  }
- }
+   if (UART2_C2 & UART_C2_RIE_MASK)
+   {
+      if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
+      {
+         RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+      }
+   }
 
 // Transmit a byte of data
- if (UART2_C2 & UART_C2_TIE_MASK)
- {
-  if (UART2_S1 & UART_S1_TDRE_MASK)
-  {
-   uint8_t data{0};
-
-   if (!TxFIFO.Get(data) )
+   if (UART2_C2 & UART_C2_TIE_MASK)
    {
-	EnterCritical(); //Start critical section
+      if (UART2_S1 & UART_S1_TDRE_MASK)
+      {
+         uint8_t data{0};
 
-	UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+         if (!TxFIFO.Get(data) )
+         {
+	        critical section; //Enter critical section
 
-	ExitCritical(); //End critical section
+	        UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+
+         }
+         else
+         UART2_D = data;
+      }
+
    }
-   else
-   UART2_D = data;
-  }
-
- }
 
 }
 

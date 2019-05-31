@@ -25,6 +25,7 @@
 // involve mask for all registers
 #include "MK70F12.h"
 
+#include "critical.h" //critical section
 
 class UART_t
 {
