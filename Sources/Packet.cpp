@@ -77,28 +77,27 @@ const uint8_t PACKET_ACK_MASK = 0b10000000;
 }
 
 
- bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
+bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
 {
-  //bool success;
+  bool success{1};
   uint8_t checksum = command ^ parameter1 ^ parameter2 ^ parameter3;
-
-  if (this->OutChar(command))
-  {
-  	 EnterCritical(); //Start critical section
-
-  	 UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
-
-  	 ExitCritical(); //End critical section
+  uint8_t packet[5] = {command, parameter1, parameter2, parameter3, checksum};
+  
+  for (auto it : packet)
+  { 
+     if (success)
+      success = this->OutChar(it);
+     else
+	  return false;
   }
-  else
-  return false;
+  
+  EnterCritical(); //Start critical section
 
-  this->OutChar(parameter1);
-  this->OutChar(parameter2);
-  this->OutChar(parameter3);
-  this->OutChar(checksum);
+  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 
-  return true;
+  ExitCritical(); //End critical section
+
+  return success;
 }
 
 

@@ -309,6 +309,7 @@ void HandlePacket::HandleACKTowerNumberPacket(Packet_t &packet)
   HandleTowerNumberPacket(packet);
 }
 
+
 void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 {
   // Send tower mode packet
@@ -323,7 +324,7 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
   HandleTowerModePacket(packet);
 }
 
-void SendAccelPacket(Packet_t &packet)
+void SendAccelPacket()
 {
   //local variable for axis: x y z
   Accel::TAccelData data;
@@ -343,7 +344,7 @@ void SendAccelPacket(Packet_t &packet)
    dataY = data.axes.y;
    dataZ = data.axes.z;
 
-   packet.Packet_t::PacketPut(HandlePacket::CMD_ACCEL_VALUE, dataX, dataY, dataZ); //send it to FIFO
+   Packet.Packet_t::PacketPut(HandlePacket::CMD_ACCEL_VALUE, dataX, dataY, dataZ); //send it to FIFO
   }
 }
 
@@ -355,10 +356,11 @@ static LED_t Led;
  //function description
  void PIT(void* argu)
  {
+
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  SendAccelPacket(Packet);
+  SendAccelPacket();
  }
 
 /*

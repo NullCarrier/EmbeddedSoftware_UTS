@@ -58,6 +58,7 @@
   #include "UART.h"
   #include "PIT.h"
   #include "RTC.h"
+  #include "OS.h"
 
   /* ISR prototype */
   extern uint32_t __SP_INIT;
@@ -89,8 +90,8 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x0B  0x0000002C   -   ivINT_SVCall                   unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x0C  0x00000030   -   ivINT_DebugMonitor             unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x0D  0x00000034   -   ivINT_Reserved13               unused by PE */
-    (tIsrFunc)&Cpu_Interrupt,          /* 0x0E  0x00000038   -   ivINT_PendableSrvReq           unused by PE */
-    (tIsrFunc)&Cpu_Interrupt,          /* 0x0F  0x0000003C   -   ivINT_SysTick                  unused by PE */
+    (tIsrFunc)&OS_ContextSwitchISR,  /* 0x0E  0x00000038   -   ivINT_PendableSrvReq           unused by PE */
+    (tIsrFunc)&OS_SysTickISR,       /* 0x0F  0x0000003C   -   ivINT_SysTick                  unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x10  0x00000040   -   ivINT_DMA0_DMA16               unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x11  0x00000044   -   ivINT_DMA1_DMA17               unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x12  0x00000048   -   ivINT_DMA2_DMA18               unused by PE */

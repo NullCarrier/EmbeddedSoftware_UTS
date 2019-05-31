@@ -15,50 +15,55 @@
 
  bool TFIFO::Put(const uint8_t data)
 {
+  //Wait for timer
+  for (uint16_t i = 0; i < 1000; i++ )
+	  ;
 
+  EnterCritical(); //Start critical section
 
   if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
   {
-	  EnterCritical(); //Start critical section
 
-  NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
+    NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
-  Buffer[End] = data; // add a byte of data into array buffer
+    Buffer[End] = data; // add a byte of data into array buffer
 
-  End++; // add a new data , then increment one for End index
+    End++; // add a new data , then increment one for End index
 
-  End %= FIFO_SIZE; // to make a circular array, reset End index
+    End %= FIFO_SIZE; // to make a circular array, reset End index
 
-  ExitCritical(); //End critical section
+    ExitCritical(); //End critical section
 
-  return true;
+    return true;
   }
   else
-  return false;
+    return false;
 }
 
 
 bool TFIFO::Get(uint8_t &dataRef)
 {
 
+  //Wait for timer
+  for (uint16_t i = 0; i < 1000; i++ )
+	 ;
 
+  EnterCritical(); //Start critical section
 
   if (NbBytes != 0) // can not retrieve if buffer is empty
   {
 
-	  EnterCritical(); //Start critical section
+    NbBytes--; // decrement one whenever the Buffer has been retrieved
 
-  NbBytes--; // decrement one whenever the Buffer has been retrieved
+    dataRef = Buffer[Start]; // place the retrieved byte
 
-  dataRef = Buffer[Start]; // place the retrieved byte
+    Start++; // removing one data, then increment Start index
 
-  Start++; // removing one data, then increment Start index
+    Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
-  Start %= FIFO_SIZE; // to make a circular array, reset Start index
+    ExitCritical(); //End critical section
 
-  ExitCritical(); //End critical section
-
-  return true;
+    return true;
   }
   else
   return false;
