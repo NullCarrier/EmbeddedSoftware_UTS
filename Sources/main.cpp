@@ -28,6 +28,9 @@
 // CPU module - contains low level hardware initialization routines
 #include "Cpu.h"
 
+// Simple OS
+#include "OS.h"
+
 //include packet module
 #include "packet.h"
 
@@ -46,9 +49,6 @@
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
 
-static Packet_t Packet(BAUDRATE, CPU_BUS_CLK_HZ); // initialize the packet obejct
-
-static Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
 
 namespace HandlePacket
 {
@@ -349,19 +349,22 @@ void SendAccelPacket()
 }
 
 
-namespace CallBack{
 
-static LED_t Led;
+
+namespace CallBack
+{
+
+  static LED_t Led;
 
  //function description
- void PIT(void* argu)
- {
+  void PIT(void* argu)
+  {
 
-  Led.Color(LED_t::GREEN);
-  Led.Toggle();
+    Led.Color(LED_t::GREEN);
+    Led.Toggle();
 
   //SendAccelPacket();
- }
+  }
 
 
  void RTC(void* argu)
@@ -382,18 +385,93 @@ static LED_t Led;
 
 
 
+/*! @brief Waits for a signal to toggle the LED, then waits for a specified delay, then signals for the next LED to toggle.
+ *
+ *  @param pData holds the configuration data for each LED thread.
+ *  @note Assumes that LEDInit has been called successfully.
+ */
+static void LEDThread(void* pData)
+{
+
+  for (;;)
+  {
+    //wait....
+
+
+  }
+
+}
+
+
+/*! @brief Initialises the modules to support all modules
+ *
+ *  @param pData is not used but is required by the OS to create a thread.
+ *  @note This thread deletes itself after running for the first time.
+ */
+static void InitModulesThread(void* pData)
+{
+
+
+
+
+  //Initialize accelerometer and I2C module
+  //Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
+
+ /*
+  // Generate the three global LED semaphores
+  for (uint8_t ledNb = 0; ledNb < NB_LEDS; ledNb++)
+    MyLEDThreadData[ledNb].semaphore = OS_SemaphoreCreate(0);
+
+  // Signal the first LED to toggle
+  (void)OS_SemaphoreSignal(MyLEDThreadData[0].semaphore);
+  */
+
+  // Delete this thread
+  OS_ThreadDelete(OS_PRIORITY_SELF);
+
+}
+
+
+/*! @brief Initialises the modules to support all modules
+ *
+ *  @param pData is not used but is required by the OS to create a thread.
+ *  @note This thread deletes itself after running for the first time.
+ */
+static void HandlePacketThread(void* pData)
+{
+  // initialize the packet module
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
+
+  //Thread of sending Packet
+  for (;;)
+  {
+    if ( Packet.Packet_t::PacketGet())
+      HandlePacket::HandleCommandPacket(Packet);
+
+  }
+
+}
+
+
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
 
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
+  // Initialize PIT module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0);
   pit.Set(1000, true);
 
-  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+  // Initialize RTC module
+  RTC::RTC_t rtc(CallBack::RTC, 0);
+
+  OS_ERROR error; //Error for all possible ones in RTOS
 
   __DI();//Disable interrupt
+
+  //Initialize OS without flashing the orange LED
+  OS_Init(CPU_CORE_CLK_HZ, 0);
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -402,12 +480,17 @@ int main(void)
   __EI(); //Enable the interrupt
 
   /* Write your code here */
-  for (;;)
-  {
-    if ( Packet.Packet_t::PacketGet())
-    HandlePacket::HandleCommandPacket(Packet);
 
-  }
+  // Create HandlePacket thread
+  error = OS_ThreadCreate(HandlePacketThread,
+                              0,
+                              &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
+    		          4); // Highest priority
+
+
+  // Start multithreading - never returns!
+  OS_Start();
+
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/

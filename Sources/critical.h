@@ -10,12 +10,12 @@ class critical
    public:
      critical()
      {
-        EnterCritical(); //Start critical section
+       EnterCritical(); //Start critical section
      }
 
     ~critical()
     {
-       ExitCritical(); //End critical section
+      ExitCritical(); //End critical section
     }
 };
 

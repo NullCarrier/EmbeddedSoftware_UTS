@@ -18,21 +18,22 @@ bool TFIFO::Put(const uint8_t data)
 
   critical section; //Enter critical section
 
-   if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
-   {
+  if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
+  {
 
-      NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
+    NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
-      Buffer[End] = data; // add a byte of data into array buffer
+    Buffer[End] = data; // add a byte of data into array buffer
 
-      End++; // add a new data , then increment one for End index
+    End++; // add a new data , then increment one for End index
 
-      End %= FIFO_SIZE; // to make a circular array, reset End index
+    End %= FIFO_SIZE; // to make a circular array, reset End index
 
-      return true;
-   }
-   else
-      return false;
+    return true;
+  }
+  else
+	//wait for buffer is not full by suspending thread through a semaphore
+    return false;
 }
 
 
@@ -57,7 +58,11 @@ bool TFIFO::Get(uint8_t &dataRef)
     return true;
   }
   else
-    return false;
+  //wait for buffer is not empty by suspending thread through a semaphore
+
+	  return false;
+
+
 }
 
 
