@@ -180,11 +180,11 @@ void HandlePacket::HandleTowerModePacket(Packet_t &packet)
 
 void HandlePacket::SetTimePacket(Packet_t &packet)
 {
-//  RTC::RTC_t rtc;
+  RTC::RTC_t rtc;
 
-//  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
+  rtc.RTC_Set(Packet_Parameter1, Packet_Parameter2, Packet_Parameter3);
 
-//  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
+  packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
 
@@ -360,23 +360,23 @@ static LED_t Led;
   Led.Color(LED_t::GREEN);
   Led.Toggle();
 
-  SendAccelPacket();
+  //SendAccelPacket();
  }
 
-/*
+
  void RTC(void* argu)
 {
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
 
-  Led.Color(LED_t::GREEN);
+  Led.Color(LED_t::YELLOW);
   Led.Toggle();
 
   rtc.RTC_Get(hours, mins, sec);
 
-  Packet.Packet_t::PacketPut(Packet_Command, hours, mins, sec); //send it to FIFO
+  Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
 
-}*/
+}
 
 }
 
@@ -391,7 +391,7 @@ int main(void)
   PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
   pit.Set(1000, true);
 
-  //RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
+  RTC::RTC_t rtc(CallBack::RTC, 0); // Initialize RTC module
 
   __DI();//Disable interrupt
 
@@ -407,7 +407,6 @@ int main(void)
     if ( Packet.Packet_t::PacketGet())
     HandlePacket::HandleCommandPacket(Packet);
 
-    UART_ISR();
   }
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

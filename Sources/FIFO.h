@@ -15,13 +15,10 @@
 // new types
 #include "type_cpp.h"
 
-// _EI() _DI()
-#include "PE_Types.h"
-
 // involve mask for all registers
 #include "MK70F12.h"
 
-#include "Cpu.h"
+#include "critical.h"
 
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256

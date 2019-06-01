@@ -58,7 +58,12 @@
   #include "UART.h"
   #include "PIT.h"
   #include "RTC.h"
-  #include "OS.h"
+
+// This tells your c++ compiler not to use c++-style name mangling when defining the required symbols from the header, allowing the linker to successfully find them in the c-compiled .o files
+ extern "C"{
+   #include "OS.h"
+ }
+
 
   /* ISR prototype */
   extern uint32_t __SP_INIT;

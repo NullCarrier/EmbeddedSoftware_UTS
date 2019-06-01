@@ -13,13 +13,10 @@
 #include "FIFO.h"
 
 
- bool TFIFO::Put(const uint8_t data)
+bool TFIFO::Put(const uint8_t data)
 {
-  //Wait for timer
-   for (uint16_t i = 0; i < 1000; i++ )
-	  ;
 
-   critical section; //Enter critical section
+  critical section; //Enter critical section
 
    if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
    {
@@ -41,15 +38,11 @@
 
 bool TFIFO::Get(uint8_t &dataRef)
 {
-
-  //Wait for timer
-  for (uint16_t i = 0; i < 1000; i++ )
-	 ;
-
-  EnterCritical(); //Start critical section
+  critical section; //Enter critical section
 
   if (NbBytes != 0) // can not retrieve if buffer is empty
   {
+	//EnterCritical(); //Start critical section
 
     NbBytes--; // decrement one whenever the Buffer has been retrieved
 
@@ -59,7 +52,7 @@ bool TFIFO::Get(uint8_t &dataRef)
 
     Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
-    ExitCritical(); //End critical section
+    //ExitCritical(); //End critical section
 
     return true;
   }
