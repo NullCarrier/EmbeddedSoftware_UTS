@@ -351,26 +351,37 @@ void SendAccelPacket()
 
 
 
-namespace CallBack
-{
-
-  static LED_t Led;
-
  //function description
-  void PIT(void* argu)
-  {
-
-    Led.Color(LED_t::GREEN);
-    Led.Toggle();
-
-  //SendAccelPacket();
-  }
-
-
- void RTC(void* argu)
+static void PitThread(void* argu)
 {
+  static LED_t led; //local object for LED
+
+  for (;;)
+  {
+	    //wait....
+
+
+  }
+  //  Led.Color(LED_t::GREEN);
+  //  Led.Toggle();
+
+
+}
+
+
+static void RtcThread(void* argu)
+{
+
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
+  static LED_t led; //local object for LED
+
+  for (;;)
+  {
+  	    //wait....
+
+
+  }
 
   Led.Color(LED_t::YELLOW);
   Led.Toggle();
@@ -378,61 +389,13 @@ namespace CallBack
   rtc.RTC_Get(hours, mins, sec);
 
   Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
-
-}
-
-}
-
-
-
-/*! @brief Waits for a signal to toggle the LED, then waits for a specified delay, then signals for the next LED to toggle.
- *
- *  @param pData holds the configuration data for each LED thread.
- *  @note Assumes that LEDInit has been called successfully.
- */
-static void LEDThread(void* pData)
-{
-
-  for (;;)
-  {
-    //wait....
-
-
-  }
-
+  SendAccelPacket();
 }
 
 
-/*! @brief Initialises the modules to support all modules
- *
- *  @param pData is not used but is required by the OS to create a thread.
- *  @note This thread deletes itself after running for the first time.
- */
-static void InitModulesThread(void* pData)
-{
 
 
-
-
-  //Initialize accelerometer and I2C module
-  //Accel::Accel_t Accelerometer(CPU_BUS_CLK_HZ, 0, 0, 0, 0);
-
- /*
-  // Generate the three global LED semaphores
-  for (uint8_t ledNb = 0; ledNb < NB_LEDS; ledNb++)
-    MyLEDThreadData[ledNb].semaphore = OS_SemaphoreCreate(0);
-
-  // Signal the first LED to toggle
-  (void)OS_SemaphoreSignal(MyLEDThreadData[0].semaphore);
-  */
-
-  // Delete this thread
-  OS_ThreadDelete(OS_PRIORITY_SELF);
-
-}
-
-
-/*! @brief Initialises the modules to support all modules
+/*! @brief Thread of sending Packet
  *
  *  @param pData is not used but is required by the OS to create a thread.
  *  @note This thread deletes itself after running for the first time.
@@ -442,11 +405,10 @@ static void HandlePacketThread(void* pData)
   // initialize the packet module
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
-  //Thread of sending Packet
   for (;;)
   {
-    if ( Packet.Packet_t::PacketGet())
-      HandlePacket::HandleCommandPacket(Packet);
+    if ( packet.Packet_t::PacketGet())
+      HandlePacket::HandleCommandPacket(packet);
 
   }
 
@@ -461,7 +423,7 @@ int main(void)
 
   // Initialize PIT module
   PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0);
-  pit.Set(1000, true);
+  pit.Set(500, true); // Set period 500ms
 
   // Initialize RTC module
   RTC::RTC_t rtc(CallBack::RTC, 0);

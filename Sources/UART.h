@@ -27,6 +27,8 @@
 
 #include "critical.h" //critical section
 
+#include "OS.h"
+
 class UART_t
 {
   private:

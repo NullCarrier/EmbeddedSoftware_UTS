@@ -32,8 +32,7 @@ bool TFIFO::Put(const uint8_t data)
     return true;
   }
   else
-	//wait for buffer is not full by suspending thread through a semaphore
-    return false;
+    return false; //wait for buffer is not full by suspending thread through a semaphore
 }
 
 
@@ -58,10 +57,7 @@ bool TFIFO::Get(uint8_t &dataRef)
     return true;
   }
   else
-  //wait for buffer is not empty by suspending thread through a semaphore
-
-	  return false;
-
+    return false; //wait for buffer is not empty by suspending thread through a semaphore
 
 }
 

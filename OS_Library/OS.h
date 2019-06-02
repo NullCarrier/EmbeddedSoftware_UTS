@@ -1,4 +1,4 @@
-/*! @file
+/*! @file OS.h
  *
  *  @brief Routines to implement a simple real-time operating system (RTOS).
  *

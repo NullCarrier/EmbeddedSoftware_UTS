@@ -116,6 +116,9 @@ void UART_Poll(void)
 }
 #endif
 
+
+
+// OS_SemaphoreSignal(OS_ECB* const pEvent);
 void __attribute__ ((interrupt)) UART_ISR(void)
 {
   // receiving data condition

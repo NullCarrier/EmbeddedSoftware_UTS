@@ -1,6 +1,6 @@
 /*! @file FIFO.h
  *
- *  @brief Routines to implement a FIFO buffer.
+ *  @brief Routines to implement a FIFO buffer Thread.
  *
  *  This contains the structure and "methods" for accessing a byte-wide FIFO.
  *
@@ -20,6 +20,8 @@
 
 #include "critical.h"
 
+#include "OS.h"
+
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256
 
@@ -36,7 +38,8 @@ class TFIFO
 
   public:
 
-  TFIFO() = default;
+  // Initialize FIFO thread
+  TFIFO();
 
 /*! @brief Put one character into the FIFO.
  *

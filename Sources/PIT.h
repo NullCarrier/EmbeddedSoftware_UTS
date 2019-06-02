@@ -17,23 +17,23 @@
 
 #include "PE_Types.h" // _EI() _DI()
 
+#include "OS.h"
+
 // involve mask for all registers
 #include "MK70F12.h"
 
 namespace PIT
 {
 
-class PIT_t
-{
- using F = void (void*); // a function type, not a pointer
+  class PIT_t
+  {
 
- private:
-  uint32_t moduleClk; /*!<The module clock rate in Hz.*/
-  uint32_t period; /*!<set a period in nanosec */
-  F* userFunction; /*!<a pointer to a user callback function.*/
-  void* userArguments; /*!<a pointer to the user arguments to use with the user callback function.*/
+    private:
+      uint32_t moduleClk; /*!<The module clock rate in Hz.*/
+      uint32_t period; /*!<set a period in nanosec */
+      OS_ECB ecb;
 
- public:
+    public:
 /*! @brief Constructor for initializing all member variables in PIT class
  *
  *  Enables the PIT and freezes the timer when debugging.
@@ -42,7 +42,7 @@ class PIT_t
  *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-  PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
+      PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
 
 /*! @brief Sets up the PIT before first use.
  *
@@ -51,7 +51,7 @@ class PIT_t
  *  @return bool - TRUE if the PIT was successfully initialized.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-  bool Init();
+      bool Init();
 
 /*! @brief Sets the value of the desired period of the PIT.
  *
@@ -60,15 +60,15 @@ class PIT_t
  *                 FALSE if the PIT will use the new value after a trigger event.
  *  @note The function will enable the timer and interrupts for the PIT.
  */
-  void Set(const uint32_t& newPeriod, bool restart);
+      void Set(const uint32_t& newPeriod, bool restart);
 
 /*! @brief Enables or disables the PIT.
  *
  *  @param enable - TRUE if the PIT is to be enabled, FALSE if the PIT is to be disabled.
  */
-  void Enable(const bool enable);
+      void Enable(const bool enable);
 
-};
+  };
 
 /*! @brief Interrupt service routine for the PIT.
  *
@@ -76,7 +76,7 @@ class PIT_t
  *  The user callback function will be called.
  *  @note Assumes the PIT has been initialized.
  */
-void __attribute__ ((interrupt)) ISR(void);
+  void __attribute__ ((interrupt)) ISR(void);
 
 }
 
