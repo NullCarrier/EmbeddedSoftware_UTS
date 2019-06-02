@@ -17,7 +17,7 @@
 
 #include "PE_Types.h" // _EI() _DI()
 
-#include "OS.h"
+#include "critical.h"
 
 // involve mask for all registers
 #include "MK70F12.h"
@@ -27,10 +27,14 @@ namespace PIT
 
   class PIT_t
   {
+	using F = void (void*); // a function type, not a pointer
 
     private:
       uint32_t moduleClk; /*!<The module clock rate in Hz.*/
       uint32_t period; /*!<set a period in nanosec */
+      F* userFunction; /*!<a pointer to a user callback function.*/
+      void* userArguments; /*!<a pointer to the user arguments to use with the user callback function.*/
+
       OS_ECB ecb;
 
     public:

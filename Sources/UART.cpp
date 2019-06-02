@@ -121,6 +121,9 @@ void UART_Poll(void)
 // OS_SemaphoreSignal(OS_ECB* const pEvent);
 void __attribute__ ((interrupt)) UART_ISR(void)
 {
+  // inform RTOS that ISR is being processed
+  OS ISR;
+
   // receiving data condition
    if (UART2_C2 & UART_C2_RIE_MASK)
    {
@@ -139,10 +142,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
 
          if (!TxFIFO.Get(data) )
          {
-	        critical section; //Enter critical section
-
 	        UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
-
          }
          else
          UART2_D = data;

@@ -78,9 +78,19 @@ bool Packet_t::PacketGet()
 }
 
 
-bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
+bool Packet_t::PacketPut(uint8_t &command, uint8_t &parameter1, uint8_t &parameter2, uint8_t &parameter3, const uint16_t &timeout)
 {
   bool success{1};
+
+  //Acquire serial port's semaphore;
+  //Send packet to deveice;
+  //Wait for response (with timeout);
+  //Release semaphore;
+  /* if (time out)
+     return error code;
+     else
+     return no error;
+  */
   uint8_t checksum = command ^ parameter1 ^ parameter2 ^ parameter3;
   uint8_t packet[5] = {command, parameter1, parameter2, parameter3, checksum};
 

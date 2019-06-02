@@ -4,20 +4,41 @@
 #include "Cpu.h"
 #include "PE_Types.h"
 
+#include "OS.h"
 
 class critical
 {
-   public:
-     critical()
-     {
-       EnterCritical(); //Start critical section
-     }
+  public:
+    critical()
+    {
+      OS_DisableInterrupts(); //Start critical section
+    }
 
     ~critical()
     {
-      ExitCritical(); //End critical section
+      OS_EnableInterrupts(); //End critical section
     }
 };
+
+
+class OS
+{
+  public:
+    OS()
+    {
+      OS_ISREnter();
+    }
+
+    ~OS()
+    {
+      OS_ISRExit();
+    }
+
+};
+
+
+
+
 
 
 #endif // CRITICAL_H_INCLUDED

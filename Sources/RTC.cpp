@@ -14,11 +14,11 @@
 namespace RTC
 {
 
-using F = void(void*); // a function type, not a pointer
+  using F = void(void*); // a function type, not a pointer
 
-// Local function pointer
-static F* UserFunc;
-static void* UserArgu;
+  // Local function pointer
+  static F* UserFunc;
+  static void* UserArgu;
 
 bool RTC_t::RTC_Init()
 {
@@ -97,9 +97,11 @@ userFunction(userFunc), userArguments(userArgu)
 
 void __attribute__ ((interrupt)) ISR()
 {
-  // call callback function
-  if (UserFunc)
-  UserFunc (UserArgu);
+  // inform RTOS that ISR is being processed
+  OS ISR;
+
+  //Signal PIT thread
+  //OS_SemaphoreSignal(OS_ECB* const pEvent);
 }
 
 }

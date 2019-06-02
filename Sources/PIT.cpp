@@ -13,6 +13,11 @@
 
 namespace PIT
 {
+  using F = void (void*); // a function type, not a pointer
+
+  // Local function pointer
+  static F* UserFunc;
+  static void* UserArgu;
 
 
   bool PIT_t::Init()
@@ -105,13 +110,15 @@ moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
 
   void __attribute__ ((interrupt)) ISR(void)
   {
+    // inform RTOS that ISR is being processed
+	OS ISR;
+
     if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
     {
       PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
       //Signal PIT thread
       //OS_SemaphoreSignal(OS_ECB* const pEvent);
-
 
     }
 

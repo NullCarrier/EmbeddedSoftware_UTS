@@ -22,6 +22,8 @@
 
 #include "Cpu.h"
 
+#include "critical.h"
+
 namespace RTC{
 
 class RTC_t

@@ -46,32 +46,67 @@
 
 #include "accel.h"
 
+#include <list> //doubly link list
+
 const uint64_t BAUDRATE = 115200;
+
+const uint8_t THREAD_STACK_SIZE = 100;
+
 /* MODULE main */
 
 
-namespace HandlePacket
-{
+std::list<OS_TCB> Tcb;   //a empty Thread control block
 
- enum Command{
-  CMD_STARTUP = 0x04,
-  CMD_TOWERVERSION = 0x09,
-  CMD_TOWERNUMBER = 0x0B,
-  CMD_MODE = 0x0A,
-  CMD_SETTIME = 0x0C,
-  CMD_TOWERMODE = 0x0D,
-  CMD_ACCEL_VALUE = 0x10,
-  CMD_ACK_STARTUP = 0x84,
-  CMD_ACK_TOWERVERSION = 0x89,
-  CMD_ACK_TOWERNUMBER = 0x8B,
-  CMD_ACK_TOWERMODE = 0x8D,
-  CMD_MYTOWERNUMBER = 0x9434
- };
+static OS_ERROR Error; //Error for all possible ones in RTOS
+
+class HandlePacket
+{
+  using F = void (void*); // a function type, not a pointer
+
+  private:
+   // OS_ECB* semaphore;
+    uint8_t priority;
+
+  public:
+    /*! @brief using member function as the thread of sending Packet
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
+    void Thread(void* pData);
+
+   	HandlePacket(F* Thread, void* pData, const uint8_t prio):
+   	priority(prio)
+    {
+   	  // Create HandlePacket thread
+   	  Error = OS_ThreadCreate(Thread,
+   		                      pData,
+   		                      &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
+							  prio); // Highest priority
+    }
+
+    enum Command
+	{
+      CMD_STARTUP = 0x04,
+      CMD_TOWERVERSION = 0x09,
+      CMD_TOWERNUMBER = 0x0B,
+      CMD_MODE = 0x0A,
+      CMD_SETTIME = 0x0C,
+      CMD_TOWERMODE = 0x0D,
+      CMD_ACCEL_VALUE = 0x10,
+      CMD_ACK_STARTUP = 0x84,
+      CMD_ACK_TOWERVERSION = 0x89,
+      CMD_ACK_TOWERNUMBER = 0x8B,
+      CMD_ACK_TOWERMODE = 0x8D,
+      CMD_MYTOWERNUMBER = 0x9434
+    };
+
+
   /*! @brief To handle startup packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleStartupPacket(Packet_t &packet);
+    static void HandleStartupPacket(Packet_t &packet);
 
   /*! @brief To handle acknowledgement startup packet
    *  @param packet the PacketVert2 object
@@ -139,7 +174,17 @@ namespace HandlePacket
     */
   static void SetModePacket(Packet_t &packet);
 
-}
+  /*! @brief Destructor for deleting thread when object has not existed
+   *
+   *
+  */
+  ~HandlePacket()
+  {
+    OS_ThreadDelete(OS_PRIORITY_SELF); // delete thread in destructor , has not assigned priority yet
+    // need to delete TCB
+  }
+
+};
 
 void HandlePacket::HandleStartupPacket(Packet_t &packet)
 {
@@ -187,7 +232,7 @@ void HandlePacket::SetTimePacket(Packet_t &packet)
   packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
 }
 
-
+/*
 void HandlePacket::SetModePacket(Packet_t &packet)
 {
   //Select mode
@@ -197,31 +242,32 @@ void HandlePacket::SetModePacket(Packet_t &packet)
   Accelerometer.SetMode(Accel::INT);
 
   //packet.Packet_t::PacketPut(Packet_Command, Packet_Parameter1, Packet_Parameter2, Packet_Parameter3); //send it to FIFO
-}
+}*/
 
 
 
 // Handling packet protocol (Tower to PC)
 void HandlePacket::HandleCommandPacket(Packet_t &packet)
 {
-  switch (Packet_Command){
+  switch (Packet_Command)
+  {
 
   // for specific command. Startup needs to send 3 packets
-  case CMD_STARTUP:
-  InitResponsePacket(packet);
-  break;
-  case CMD_ACK_STARTUP:
-  HandleACKStartupPacket(packet);
-  break;
-  case CMD_TOWERVERSION:
-  HandleTowerVersionPacket(packet);//only responce once for version
-  break;
-  case CMD_ACK_TOWERVERSION:
-  HandleACKTowerVersionPacket(packet);
-  break;
-  case CMD_TOWERNUMBER:
-  HandleTowerNumberPacket(packet);//only responce once for number
-  break;
+    case CMD_STARTUP:
+    InitResponsePacket(packet);
+    break;
+    case CMD_ACK_STARTUP:
+    HandleACKStartupPacket(packet);
+    break;
+    case CMD_TOWERVERSION:
+    HandleTowerVersionPacket(packet);//only responce once for version
+    break;
+    case CMD_ACK_TOWERVERSION:
+    HandleACKTowerVersionPacket(packet);
+    break;
+    case CMD_TOWERNUMBER:
+    HandleTowerNumberPacket(packet);//only responce once for number
+    break;
   case CMD_ACK_TOWERNUMBER:
   HandleACKTowerNumberPacket(packet);
   break;
@@ -323,7 +369,7 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 
   HandleTowerModePacket(packet);
 }
-
+/*
 void SendAccelPacket()
 {
   //local variable for axis: x y z
@@ -346,9 +392,7 @@ void SendAccelPacket()
 
    Packet.Packet_t::PacketPut(HandlePacket::CMD_ACCEL_VALUE, dataX, dataY, dataZ); //send it to FIFO
   }
-}
-
-
+}*/
 
 
  //function description
@@ -374,45 +418,41 @@ static void RtcThread(void* argu)
 
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
+
   static LED_t led; //local object for LED
 
   for (;;)
   {
-  	    //wait....
+
 
 
   }
 
-  Led.Color(LED_t::YELLOW);
-  Led.Toggle();
+  led.Color(LED_t::YELLOW);
+  led.Toggle();
 
   rtc.RTC_Get(hours, mins, sec);
 
-  Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
-  SendAccelPacket();
+//Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
+//SendAccelPacket();
 }
 
 
-
-
-/*! @brief Thread of sending Packet
- *
- *  @param pData is not used but is required by the OS to create a thread.
- *  @note This thread deletes itself after running for the first time.
- */
-static void HandlePacketThread(void* pData)
+void HandlePacket::Thread(void* pData)
 {
   // initialize the packet module
-  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
+  Packet_t rxPacket(BAUDRATE, CPU_BUS_CLK_HZ);
 
   for (;;)
   {
-    if ( packet.Packet_t::PacketGet())
-      HandlePacket::HandleCommandPacket(packet);
+    if ( rxPacket.Packet_t::PacketGet())
+      HandlePacket::HandleCommandPacket(rxPacket);
 
   }
 
 }
+
+
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -422,13 +462,13 @@ int main(void)
   /* Write your local variable definition here */
 
   // Initialize PIT module
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0);
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, PitThread, 0);
   pit.Set(500, true); // Set period 500ms
 
   // Initialize RTC module
-  RTC::RTC_t rtc(CallBack::RTC, 0);
+  RTC::RTC_t rtc(RtcThread, 0);
 
-  OS_ERROR error; //Error for all possible ones in RTOS
+
 
   __DI();//Disable interrupt
 
@@ -443,11 +483,8 @@ int main(void)
 
   /* Write your code here */
 
-  // Create HandlePacket thread
-  error = OS_ThreadCreate(HandlePacketThread,
-                              0,
-                              &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
-    		          4); // Highest priority
+  // Create sending packet thread with highest priority
+  static HandlePacket packetThread(HandlePacket::Thread, 0, 10);
 
 
   // Start multithreading - never returns!
