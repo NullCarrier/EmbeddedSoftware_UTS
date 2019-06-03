@@ -157,19 +157,19 @@ void UART_Poll(void)
 
 
 
-// OS_SemaphoreSignal(OS_ECB* const pEvent);
+
 void __attribute__ ((interrupt)) UART_ISR(void)
 {
   // inform RTOS that ISR is being processed
-  //OS ISR;
-  OS_ISREnter();
+  OS ISR;
+  //OS_ISREnter();
 
   // receiving data condition
    if (UART2_C2 & UART_C2_RIE_MASK)
    {
      if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
      {
-       OS_SemaphoreSignal(RxfifoSemaphore);
+       OS_SemaphoreSignal(RxfifoSemaphore); // To signal an event
        	// RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
      }
    }
@@ -181,7 +181,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
        OS_SemaphoreSignal(TxfifoSemaphore); // To check any threads waiting on semaphore and make them ready to run
    }
 
-  OS_ISRExit();
+  //OS_ISRExit();
 }
 
 

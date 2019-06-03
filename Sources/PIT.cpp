@@ -19,6 +19,7 @@ namespace PIT
   static F* UserFunc;
   static void* UserArgu;
 
+  static OS_ECB* PITSemaphore;
 
   bool PIT_t::Init()
   {
@@ -52,6 +53,8 @@ namespace PIT
  // Initialize the local usefunction
     UserFunc = userFunction;
     UserArgu = userArguments;
+
+    PITSemaphore = OS_SemaphoreCreate(0);
 
     // Enable timer0 interrupt
     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
@@ -95,8 +98,8 @@ void PIT_t::Enable(const bool enable)
 }
 
 
-PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
-moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
+PIT_t::PIT_t(const uint32_t mClock, void* userArgu):
+moduleClk(mClock), userArguments(userArgu)
 {
 
   __DI(); //Disable interrupt
@@ -111,14 +114,14 @@ moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
   void __attribute__ ((interrupt)) ISR(void)
   {
     // inform RTOS that ISR is being processed
-	OS ISR;
+    OS ISR;
 
     if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
     {
       PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
       //Signal PIT thread
-      //OS_SemaphoreSignal(OS_ECB* const pEvent);
+      OS_SemaphoreSignal(PITSemaphore);
 
     }
 

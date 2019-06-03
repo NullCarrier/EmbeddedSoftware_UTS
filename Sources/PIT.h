@@ -35,8 +35,6 @@ namespace PIT
       F* userFunction; /*!<a pointer to a user callback function.*/
       void* userArguments; /*!<a pointer to the user arguments to use with the user callback function.*/
 
-      OS_ECB ecb;
-
     public:
 /*! @brief Constructor for initializing all member variables in PIT class
  *
@@ -46,7 +44,7 @@ namespace PIT
  *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-      PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
+      PIT_t(const uint32_t mClock, void* userArgu);
 
 /*! @brief Sets up the PIT before first use.
  *

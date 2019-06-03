@@ -69,6 +69,7 @@ typedef union
 
 class Packet_t: public UART_t
 {
+
   public:
   static TPacket s_Packet; /*!< The static variable packet with TPacket type */
 
@@ -79,9 +80,15 @@ class Packet_t: public UART_t
  *  @return None
  */
    Packet_t(const uint32_t baudRate, const uint32_t moduleClk):
-    UART_t::UART_t(baudRate, moduleClk)
+     UART_t::UART_t(baudRate, moduleClk)
    {
    }
+
+   Packet_t():
+     UART_t::UART_t()
+   {
+   }
+
   /*! @brief Attempts to get a packet from the received data.
  *
  *  @return bool - TRUE if a valid packet was received.
@@ -93,6 +100,8 @@ class Packet_t: public UART_t
  *  @return bool - TRUE if a valid packet was sent.
  */
    bool PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3);
+
+   bool PacketPut(uint8_t* packet, const uint16_t timeout);
 
   /*! @brief to handle error condition by discarding first byte and adding the new byte
  *

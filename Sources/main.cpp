@@ -54,6 +54,9 @@ const uint8_t THREAD_STACK_SIZE = 100;
 
 //OS thread stacks
 OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE);
+OS_THREAD_STACK(RxThreadStack, THREAD_STACK_SIZE);
+OS_THREAD_STACK(TxThreadStack, THREAD_STACK_SIZE);
+OS_THREAD_STACK(InitThreadStack, THREAD_STACK_SIZE);
 
 
 /* MODULE main */
@@ -71,21 +74,15 @@ class HandlePacket
     uint8_t priority;
 
   public:
-    /*! @brief using member function as the thread of sending Packet
-     *
-     *  @param pData might not use but is required by the OS to create a thread.
-     *
-     */
-    void Thread(void* pData);
 
    	HandlePacket(F* Thread, void* pData, const uint8_t prio):
    	priority(prio)
     {
    	  // Create HandlePacket thread
    	  Error = OS_ThreadCreate(Thread,
-   		                      pData,
-   		                      &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
-							  prio); // Highest priority
+   		               pData,
+   		               &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
+					   prio); // Highest priority
     }
 
     enum Command
@@ -284,7 +281,7 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
   SetTimePacket(packet);
   break;
   case CMD_MODE:
-  SetModePacket(packet);
+  //SetModePacket(packet);
   break;
 
   }
@@ -398,8 +395,28 @@ void SendAccelPacket()
 }*/
 
 
+static void InitModulesThread(void* pData)
+{
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
+
+  //Initialize PIT module
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 0);
+  pit.Set(500, true); // Set period 500ms
+
+  // Initialize RTC module
+  RTC::RTC_t rtc(0);
+
+  LED_t led(LED_t::ORANGE);
+
+  //delete this thread
+  OS_ThreadDelete(OS_PRIORITY_SELF);
+}
+
+
+
+/*
  //function description
-static void PitThread(void* argu)
+static void PITThread(void* argu)
 {
   static LED_t led; //local object for LED
 
@@ -416,7 +433,7 @@ static void PitThread(void* argu)
 }
 
 
-static void RtcThread(void* argu)
+static void RTCThread(void* argu)
 {
 
   uint8_t hours, mins, sec;
@@ -439,22 +456,28 @@ static void RtcThread(void* argu)
 //Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
 //SendAccelPacket();
 }
+*/
 
 
-void HandlePacket::Thread(void* pData)
+
+/*! @brief using member function as the thread of sending Packet
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
+static void HandlePacketThread(void* pData)
 {
   // initialize the packet module
-  Packet_t rxPacket(BAUDRATE, CPU_BUS_CLK_HZ);
+  Packet_t packet;
 
   for (;;)
   {
-    if ( rxPacket.Packet_t::PacketGet())
-      HandlePacket::HandleCommandPacket(rxPacket);
+    if (packet.Packet_t::PacketGet())
+      HandlePacket::HandleCommandPacket(packet);
 
   }
 
 }
-
 
 
 
@@ -463,17 +486,6 @@ int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
-
-  // Initialize PIT module
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, PitThread, 0);
-  pit.Set(500, true); // Set period 500ms
-
-  // Initialize RTC module
-  RTC::RTC_t rtc(RtcThread, 0);
-
-
-  OS_ERROR error;
-
 
   __DI();//Disable interrupt
 
@@ -484,23 +496,28 @@ int main(void)
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
-  __EI(); //Enable the interrupt
 
   /* Write your code here */
 
-  error = OS_ThreadCreate(RxThread,
+  Error = OS_ThreadCreate(InitModulesThread,
+                  0,
+                  &InitThreadStack[THREAD_STACK_SIZE - 1],
+    		      0);
+
+  Error = OS_ThreadCreate(RxThread,
                           0,
                           &RxThreadStack[THREAD_STACK_SIZE - 1],
-  		                  1);
+  		                  2);
 
-  error = OS_ThreadCreate(TxThread,
+  Error = OS_ThreadCreate(TxThread,
                             0,
                             &TxThreadStack[THREAD_STACK_SIZE - 1],
-    		                  2);
+    		                3);
 
   // Create sending packet thread with highest priority
-  static HandlePacket packetThread(HandlePacket::Thread, 0, 10);
+  static HandlePacket packetThread(HandlePacketThread, 0, 10);
 
+  __EI(); //Enable the interrupt
 
   // Start multithreading - never returns!
   OS_Start();

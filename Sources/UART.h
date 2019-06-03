@@ -27,7 +27,7 @@
 
 #include "critical.h" //critical section
 
-#include "OS.h"
+
 
 class UART_t
 {
@@ -54,6 +54,8 @@ class UART_t
    this->Init();
   }
 
+  UART_t() = default;
+
 #if 0
   protected:
   uint8_t txData;
@@ -76,6 +78,10 @@ class UART_t
    */
   bool OutChar(const uint8_t txData);
 };
+
+
+static void RxThread(void* pData);
+static void TxThread(void* pData);
 
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.

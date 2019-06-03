@@ -78,11 +78,12 @@ bool Packet_t::PacketGet()
 }
 
 
-bool Packet_t::PacketPut(uint8_t &command, uint8_t &parameter1, uint8_t &parameter2, uint8_t &parameter3, const uint16_t &timeout)
+bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3)
 {
   bool success{1};
 
   //Acquire serial port's semaphore;
+
   //Send packet to deveice;
   //Wait for response (with timeout);
   //Release semaphore;
@@ -102,15 +103,20 @@ bool Packet_t::PacketPut(uint8_t &command, uint8_t &parameter1, uint8_t &paramet
 	  return false;
   }
 
-  EnterCritical(); //Start critical section
+  //EnterCritical(); //Start critical section
 
   UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 
-  ExitCritical(); //End critical section
+  //ExitCritical(); //End critical section
 
   return success;
 }
 
+
+bool PacketPut(uint8_t* packet, const uint16_t timeout)
+{
+
+}
 
 void Packet_t::SwitchPacket()
 {

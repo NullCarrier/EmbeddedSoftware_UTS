@@ -16,6 +16,8 @@ namespace RTC
 
   using F = void(void*); // a function type, not a pointer
 
+  static OS_ECB* RTCSemaphore;
+
   // Local function pointer
   static F* UserFunc;
   static void* UserArgu;
@@ -52,6 +54,7 @@ bool RTC_t::RTC_Init()
   UserFunc = userFunction;
   UserArgu = userArguments;
 
+  RTCSemaphore = OS_SemaphoreCreate(0);
 
   return true;
 }
@@ -87,8 +90,8 @@ void RTC_t::RTC_Get(uint8_t &hours, uint8_t &mins, uint8_t &sec)
 }
 
 
-RTC_t::RTC_t(F* userFunc, void* userArgu):
-userFunction(userFunc), userArguments(userArgu)
+RTC_t::RTC_t( void* userArgu):
+userArguments(userArgu)
 {
   this->RTC_Init();
 }
@@ -100,8 +103,8 @@ void __attribute__ ((interrupt)) ISR()
   // inform RTOS that ISR is being processed
   OS ISR;
 
-  //Signal PIT thread
-  //OS_SemaphoreSignal(OS_ECB* const pEvent);
+  //Signal RTC thread
+  OS_SemaphoreSignal(RTCSemaphore);
 }
 
 }

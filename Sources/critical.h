@@ -1,8 +1,6 @@
 #ifndef CRITICAL_H_INCLUDED
 #define CRITICAL_H_INCLUDED
 
-#include "Cpu.h"
-#include "PE_Types.h"
 
 #include "OS.h"
 
