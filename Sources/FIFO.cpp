@@ -16,12 +16,9 @@
 bool TFIFO::Put(const uint8_t data)
 {
 
+  OS_SemaphoreWait(availability, 0);
+
   critical section; //Enter critical section
-
-  if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
-  {
-
-    NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
     Buffer[End] = data; // add a byte of data into array buffer
 
@@ -29,36 +26,30 @@ bool TFIFO::Put(const uint8_t data)
 
     End %= FIFO_SIZE; // to make a circular array, reset End index
 
-    return true;
-  }
-  else
-    return false; //wait for buffer is not full by suspending thread through a semaphore
+   // return true;
+
+  //increment semaphore
+   OS_SemaphoreSignal(nbItem);
 }
 
 
 bool TFIFO::Get(uint8_t &dataRef)
 {
+  //wait for other threads  if buffer was empty by suspending thread through a semaphore
+  OS_SemaphoreWait(nbItem, 0);
+
   critical section; //Enter critical section
 
-  if (NbBytes != 0) // can not retrieve if buffer is empty
-  {
-	//EnterCritical(); //Start critical section
+  dataRef = Buffer[Start]; // place the retrieved byte
 
-    NbBytes--; // decrement one whenever the Buffer has been retrieved
+  Start++; // removing one data, then increment Start index
 
-    dataRef = Buffer[Start]; // place the retrieved byte
+  Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
-    Start++; // removing one data, then increment Start index
+  //one semaphore has been used then it increments by 1 and return to its caller if semaphore is greater than 1
+  OS_SemaphoreSignal(availability);
 
-    Start %= FIFO_SIZE; // to make a circular array, reset Start index
-
-    //ExitCritical(); //End critical section
-
-    return true;
-  }
-  else
-    return false; //wait for buffer is not empty by suspending thread through a semaphore
-
+  return true;
 }
 
 

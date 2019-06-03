@@ -20,6 +20,10 @@ const float DIVISIOR = 16.0;
 static TFIFO TxFIFO;
 static TFIFO RxFIFO;
 
+OS_ECB* TxfifoSemaphore;
+OS_ECB* RxfifoSemaphore;
+
+
 /*! @brief Calculate the fractional part of number
  *
  *         Baud rate = UART module clock / (16* (SBR[12:0]+BRFD) )
@@ -75,6 +79,10 @@ bool UART_t::Init() const
  // Enable interrupts from UART2 module
   NVICISER1 = NVIC_ISER_SETENA(1 << 17);
 
+  //To signal occurrence of one or more events
+  TxfifoSemaphore = OS_SemaphoreCreate(0);
+  RxfifoSemaphore = OS_SemaphoreCreate(0);
+
  //Set priority?
   UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
 
@@ -94,6 +102,37 @@ bool UART_t::InChar(uint8_t &rxData)
 {
   return TxFIFO.Put(txData); // Packet module requires to send data to FIFO
 }
+
+
+
+static void RxThread(void* pData)
+{
+  for (;;)
+  {
+    RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+    OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+  }
+}
+
+
+static void TxThread(void* pData)
+{
+  uint8_t data{0};
+
+  for (;;)
+  {
+    if (!TxFIFO.Get(data) )
+	  UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+	else
+	{
+	  UART2_D = data;
+	}
+
+    OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+  }
+
+}
+
 
 
 #if 0
@@ -122,34 +161,27 @@ void UART_Poll(void)
 void __attribute__ ((interrupt)) UART_ISR(void)
 {
   // inform RTOS that ISR is being processed
-  OS ISR;
+  //OS ISR;
+  OS_ISREnter();
 
   // receiving data condition
    if (UART2_C2 & UART_C2_RIE_MASK)
    {
-      if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
-      {
-         RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
-      }
+     if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
+     {
+       OS_SemaphoreSignal(RxfifoSemaphore);
+       	// RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+     }
    }
 
 // Transmit a byte of data
    if (UART2_C2 & UART_C2_TIE_MASK)
    {
-      if (UART2_S1 & UART_S1_TDRE_MASK)
-      {
-         uint8_t data{0};
-
-         if (!TxFIFO.Get(data) )
-         {
-	        UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
-         }
-         else
-         UART2_D = data;
-      }
-
+     if (UART2_S1 & UART_S1_TDRE_MASK)
+       OS_SemaphoreSignal(TxfifoSemaphore); // To check any threads waiting on semaphore and make them ready to run
    }
 
+  OS_ISRExit();
 }
 
 

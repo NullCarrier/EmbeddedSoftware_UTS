@@ -16,9 +16,9 @@
 // ----------------------------------------
 // Application defined OS constants
 
-#define OS_MAX_USER_THREADS       31
+#define OS_MAX_USER_THREADS       31 // defines the num of users threads that you wish RTOS to manage
 #define OS_LOWEST_PRIORITY        31
-#define OS_MAX_EVENTS             32
+#define OS_MAX_EVENTS             32 //
 #define OS_PRIORITY_SELF          255
 
 // ----------------------------------------

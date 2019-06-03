@@ -52,10 +52,14 @@ const uint64_t BAUDRATE = 115200;
 
 const uint8_t THREAD_STACK_SIZE = 100;
 
+//OS thread stacks
+OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE);
+
+
 /* MODULE main */
 
 
-std::list<OS_TCB> Tcb;   //a empty Thread control block
+//std::list<OS_TCB> Tcb;   //a empty Thread control block
 
 static OS_ERROR Error; //Error for all possible ones in RTOS
 
@@ -64,7 +68,6 @@ class HandlePacket
   using F = void (void*); // a function type, not a pointer
 
   private:
-   // OS_ECB* semaphore;
     uint8_t priority;
 
   public:
@@ -180,7 +183,7 @@ class HandlePacket
   */
   ~HandlePacket()
   {
-    OS_ThreadDelete(OS_PRIORITY_SELF); // delete thread in destructor , has not assigned priority yet
+    OS_ThreadDelete(priority); // delete thread in destructor , has not assigned priority yet
     // need to delete TCB
   }
 
@@ -469,6 +472,8 @@ int main(void)
   RTC::RTC_t rtc(RtcThread, 0);
 
 
+  OS_ERROR error;
+
 
   __DI();//Disable interrupt
 
@@ -482,6 +487,16 @@ int main(void)
   __EI(); //Enable the interrupt
 
   /* Write your code here */
+
+  error = OS_ThreadCreate(RxThread,
+                          0,
+                          &RxThreadStack[THREAD_STACK_SIZE - 1],
+  		                  1);
+
+  error = OS_ThreadCreate(TxThread,
+                            0,
+                            &TxThreadStack[THREAD_STACK_SIZE - 1],
+    		                  2);
 
   // Create sending packet thread with highest priority
   static HandlePacket packetThread(HandlePacket::Thread, 0, 10);
