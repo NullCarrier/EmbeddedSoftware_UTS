@@ -17,11 +17,11 @@
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
 
-static TFIFO TxFIFO;
-static TFIFO RxFIFO;
+ TFIFO TxFIFO;
+ TFIFO RxFIFO;
 
-OS_ECB* TxfifoSemaphore;
-OS_ECB* RxfifoSemaphore;
+ OS_ECB* TxfifoSemaphore;
+ OS_ECB* RxfifoSemaphore;
 
 
 /*! @brief Calculate the fractional part of number
@@ -105,33 +105,7 @@ bool UART_t::InChar(uint8_t &rxData)
 
 
 
-static void RxThread(void* pData)
-{
-  for (;;)
-  {
-    RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
-    OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-  }
-}
 
-
-static void TxThread(void* pData)
-{
-  uint8_t data{0};
-
-  for (;;)
-  {
-    if (!TxFIFO.Get(data) )
-	  UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
-	else
-	{
-	  UART2_D = data;
-	}
-
-    OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-  }
-
-}
 
 
 

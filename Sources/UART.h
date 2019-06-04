@@ -80,8 +80,11 @@ class UART_t
 };
 
 
-static void RxThread(void* pData);
-static void TxThread(void* pData);
+
+//static void RxThread(void* pData);
+
+
+//static void TxThread(void* pData);
 
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.

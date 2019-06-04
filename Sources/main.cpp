@@ -29,7 +29,7 @@
 #include "Cpu.h"
 
 // Simple OS
-#include "OS.h"
+#include "critical.h"
 
 //include packet module
 #include "packet.h"
@@ -52,6 +52,14 @@ const uint64_t BAUDRATE = 115200;
 
 const uint8_t THREAD_STACK_SIZE = 100;
 
+extern TFIFO TxFIFO;
+extern TFIFO RxFIFO;
+
+extern OS_ECB* TxfifoSemaphore;
+extern OS_ECB* RxfifoSemaphore;
+
+static OS_ERROR Error; //Error for all possible ones in RTOS
+
 //OS thread stacks
 OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(RxThreadStack, THREAD_STACK_SIZE);
@@ -61,10 +69,8 @@ OS_THREAD_STACK(InitThreadStack, THREAD_STACK_SIZE);
 
 /* MODULE main */
 
-
 //std::list<OS_TCB> Tcb;   //a empty Thread control block
 
-static OS_ERROR Error; //Error for all possible ones in RTOS
 
 class HandlePacket
 {
@@ -397,6 +403,8 @@ void SendAccelPacket()
 
 static void InitModulesThread(void* pData)
 {
+ // critical section;
+
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
   //Initialize PIT module
@@ -407,12 +415,44 @@ static void InitModulesThread(void* pData)
   RTC::RTC_t rtc(0);
 
   LED_t led(LED_t::ORANGE);
+  led.On();
 
   //delete this thread
   OS_ThreadDelete(OS_PRIORITY_SELF);
 }
 
 
+
+static void RxThread(void* pData)
+{
+  for (;;)
+  {
+	OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+    RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+
+  }
+}
+
+
+static void TxThread(void* pData)
+{
+  uint8_t data{0};
+
+  for (;;)
+  {
+	OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+
+    if (!TxFIFO.Get(data) )
+	  UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+	else
+	{
+	  UART2_D = data;
+	}
+
+
+  }
+
+}
 
 /*
  //function description
@@ -515,7 +555,7 @@ int main(void)
     		                3);
 
   // Create sending packet thread with highest priority
-  static HandlePacket packetThread(HandlePacketThread, 0, 10);
+  static HandlePacket packetThread(HandlePacketThread, 0, 5);
 
   __EI(); //Enable the interrupt
 
