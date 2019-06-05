@@ -46,7 +46,6 @@
 
 #include "accel.h"
 
-#include <list> //doubly link list
 
 const uint64_t BAUDRATE = 115200;
 
@@ -57,6 +56,8 @@ extern TFIFO RxFIFO;
 
 extern OS_ECB* TxfifoSemaphore;
 extern OS_ECB* RxfifoSemaphore;
+
+extern uint8_t Data;
 
 static OS_ERROR Error; //Error for all possible ones in RTOS
 
@@ -187,7 +188,6 @@ class HandlePacket
   ~HandlePacket()
   {
     OS_ThreadDelete(priority); // delete thread in destructor , has not assigned priority yet
-    // need to delete TCB
   }
 
 };
@@ -403,16 +403,16 @@ void SendAccelPacket()
 
 static void InitModulesThread(void* pData)
 {
- // critical section;
+  critical section;
 
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
   //Initialize PIT module
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 0);
-  pit.Set(500, true); // Set period 500ms
+ // PIT::PIT_t pit(CPU_BUS_CLK_HZ, 0);
+//  pit.Set(500, true); // Set period 500ms
 
   // Initialize RTC module
-  RTC::RTC_t rtc(0);
+//  RTC::RTC_t rtc(0);
 
   LED_t led(LED_t::ORANGE);
   led.On();
@@ -427,8 +427,8 @@ static void RxThread(void* pData)
 {
   for (;;)
   {
-	OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-    RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
+	OS_SemaphoreWait(RxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+    RxFIFO.Put(Data); // let the receiver to send a byte of data to RxFIFO
 
   }
 }
@@ -508,7 +508,7 @@ static void RTCThread(void* argu)
 static void HandlePacketThread(void* pData)
 {
   // initialize the packet module
-  Packet_t packet;
+	Packet_t packet;
 
   for (;;)
   {

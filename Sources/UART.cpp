@@ -23,6 +23,8 @@ const float DIVISIOR = 16.0;
  OS_ECB* TxfifoSemaphore;
  OS_ECB* RxfifoSemaphore;
 
+ uint8_t Data;
+
 
 /*! @brief Calculate the fractional part of number
  *
@@ -45,7 +47,7 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 
 bool UART_t::Init() const
 {
-  __DI();//Disable interrupt
+ // __DI();//Disable interrupt
 
  //local variable for storing SBR using union type
   uint16union_t sbr;
@@ -86,7 +88,7 @@ bool UART_t::Init() const
  //Set priority?
   UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
 
-  __EI();// Enable the interrupt
+ // __EI();// Enable the interrupt
 
   return true;
 }
@@ -143,6 +145,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
    {
      if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
      {
+    	Data = UART2_D;
        OS_SemaphoreSignal(RxfifoSemaphore); // To signal an event
        	// RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
      }

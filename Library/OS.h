@@ -75,18 +75,6 @@ typedef struct ecb
 } OS_ECB;
 
 
-//-----------------------------------------
-// Thread control block
-typedef struct tcb
-{
-  void* pStack;
-  uint8_t priority;
-  OS_STATE state;
-  uint32_t delay;
-  OS_ECB* pEvent;
-}OS_TCB;
-
-
 /*! @brief Sets up the OS before first use.
  *
  *  Initialises the Coretex-M4 SysTick for use by the OS.

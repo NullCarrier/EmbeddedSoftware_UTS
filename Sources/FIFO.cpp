@@ -15,8 +15,8 @@
 
 bool TFIFO::Put(const uint8_t data)
 {
-  //Acquire the semaphore
-  OS_SemaphoreWait(availability, 0);
+  //Acquire the semaphore and wait for it forever until semaphore is signalled
+  OS_SemaphoreWait(nbItem, 0);
 
   critical section; //Enter critical section
 
@@ -26,10 +26,8 @@ bool TFIFO::Put(const uint8_t data)
 
   End %= FIFO_SIZE; // to make a circular array, reset End index
 
-   // return true;
-
-   //increment semaphore and return its caller
-  OS_SemaphoreSignal(nbItem);
+  //Release a semaphore
+  OS_SemaphoreSignal(availability);
 
   return true;
 }
@@ -38,7 +36,7 @@ bool TFIFO::Put(const uint8_t data)
 bool TFIFO::Get(uint8_t &dataRef)
 {
   //wait for other threads  if buffer was empty by suspending thread through a semaphore
-  OS_SemaphoreWait(nbItem, 0);
+  OS_SemaphoreWait(availability, 0);
 
   critical section; //Enter critical section
 
@@ -50,7 +48,8 @@ bool TFIFO::Get(uint8_t &dataRef)
 
   //one semaphore has been used then it increments by 1 and return to its caller if semaphore is greater than 1
   //OS_SEMAPHORE_OVERFLOW if the semaphore count overflowed
-  OS_SemaphoreSignal(availability);
+
+  OS_SemaphoreSignal(nbItem);
 
   return true;
 }

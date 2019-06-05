@@ -41,8 +41,8 @@ class TFIFO
   // Initialize FIFO
   TFIFO()
   {
-	availability = OS_SemaphoreCreate(FIFO_SIZE); //
-    nbItem = OS_SemaphoreCreate(0);
+	availability = OS_SemaphoreCreate(0); //
+    nbItem = OS_SemaphoreCreate(FIFO_SIZE);
   }
 
 /*! @brief Put one character into the FIFO.
