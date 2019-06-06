@@ -19,6 +19,7 @@ TPacket Packet_t::s_Packet;
 // define the global variable
 const uint8_t PACKET_ACK_MASK = 0b10000000;
 
+
 bool Packet_t::PacketGet()
 {
   // local variable for holding temp value
@@ -56,7 +57,6 @@ bool Packet_t::PacketGet()
 
         if (Packet_Checksum == MakeChecksum())
         {
-
        // checksum is good, then check it out
           nbBytesPacket = 1;
 
@@ -84,19 +84,10 @@ bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2
 
   bool success{1};
 
-  //Acquire serial port's semaphore;
-
-  //Send packet to deveice;
-  //Wait for response (with timeout);
-  //Release semaphore;
-  /* if (time out)
-     return error code;
-     else
-     return no error;
-  */
   uint8_t checksum = command ^ parameter1 ^ parameter2 ^ parameter3;
   uint8_t packet[5] = {command, parameter1, parameter2, parameter3, checksum};
 
+  //Repeating Outchar 5times
   for (auto it : packet)
   {
     if (success)
@@ -109,6 +100,7 @@ bool Packet_t::PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2
 
   return success;
 }
+
 
 
 void Packet_t::SwitchPacket()

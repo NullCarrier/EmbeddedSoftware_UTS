@@ -54,6 +54,11 @@ class UART_t
    this->Init();
   }
 
+  /*! @brief default constructor for HandlePacketThread
+       *
+       *
+       *
+       */
   UART_t() = default;
 
 #if 0

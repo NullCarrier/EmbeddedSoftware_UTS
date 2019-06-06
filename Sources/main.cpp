@@ -56,10 +56,12 @@ extern TFIFO RxFIFO;
 
 extern OS_ECB* TxfifoSemaphore;
 extern OS_ECB* RxfifoSemaphore;
-extern OS_ECB* PITSemaphore;
-extern OS_ECB* RTCSemaphore;
+extern OS_ECB* ShareFIFOSemaphore;
+extern OS_ECB* PIT_Semaphore;
+extern OS_ECB* RTC_Semaphore;
 
-extern uint8_t Data;
+extern uint8_t RxData;
+extern uint8_t TxData;
 
 static OS_ERROR Error; //Error for all possible ones in RTOS
 
@@ -69,12 +71,10 @@ OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(RxThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(TxThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(InitThreadStack, THREAD_STACK_SIZE);
-OS_THREAD_STACK(PITThread, THREAD_STACK_SIZE);
+OS_THREAD_STACK(PITThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(RTCThreadStack, THREAD_STACK_SIZE);
 
 /* MODULE main */
-
-//std::list<OS_TCB> Tcb;   //a empty Thread control block
 
 
 class HandlePacket
@@ -259,9 +259,9 @@ void HandlePacket::SetModePacket(Packet_t &packet)
 // Handling packet protocol (Tower to PC)
 void HandlePacket::HandleCommandPacket(Packet_t &packet)
 {
+
   switch (Packet_Command)
   {
-
    // for specific command. Startup needs to send 3 packets
     case CMD_STARTUP:
       InitResponsePacket(packet);
@@ -378,6 +378,7 @@ void HandlePacket::HandleACKTowerModePacket(Packet_t &packet)
 
   HandleTowerModePacket(packet);
 }
+
 /*
 void SendAccelPacket()
 {
@@ -405,7 +406,11 @@ void SendAccelPacket()
 
 
 
-
+/*! @brief this thread initializes all modules
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
 static void InitModulesThread(void* pData)
 {
   critical section;
@@ -437,10 +442,12 @@ static void RxThread(void* pData)
   for (;;)
   {
 	OS_SemaphoreWait(RxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-    RxFIFO.Put(Data); // let the receiver to send a byte of data to RxFIFO
+    RxFIFO.Put(RxData); // let the receiver to send a byte of data to RxFIFO
 
+    OS_SemaphoreSignal(ShareFIFOSemaphore); //Release a remaphore
   }
 }
+
 
 /*! @brief Transimission thread
      *
@@ -449,7 +456,7 @@ static void RxThread(void* pData)
      */
 static void TxThread(void* pData)
 {
-  uint8_t data{0};
+  uint8_t data = 0;
 
   for (;;)
   {
@@ -460,6 +467,7 @@ static void TxThread(void* pData)
 	else
 	{
 	  UART2_D = data;
+	  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
 	}
 
   }
@@ -472,16 +480,16 @@ static void TxThread(void* pData)
      *  @param pData might not use but is required by the OS to create a thread.
      *
      */
-
 static void PITThread(void* argu)
 {
-  OS_SemaphoreWait(PITSemaphore, 0); //suspend the thread until next time it has been siginified
-
   static LED_t led; //local object for LED
+
   for (;;)
   {
-    Led.Color(LED_t::GREEN);
-    Led.Toggle();
+	OS_SemaphoreWait(PIT_Semaphore, 0); //suspend the thread until next time it has been siginified
+
+	led.Color(LED_t::GREEN);
+    led.Toggle();
   }
 
 }
@@ -494,20 +502,22 @@ static void PITThread(void* argu)
      */
 static void RTCThread(void* argu)
 {
-  OS_SemaphoreWait(RTCSemaphore, 0); //suspend the thread until next time it has been siginified
-
+  //local object for RTC thread
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
-
+  Packet_t packet;
   LED_t led; //local object for LED
 
   for (;;)
   {
-   led.Color(LED_t::YELLOW);
-   led.Toggle();
+	OS_SemaphoreWait(RTC_Semaphore, 0); //suspend the thread until next time it has been siginified
 
-   rtc.RTC_Get(hours, mins, sec);
-   Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
+    led.Color(LED_t::YELLOW);
+    led.Toggle();
+
+    rtc.RTC_Get(hours, mins, sec);
+
+    packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
   }
 
 }

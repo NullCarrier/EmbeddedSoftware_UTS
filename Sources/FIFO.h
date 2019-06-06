@@ -29,21 +29,14 @@
 class TFIFO
 {
   protected:
-  uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
-  uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
-  //uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
-  uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
-  OS_ECB* nbItem;
-  OS_ECB* availability;
+    uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
+    uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
+    uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
+    uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
+    //OS_ECB* nbItem; /*!< The number of bytes currently stored in the FIFO */
+    //OS_ECB* availability; /*!< the semaphore for singalling a event */
 
   public:
-
-  // Initialize FIFO
-  TFIFO()
-  {
-	availability = OS_SemaphoreCreate(0); //create binary semaphore
-    nbItem = OS_SemaphoreCreate(FIFO_SIZE); //create counting semaphore
-  }
 
 /*! @brief Put one character into the FIFO.
  *
@@ -52,7 +45,7 @@ class TFIFO
  *  @return bool - TRUE if data is successfully stored in the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
-  bool Put(const uint8_t data);
+    bool Put(const uint8_t data);
 
  /*! @brief Get one character from the FIFO.
  *
@@ -61,7 +54,7 @@ class TFIFO
  *  @return bool - TRUE if data is successfully retrieved from the FIFO.
  *  @note Assumes that FIFO_Init has been called.
  */
-  bool Get(uint8_t &dataRef);
+    bool Get(uint8_t &dataRef);
 
 };
 

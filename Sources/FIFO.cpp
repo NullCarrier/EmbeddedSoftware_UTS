@@ -15,41 +15,45 @@
 
 bool TFIFO::Put(const uint8_t data)
 {
-  //Start counting and suspend the thread until count is greater than 0
-  OS_SemaphoreWait(nbItem, 0);
-
   critical section; //Enter critical section
 
-  Buffer[End] = data; // add a byte of data into array buffer
+  if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
+  {
 
-  End++; // add a new data , then increment one for End index
+    NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
-  End %= FIFO_SIZE; // to make a circular array, reset End index
+	Buffer[End] = data; // add a byte of data into array buffer
 
-  //Release a semaphore
-  OS_SemaphoreSignal(availability);
+	End++; // add a new data , then increment one for End index
 
-  return true;
+	End %= FIFO_SIZE; // to make a circular array, reset End index
+
+	return true;
+  }
+  else
+    return false;
 }
 
 
 bool TFIFO::Get(uint8_t &dataRef)
 {
-  //wait for other threads  if buffer was empty by suspending thread through a semaphore
-  OS_SemaphoreWait(availability, 0);
-
   critical section; //Enter critical section
 
-  dataRef = Buffer[Start]; // place the retrieved byte
+  if (NbBytes != 0) // can not retrieve if buffer is empty
+  {
+    NbBytes--; // decrement one whenever the Buffer has been retrieved
 
-  Start++; // removing one data, then increment Start index
+	dataRef = Buffer[Start]; // place the retrieved byte
 
-  Start %= FIFO_SIZE; // to make a circular array, reset Start index
+	Start++; // removing one data, then increment Start index
 
-  //increments by 1 and return to its caller if semaphore is greater than 1
-  OS_SemaphoreSignal(nbItem);
+	Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
-  return true;
+	return true;
+  }
+  else
+	return false;
 }
+
 
 

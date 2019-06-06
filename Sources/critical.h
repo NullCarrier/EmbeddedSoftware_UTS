@@ -27,12 +27,12 @@ class OS
   public:
     OS()
     {
-      OS_ISREnter();
+      OS_ISREnter(); //notifies the RTOS that an ISR is being processed
     }
 
     ~OS()
     {
-      OS_ISRExit();
+      OS_ISRExit(); // notifies the RTOS that an ISR has completed
     }
 
 };

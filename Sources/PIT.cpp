@@ -11,6 +11,8 @@
 #include "PIT.h"
 
 
+OS_ECB* PIT_Semaphore;
+
 namespace PIT
 {
   using F = void (void*); // a function type, not a pointer
@@ -19,7 +21,6 @@ namespace PIT
   static F* UserFunc;
   static void* UserArgu;
 
-  OS_ECB* PITSemaphore;
 
   bool PIT_t::Init()
   {
@@ -55,7 +56,7 @@ namespace PIT
     UserArgu = userArguments;
 
     //Create semaphore for PIT thread
-    PITSemaphore = OS_SemaphoreCreate(0);
+    PIT_Semaphore = OS_SemaphoreCreate(0);
 
     // Enable timer0 interrupt
     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
@@ -111,8 +112,7 @@ namespace PIT
       PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
       //Signal PIT thread
-      OS_SemaphoreSignal(PITSemaphore);
-
+      OS_SemaphoreSignal(PIT_Semaphore);
     }
 
   }

@@ -84,6 +84,10 @@ class Packet_t: public UART_t
    {
    }
 
+   /*! @brief Initializes empty packet object for any other threads
+    *
+    *
+    */
    Packet_t():
      UART_t::UART_t()
    {

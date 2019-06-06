@@ -17,13 +17,15 @@
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
 
- TFIFO TxFIFO;
- TFIFO RxFIFO;
+TFIFO TxFIFO;
+TFIFO RxFIFO;
 
- OS_ECB* TxfifoSemaphore;
- OS_ECB* RxfifoSemaphore;
+OS_ECB* TxfifoSemaphore;
+OS_ECB* RxfifoSemaphore;
 
- uint8_t Data;
+OS_ECB* ShareFIFOSemaphore;
+
+uint8_t RxData;
 
 
 /*! @brief Calculate the fractional part of number
@@ -85,6 +87,9 @@ bool UART_t::Init() const
   TxfifoSemaphore = OS_SemaphoreCreate(0);
   RxfifoSemaphore = OS_SemaphoreCreate(0);
 
+  //Create binary semaphore
+  ShareFIFOSemaphore = OS_SemaphoreCreate(0);
+
  //Set priority?
   UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
 
@@ -96,7 +101,10 @@ bool UART_t::Init() const
 
 bool UART_t::InChar(uint8_t &rxData)
 {
-  return RxFIFO.Get(rxData); // retrieve data from FIFO and send it to Packet module
+  OS_SemaphoreWait(ShareFIFOSemaphore, 0); // Wait for semaphore signalled by RxThread
+
+  // retrieve data from FIFO and send it to Packet module
+  return RxFIFO.Get(rxData);
 }
 
 
@@ -135,16 +143,14 @@ void __attribute__ ((interrupt)) UART_ISR(void)
 {
   // inform RTOS that ISR is being processed
   OS ISR;
-  //OS_ISREnter();
 
   // receiving data condition
    if (UART2_C2 & UART_C2_RIE_MASK)
    {
      if (UART2_S1 & UART_S1_RDRF_MASK) // To check the state of RDRF bit
      {
-    	Data = UART2_D;
+       RxData = UART2_D; //Clear RDRF bit
        OS_SemaphoreSignal(RxfifoSemaphore); // To signal an event
-       	// RxFIFO.Put(UART2_D); // let the receiver to send a byte of data to RxFIFO
      }
    }
 
@@ -153,9 +159,9 @@ void __attribute__ ((interrupt)) UART_ISR(void)
    {
      if (UART2_S1 & UART_S1_TDRE_MASK)
        OS_SemaphoreSignal(TxfifoSemaphore); // To check any threads waiting on semaphore and make them ready to run
+       UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
    }
 
-  //OS_ISRExit();
 }
 
 
