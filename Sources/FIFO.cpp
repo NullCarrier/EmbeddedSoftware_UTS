@@ -15,7 +15,7 @@
 
 bool TFIFO::Put(const uint8_t data)
 {
-  //Acquire the semaphore and wait for it forever until semaphore is signalled
+  //Start counting and suspend the thread until count is greater than 0
   OS_SemaphoreWait(nbItem, 0);
 
   critical section; //Enter critical section
@@ -46,9 +46,7 @@ bool TFIFO::Get(uint8_t &dataRef)
 
   Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
-  //one semaphore has been used then it increments by 1 and return to its caller if semaphore is greater than 1
-  //OS_SEMAPHORE_OVERFLOW if the semaphore count overflowed
-
+  //increments by 1 and return to its caller if semaphore is greater than 1
   OS_SemaphoreSignal(nbItem);
 
   return true;

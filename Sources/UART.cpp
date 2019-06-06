@@ -108,9 +108,6 @@ bool UART_t::InChar(uint8_t &rxData)
 
 
 
-
-
-
 #if 0
 void UART_Poll(void)
 {

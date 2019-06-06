@@ -101,7 +101,6 @@ class Packet_t: public UART_t
  */
    bool PacketPut(uint8_t command, uint8_t parameter1, uint8_t parameter2, uint8_t parameter3);
 
-   bool PacketPut(uint8_t* packet, const uint16_t timeout);
 
   /*! @brief to handle error condition by discarding first byte and adding the new byte
  *

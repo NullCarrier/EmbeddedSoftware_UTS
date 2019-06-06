@@ -56,17 +56,21 @@ extern TFIFO RxFIFO;
 
 extern OS_ECB* TxfifoSemaphore;
 extern OS_ECB* RxfifoSemaphore;
+extern OS_ECB* PITSemaphore;
+extern OS_ECB* RTCSemaphore;
 
 extern uint8_t Data;
 
 static OS_ERROR Error; //Error for all possible ones in RTOS
+
 
 //OS thread stacks
 OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(RxThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(TxThreadStack, THREAD_STACK_SIZE);
 OS_THREAD_STACK(InitThreadStack, THREAD_STACK_SIZE);
-
+OS_THREAD_STACK(PITThread, THREAD_STACK_SIZE);
+OS_THREAD_STACK(RTCThreadStack, THREAD_STACK_SIZE);
 
 /* MODULE main */
 
@@ -119,76 +123,76 @@ class HandlePacket
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleACKStartupPacket(Packet_t &packet);
+    static void HandleACKStartupPacket(Packet_t &packet);
 
   /*! @brief To handle tower version packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleTowerVersionPacket(Packet_t &packet);
+    static void HandleTowerVersionPacket(Packet_t &packet);
 
   /*! @brief To handle acknowledgement tower version packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleACKTowerVersionPacket(Packet_t &packet);
+    static void HandleACKTowerVersionPacket(Packet_t &packet);
 
   /*! @brief To handle tower number packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleTowerNumberPacket(Packet_t &packet);
+    static void HandleTowerNumberPacket(Packet_t &packet);
 
   /*! @brief To handle acknowledgement tower number packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleACKTowerNumberPacket(Packet_t &packet);
+    static void HandleACKTowerNumberPacket(Packet_t &packet);
 
   /*! @brief To handle tower mode packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleTowerModePacket(Packet_t &packet);
+    static void HandleTowerModePacket(Packet_t &packet);
 
   /*! @brief To handle acknowledgement tower mode packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleACKTowerModePacket(Packet_t &packet);
+    static void HandleACKTowerModePacket(Packet_t &packet);
 
   /*! @brief To send 4 packets initially and the repsonse for startup protocol
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void InitResponsePacket(Packet_t &packet);
+    static void InitResponsePacket(Packet_t &packet);
 
  /*! @brief To decide how to send packet depending on packet command ID
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void HandleCommandPacket(Packet_t &packet);
+    static void HandleCommandPacket(Packet_t &packet);
 
  /*! @brief To handle set time packet
    *  @param packet the PacketVert2 object
    *  @return void
   */
-  static void SetTimePacket(Packet_t &packet);
+    static void SetTimePacket(Packet_t &packet);
 
   /*! @brief To select Poll or Interrupt mode
      *  @param packet the Packet_t object
      *  @return void
     */
-  static void SetModePacket(Packet_t &packet);
+    static void SetModePacket(Packet_t &packet);
 
   /*! @brief Destructor for deleting thread when object has not existed
    *
    *
   */
-  ~HandlePacket()
-  {
-    OS_ThreadDelete(priority); // delete thread in destructor , has not assigned priority yet
-  }
+    ~HandlePacket()
+    {
+      OS_ThreadDelete(priority); // delete thread in destructor , has not assigned priority yet
+    }
 
 };
 
@@ -258,38 +262,37 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
   switch (Packet_Command)
   {
 
-  // for specific command. Startup needs to send 3 packets
+   // for specific command. Startup needs to send 3 packets
     case CMD_STARTUP:
-    InitResponsePacket(packet);
-    break;
+      InitResponsePacket(packet);
+      break;
     case CMD_ACK_STARTUP:
-    HandleACKStartupPacket(packet);
-    break;
+      HandleACKStartupPacket(packet);
+      break;
     case CMD_TOWERVERSION:
-    HandleTowerVersionPacket(packet);//only responce once for version
-    break;
+      HandleTowerVersionPacket(packet);//only responce once for version
+      break;
     case CMD_ACK_TOWERVERSION:
-    HandleACKTowerVersionPacket(packet);
-    break;
+      HandleACKTowerVersionPacket(packet);
+      break;
     case CMD_TOWERNUMBER:
-    HandleTowerNumberPacket(packet);//only responce once for number
-    break;
-  case CMD_ACK_TOWERNUMBER:
-  HandleACKTowerNumberPacket(packet);
-  break;
-  case CMD_TOWERMODE:
-  HandleTowerModePacket(packet);
-  break;
-  case CMD_ACK_TOWERMODE:
-  HandleACKTowerModePacket(packet);
-  break;
-  case CMD_SETTIME:
-  SetTimePacket(packet);
-  break;
-  case CMD_MODE:
-  //SetModePacket(packet);
-  break;
-
+      HandleTowerNumberPacket(packet);//only responce once for number
+      break;
+    case CMD_ACK_TOWERNUMBER:
+      HandleACKTowerNumberPacket(packet);
+      break;
+    case CMD_TOWERMODE:
+      HandleTowerModePacket(packet);
+      break;
+    case CMD_ACK_TOWERMODE:
+      HandleACKTowerModePacket(packet);
+      break;
+    case CMD_SETTIME:
+      SetTimePacket(packet);
+      break;
+    case CMD_MODE:
+      //SetModePacket(packet);
+      break;
   }
 
 }
@@ -401,6 +404,8 @@ void SendAccelPacket()
 }*/
 
 
+
+
 static void InitModulesThread(void* pData)
 {
   critical section;
@@ -408,11 +413,11 @@ static void InitModulesThread(void* pData)
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
   //Initialize PIT module
- // PIT::PIT_t pit(CPU_BUS_CLK_HZ, 0);
-//  pit.Set(500, true); // Set period 500ms
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, 0);
+  pit.Set(500, true); // Set period 500ms
 
   // Initialize RTC module
-//  RTC::RTC_t rtc(0);
+  RTC::RTC_t rtc(0);
 
   LED_t led(LED_t::ORANGE);
   led.On();
@@ -422,7 +427,11 @@ static void InitModulesThread(void* pData)
 }
 
 
-
+/*! @brief Receiving thread
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
 static void RxThread(void* pData)
 {
   for (;;)
@@ -433,7 +442,11 @@ static void RxThread(void* pData)
   }
 }
 
-
+/*! @brief Transimission thread
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
 static void TxThread(void* pData)
 {
   uint8_t data{0};
@@ -449,58 +462,58 @@ static void TxThread(void* pData)
 	  UART2_D = data;
 	}
 
-
   }
 
 }
 
-/*
- //function description
+
+/*! @brief PIT thread
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
+
 static void PITThread(void* argu)
 {
-  static LED_t led; //local object for LED
+  OS_SemaphoreWait(PITSemaphore, 0); //suspend the thread until next time it has been siginified
 
+  static LED_t led; //local object for LED
   for (;;)
   {
-	    //wait....
-
-
+    Led.Color(LED_t::GREEN);
+    Led.Toggle();
   }
-  //  Led.Color(LED_t::GREEN);
-  //  Led.Toggle();
-
 
 }
 
 
+/*! @brief RTC thread
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
 static void RTCThread(void* argu)
 {
+  OS_SemaphoreWait(RTCSemaphore, 0); //suspend the thread until next time it has been siginified
 
   uint8_t hours, mins, sec;
   RTC::RTC_t rtc;
 
-  static LED_t led; //local object for LED
+  LED_t led; //local object for LED
 
   for (;;)
   {
+   led.Color(LED_t::YELLOW);
+   led.Toggle();
 
-
-
+   rtc.RTC_Get(hours, mins, sec);
+   Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
   }
 
-  led.Color(LED_t::YELLOW);
-  led.Toggle();
-
-  rtc.RTC_Get(hours, mins, sec);
-
-//Packet.Packet_t::PacketPut(HandlePacket::CMD_SETTIME, hours, mins, sec); //send it to FIFO
-//SendAccelPacket();
 }
-*/
 
 
-
-/*! @brief using member function as the thread of sending Packet
+/*! @brief Handle packet thread
      *
      *  @param pData might not use but is required by the OS to create a thread.
      *
@@ -508,7 +521,7 @@ static void RTCThread(void* argu)
 static void HandlePacketThread(void* pData)
 {
   // initialize the packet module
-	Packet_t packet;
+  Packet_t packet;
 
   for (;;)
   {
@@ -539,20 +552,34 @@ int main(void)
 
   /* Write your code here */
 
+  //Create InitModulesThread
   Error = OS_ThreadCreate(InitModulesThread,
                   0,
                   &InitThreadStack[THREAD_STACK_SIZE - 1],
     		      0);
-
+  //Create RxThread
   Error = OS_ThreadCreate(RxThread,
                           0,
                           &RxThreadStack[THREAD_STACK_SIZE - 1],
-  		                  2);
+  		                  1);
 
+  //Create TxThread
   Error = OS_ThreadCreate(TxThread,
                             0,
                             &TxThreadStack[THREAD_STACK_SIZE - 1],
-    		                3);
+    		                2);
+
+  //Create PITThread
+  Error = OS_ThreadCreate(PITThread,
+                    0,
+                    &PITThreadStack[THREAD_STACK_SIZE - 1],
+      		      3);
+
+  //Create RTCThread
+  Error = OS_ThreadCreate(RTCThread,
+                      0,
+                      &RTCThreadStack[THREAD_STACK_SIZE - 1],
+        		      4);
 
   // Create sending packet thread with highest priority
   static HandlePacket packetThread(HandlePacketThread, 0, 5);

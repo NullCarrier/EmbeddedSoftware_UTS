@@ -16,7 +16,7 @@ namespace RTC
 
   using F = void(void*); // a function type, not a pointer
 
-  static OS_ECB* RTCSemaphore;
+  OS_ECB* RTCSemaphore;
 
   // Local function pointer
   static F* UserFunc;
@@ -54,6 +54,7 @@ bool RTC_t::RTC_Init()
   UserFunc = userFunction;
   UserArgu = userArguments;
 
+  //Create semaphore for RTC thread
   RTCSemaphore = OS_SemaphoreCreate(0);
 
   return true;

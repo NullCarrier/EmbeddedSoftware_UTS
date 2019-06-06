@@ -41,8 +41,8 @@ class TFIFO
   // Initialize FIFO
   TFIFO()
   {
-	availability = OS_SemaphoreCreate(0); //
-    nbItem = OS_SemaphoreCreate(FIFO_SIZE);
+	availability = OS_SemaphoreCreate(0); //create binary semaphore
+    nbItem = OS_SemaphoreCreate(FIFO_SIZE); //create counting semaphore
   }
 
 /*! @brief Put one character into the FIFO.

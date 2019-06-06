@@ -19,7 +19,7 @@ namespace PIT
   static F* UserFunc;
   static void* UserArgu;
 
-  static OS_ECB* PITSemaphore;
+  OS_ECB* PITSemaphore;
 
   bool PIT_t::Init()
   {
@@ -54,61 +54,51 @@ namespace PIT
     UserFunc = userFunction;
     UserArgu = userArguments;
 
+    //Create semaphore for PIT thread
     PITSemaphore = OS_SemaphoreCreate(0);
 
     // Enable timer0 interrupt
     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
 
-
     return true;
   }
 
 
-void PIT_t::Set(const uint32_t& newPeriod, bool restart)
-{
-  period = newPeriod * 1e6; // Convert into ns
-
-  if (restart)
+  void PIT_t::Set(const uint32_t& newPeriod, bool restart)
   {
-  //disable timer1
-   this->Enable(false);
+    period = newPeriod * 1e6; // Convert into ns
 
-  //reload the timer
-   PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
+    if (restart)
+    {
+      //disable timer1
+      this->Enable(false);
 
-  //Enable timer1
-   this->Enable(true);
- }
- else
- {
-  //reload the timer during running the timer
-   PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
- }
+     //reload the timer
+      PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
 
+     //Enable timer1
+      this->Enable(true);
+    }
+    else
+      PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1; //reload the timer during running the timer
 
-}
-
-
-void PIT_t::Enable(const bool enable)
-{
- if (enable)
-   PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
- else
-   PIT_TCTRL1 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
-}
+  }
 
 
-PIT_t::PIT_t(const uint32_t mClock, void* userArgu):
-moduleClk(mClock), userArguments(userArgu)
-{
+  void PIT_t::Enable(const bool enable)
+  {
+    if (enable)
+      PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
+    else
+      PIT_TCTRL1 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
+  }
 
-  __DI(); //Disable interrupt
 
-  this->Init();
-
-  __EI(); // Enable the interrupt
-
-}
+  PIT_t::PIT_t(const uint32_t mClock, void* userArgu):
+  moduleClk(mClock), userArguments(userArgu)
+  {
+    this->Init();
+  }
 
 
   void __attribute__ ((interrupt)) ISR(void)
