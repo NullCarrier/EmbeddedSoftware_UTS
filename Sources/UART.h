@@ -25,6 +25,9 @@
 // involve mask for all registers
 #include "MK70F12.h"
 
+#include "critical.h" //critical section
+
+
 
 class UART_t
 {
@@ -33,7 +36,6 @@ class UART_t
   uint32_t moduleClk;  /*!< moduleClk The module clock rate in Hz. */
 
   protected:
-
   /*! @brief Sets up the UART interface before first use.
    *
    *  @return bool - TRUE if the UART was successfully initialized.
@@ -52,13 +54,14 @@ class UART_t
    this->Init();
   }
 
+  UART_t() = default;
+
 #if 0
   protected:
   uint8_t txData;
   uint8_t &rxData;
 #endif
   public:
-
   /*! @brief Put a byte in the transmit FIFO if it is not full.
    *
    *  @param rxData The byte to be placed in the transmit FIFO.
@@ -75,6 +78,13 @@ class UART_t
    */
   bool OutChar(const uint8_t txData);
 };
+
+
+
+//static void RxThread(void* pData);
+
+
+//static void TxThread(void* pData);
 
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.

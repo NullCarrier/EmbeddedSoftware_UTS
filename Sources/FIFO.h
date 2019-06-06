@@ -1,6 +1,6 @@
 /*! @file FIFO.h
  *
- *  @brief Routines to implement a FIFO buffer.
+ *  @brief Routines to implement a FIFO buffer Thread.
  *
  *  This contains the structure and "methods" for accessing a byte-wide FIFO.
  *
@@ -15,13 +15,10 @@
 // new types
 #include "type_cpp.h"
 
-// _EI() _DI()
-#include "PE_Types.h"
-
 // involve mask for all registers
 #include "MK70F12.h"
 
-#include "Cpu.h"
+#include "critical.h"
 
 // Number of bytes in a FIFO
 #define FIFO_SIZE 256
@@ -34,12 +31,19 @@ class TFIFO
   protected:
   uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
   uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
-  uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
+  //uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
   uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
+  OS_ECB* nbItem;
+  OS_ECB* availability;
 
   public:
 
-  TFIFO() = default;
+  // Initialize FIFO
+  TFIFO()
+  {
+	availability = OS_SemaphoreCreate(0); //create binary semaphore
+    nbItem = OS_SemaphoreCreate(FIFO_SIZE); //create counting semaphore
+  }
 
 /*! @brief Put one character into the FIFO.
  *

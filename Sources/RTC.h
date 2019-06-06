@@ -22,6 +22,8 @@
 
 #include "Cpu.h"
 
+#include "critical.h"
+
 namespace RTC{
 
 class RTC_t
@@ -38,7 +40,7 @@ class RTC_t
  *  @param uF is a pointer to a user callback function.
  *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  */
-  RTC_t(F* uF, void* userArgu);
+  RTC_t(void* userArgu);
 
 /*! @brief Default constructor for initializing RTC object
  *

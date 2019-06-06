@@ -11,113 +11,111 @@
 #include "PIT.h"
 
 
-namespace PIT{
-
-using F = void (void*); // a function type, not a pointer
-
-// Local function pointer
-static F* UserFunc;
-static void* UserArgu;
-
-
- bool PIT_t::PIT_Init()
+namespace PIT
 {
+  using F = void (void*); // a function type, not a pointer
 
- __DI();//Disable interrupt
+  // Local function pointer
+  static F* UserFunc;
+  static void* UserArgu;
 
- //enable clock gate
- SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
+  OS_ECB* PITSemaphore;
 
- //Disable timer0
-  this->PIT_Enable(false);
+  bool PIT_t::Init()
+  {
 
- //enable timer module
- PIT_MCR &= ~PIT_MCR_MDIS_MASK;
+   //enable clock gate
+    SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
 
+    //enable timer module
+    PIT_MCR &= ~PIT_MCR_MDIS_MASK;
 
- //Freeze the timer
- PIT_MCR |= PIT_MCR_FRZ_MASK;
+    //Disable timer1
+    this->Enable(false);
 
- //initialize the timer: 500ms
-// PIT_LDVAL0 = 0xBEBC1F;
+    //Freeze the timer
+    PIT_MCR |= PIT_MCR_FRZ_MASK;
 
- this->PIT_Set(1000 ,true); // period 500ms
+    //initialize the timer: 500ms
+    PIT_LDVAL1 = 0xBEBC1F;
 
  // Initialize NVIC
- // Vector =84, IRQ=68
+ // Vector =85, IRQ=69
  // Clear any pending interrupts on PIT0
- NVICICPR2 = (1 << (68 % 32));
+    NVICICPR2 = (1 << (69 % 32));
 
  // Enable interrupts from PIT module
- NVICISER2 = (1 << (68 % 32));
+    NVICISER2 = (1 << (69 % 32));
 
- //Enable timer0
- this->PIT_Enable(true);
+ //Enable timer1
+    this->Enable(true);
 
  // Initialize the local usefunction
- UserFunc = userFunction;
- UserArgu = userArguments;
+    UserFunc = userFunction;
+    UserArgu = userArguments;
 
- __EI();// Enable the interrupt
+    //Create semaphore for PIT thread
+    PITSemaphore = OS_SemaphoreCreate(0);
 
- return true;
-}
+    // Enable timer0 interrupt
+    PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
 
-
-void PIT_t::PIT_Set(const uint32_t& newPeriod, bool restart)
-{
-  period = newPeriod * 1e6;
-
- if (restart)
- {
-  //disable timer0
-  this->PIT_Enable(false);
-
-  //reload the timer
-  PIT_LDVAL0 = ( period / ( ( 1/(float) moduleClk)*1e9) ) - 1;
-
-  //Enable timer0
-  this->PIT_Enable(true);
- }
- else
- {
-  //reload the timer during running the timer
-	 PIT_LDVAL0 = ( period / (( 1/ (float) moduleClk) *1e9) ) - 1;
- }
-
- // Enable timer0 interrupt
- PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK;
-
-}
+    return true;
+  }
 
 
-void PIT_t::PIT_Enable(const bool enable)
-{
- if (enable)
- PIT_TCTRL0 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
- else
- PIT_TCTRL0 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
-}
+  void PIT_t::Set(const uint32_t& newPeriod, bool restart)
+  {
+    period = newPeriod * 1e6; // Convert into ns
+
+    if (restart)
+    {
+      //disable timer1
+      this->Enable(false);
+
+     //reload the timer
+      PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
+
+     //Enable timer1
+      this->Enable(true);
+    }
+    else
+      PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1; //reload the timer during running the timer
+
+  }
 
 
-PIT_t::PIT_t(const uint32_t mClock, const uint32_t T, F* userFunc, void* userArgu):
-moduleClk(mClock) , period(T),userFunction(userFunc), userArguments(userArgu)
-{
-  this->PIT_Init();
-}
+  void PIT_t::Enable(const bool enable)
+  {
+    if (enable)
+      PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
+    else
+      PIT_TCTRL1 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
+  }
 
-void __attribute__ ((interrupt)) PIT_ISR(void)
-{
- if (PIT_TFLG0 & PIT_TFLG_TIF_MASK)
- {
-  PIT_TFLG0 |= PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
- // then call callback function
-  if (UserFunc)
-  UserFunc(UserArgu);
- }
+  PIT_t::PIT_t(const uint32_t mClock, void* userArgu):
+  moduleClk(mClock), userArguments(userArgu)
+  {
+    this->Init();
+  }
 
-}
+
+  void __attribute__ ((interrupt)) ISR(void)
+  {
+    // inform RTOS that ISR is being processed
+    OS ISR;
+
+    if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
+    {
+      PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
+
+      //Signal PIT thread
+      OS_SemaphoreSignal(PITSemaphore);
+
+    }
+
+  }
 
 }
 

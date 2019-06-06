@@ -13,14 +13,12 @@
 #include "FIFO.h"
 
 
- bool TFIFO::Put(const uint8_t data)
+bool TFIFO::Put(const uint8_t data)
 {
-  EnterCritical(); //Start critical section
+  //Start counting and suspend the thread until count is greater than 0
+  OS_SemaphoreWait(nbItem, 0);
 
-  if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
-  {
-
-  NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
+  critical section; //Enter critical section
 
   Buffer[End] = data; // add a byte of data into array buffer
 
@@ -28,24 +26,19 @@
 
   End %= FIFO_SIZE; // to make a circular array, reset End index
 
-  ExitCritical(); //End critical section
+  //Release a semaphore
+  OS_SemaphoreSignal(availability);
 
   return true;
-  }
-  else
-  return false;
 }
 
 
 bool TFIFO::Get(uint8_t &dataRef)
 {
+  //wait for other threads  if buffer was empty by suspending thread through a semaphore
+  OS_SemaphoreWait(availability, 0);
 
-  EnterCritical(); //Start critical section
-
-  if (NbBytes != 0) // can not retrieve if buffer is empty
-  {
-
-  NbBytes--; // decrement one whenever the Buffer has been retrieved
+  critical section; //Enter critical section
 
   dataRef = Buffer[Start]; // place the retrieved byte
 
@@ -53,12 +46,10 @@ bool TFIFO::Get(uint8_t &dataRef)
 
   Start %= FIFO_SIZE; // to make a circular array, reset Start index
 
-  ExitCritical(); //End critical section
+  //increments by 1 and return to its caller if semaphore is greater than 1
+  OS_SemaphoreSignal(nbItem);
 
   return true;
-  }
-  else
-  return false;
 }
 
 

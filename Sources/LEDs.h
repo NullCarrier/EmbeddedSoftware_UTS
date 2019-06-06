@@ -58,11 +58,16 @@
  *
  *  @note Assumes that LEDs_Init has been called.
  */
- LED_t()
+ LED_t(TLED color)
  {
   if (Init())
   GPIOA_PSOR = ORANGE | YELLOW | GREEN | BLUE; // Reset all LED
+
+  m_color = color;
  }
+
+
+ LED_t() = default;
 
  /*! @brief Sets up the LEDs before first use.
   *
