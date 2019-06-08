@@ -1,5 +1,5 @@
 /* ###################################################################
- **     Filename    : main.c
+ **     Filename    : main.cpp
  **     Project     : Lab6
  **     Processor   : MK70FN1M0VMJ12
  **     Version     : Driver 01.01
@@ -14,7 +14,7 @@
  **
  ** ###################################################################*/
 /*!
- ** @file main.c
+ ** @file main.cpp
  ** @version 6.0
  ** @brief
  **         Main module.
@@ -35,22 +35,115 @@
 // Analog functions
 #include "analog.h"
 
+//include packet module
+#include "packet.h"
+
 // ----------------------------------------
 // Thread set up
 // ----------------------------------------
 // Arbitrary thread stack size - big enough for stacking of interrupts and OS use.
-#define THREAD_STACK_SIZE 100
-#define NB_ANALOG_CHANNELS 2
+const uint8_t THREAD_STACK_SIZE = 100;
+const uint8_t NB_ANALOG_CHANNELS = 2;
+
+const uint64_t BAUDRATE = 115200;
 
 // Thread stacks
 OS_THREAD_STACK(InitModulesThreadStack, THREAD_STACK_SIZE); /*!< The stack for the LED Init thread. */
 static uint32_t AnalogThreadStacks[NB_ANALOG_CHANNELS][THREAD_STACK_SIZE] __attribute__ ((aligned(0x08)));
+
+OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE); /*!< The stack for the handlePacket thread. */
 
 // ----------------------------------------
 // Thread priorities
 // 0 = highest priority
 // ----------------------------------------
 const uint8_t ANALOG_THREAD_PRIORITIES[NB_ANALOG_CHANNELS] = {1, 2};
+
+
+class HandlePacket
+{
+  using F = void (void*); // a function type, not a pointer
+
+  private:
+    uint8_t priority;
+	  OS_ERROR error;
+
+  public:
+  
+  /*! @brief Constructor for creating the thread
+   *  @param thread the thread needed to create
+   *  @param pData data pointer passed to thread
+   *  @param prio the proiority of thread
+  */
+   	HandlePacket(F* thread, void* pData, const uint8_t prio):
+   	priority(prio)
+    {
+   	  // Create HandlePacket thread
+   	  error = OS_ThreadCreate(thread,
+   		               pData,
+   		               &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
+					   prio); // Highest priority
+    }
+
+    enum Command
+	  {
+	    IDMT = 0,
+	    CURRENT = 0x01,
+	    FREQUENCY = 0x02,
+	    NB_TIME_TRIPPED = 0x03,
+	    FAULT_TYPE = 0x04,
+      CMD_DOR = 0x70,
+      CMD_DOR_CURRENT = 0x71
+    };
+  
+    static void HandleIDMTCharacteristic(Packet_t &packet);
+	
+    static void HandleFrequency(Packet_t &packet);
+	
+    static void HandleNbTimeTripped(Packet_t &packet);
+	
+	  static void HandleFaultType(Packet_t &packet);
+	
+  /*! @brief To return RMS value of current of each channel
+   *  
+   *  @param packet the PacketVert2 object
+  */
+	  static void HandleCurrent(Packet_t &packet);
+	
+  /*! @brief To decide how to send packet depending on packet command ID
+   *  @param packet the PacketVert2 object
+  */
+	  static void HandleCommandPacket(Packet_t &packet);
+};
+
+
+
+void HandlePacket::HandleCommandPacket(Packet_t &packet)
+{
+  if (packet.Command == CMD_DOR)  
+  {
+	  switch (packet.parameter1)
+	  {
+	    case IDMT:
+        HandleIDMTCharacteristic(packet);
+        break;
+      case FREQUENCY:
+        HandleFrequency(packet);	
+       	break;
+      case CURRENT:
+        HandleCurrent(packet);
+        break;
+      case NB_TIME_TRIPPED:
+        HandleNbTimeTripped(packet);
+        break;
+      case FAULT_TYPE:
+	      HandleFaultType(packet);
+        break;
+	  }
+  }
+
+}
+
 
 /*! @brief Data structure used to pass Analog configuration to a user thread
  *
@@ -61,20 +154,22 @@ typedef struct AnalogThreadData
   uint8_t channelNb;
 } TAnalogThreadData;
 
+
 /*! @brief Analog thread configuration data
  *
  */
 static TAnalogThreadData AnalogThreadData[NB_ANALOG_CHANNELS] =
 {
   {
-    .semaphore = NULL,
-    .channelNb = 0
+    semaphore = NULL,
+    channelNb = 0
   },
   {
-    .semaphore = NULL,
-    .channelNb = 1
+    semaphore = NULL,
+    channelNb = 1
   }
 };
+
 
 void LPTMRInit(const uint16_t count)
 {
@@ -130,6 +225,9 @@ static void InitModulesThread(void* pData)
 {
   // Analog
   (void)Analog_Init(CPU_BUS_CLK_HZ);
+  
+  //Initialze UART
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
   // Generate the global analog semaphores
   for (uint8_t analogNb = 0; analogNb < NB_ANALOG_CHANNELS; analogNb++)
@@ -162,6 +260,27 @@ void AnalogLoopbackThread(void* pData)
   }
 }
 
+
+/*! @brief Handle packet thread
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
+static void HandlePacketThread(void* pData)
+{
+  // initialize the packet module
+  Packet_t packet;
+
+  for (;;)
+  {
+    if (packet.Packet_t::PacketGet())
+      HandlePacket::HandleCommandPacket(packet);
+
+  }
+
+}
+
+
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -188,7 +307,10 @@ int main(void)
                             &AnalogThreadStacks[threadNb][THREAD_STACK_SIZE - 1],
                             ANALOG_THREAD_PRIORITIES[threadNb]);
   }
-
+  
+  // Create sending packet thread with highest priority
+  HandlePacket packetThread(HandlePacketThread, 0, 3);
+  
   // Start multithreading - never returns!
   OS_Start();
 }

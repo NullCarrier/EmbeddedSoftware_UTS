@@ -17,7 +17,7 @@ C_DEPS += \
 Project_Settings/Startup_Code/%.o: ../Project_Settings/Startup_Code/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross ARM C Compiler'
-	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -I"C:\Users\PMcL\Documents\Subjects\48434 Embedded Software\5 Projects\Odd Autumn\Template\Project\Library" -I"C:/Users/PMcL/Documents/Subjects/48434 Embedded Software/5 Projects/Odd Autumn/Template/Project/Static_Code/IO_Map" -I"C:/Users/PMcL/Documents/Subjects/48434 Embedded Software/5 Projects/Odd Autumn/Template/Project/Sources" -I"C:/Users/PMcL/Documents/Subjects/48434 Embedded Software/5 Projects/Odd Autumn/Template/Project/Generated_Code" -std=c99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -c -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -I"C:\AS\Git_repo\group_08\08\2019_Autumn_Project-master\Library" -I"C:/AS/Git_repo/group_08/08/2019_Autumn_Project-master/Static_Code/IO_Map" -I"C:/AS/Git_repo/group_08/08/2019_Autumn_Project-master/Sources" -I"C:/AS/Git_repo/group_08/08/2019_Autumn_Project-master/Generated_Code" -std=c99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -c -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

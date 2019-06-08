@@ -1,18 +1,19 @@
-/*! @file
+
+/*! @file type_cpp.h
  *
  *  @brief Declares new types.
  *
  *  This contains types that are especially useful for the Tower to PC Protocol.
  *
  *  @author PMcL
- *  @date 2015-07-23
+ *  @date 01/04/2019
+ *  Copyright (c) UTS. All rights reserved.
  */
 
 #ifndef TYPES_H
 #define TYPES_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
 // Unions to efficiently access hi and lo parts of integers and words
 typedef union
@@ -69,3 +70,4 @@ typedef union
 } TFloat;
 
 #endif
+
