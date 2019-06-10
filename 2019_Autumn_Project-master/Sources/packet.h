@@ -69,6 +69,7 @@ typedef union
 #define Packet_Checksum    Packet_t::s_Packet.packetStruct.checksum
 #endif
 
+//
 
 class Packet_t: public UART_t
 {

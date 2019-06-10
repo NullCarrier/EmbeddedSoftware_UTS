@@ -1,64 +1,46 @@
 /* ###################################################################
- **     Filename    : main.cpp
- **     Project     : Lab6
- **     Processor   : MK70FN1M0VMJ12
- **     Version     : Driver 01.01
- **     Compiler    : GNU C Compiler
- **     Date/Time   : 2015-07-20, 13:27, # CodeGen: 0
- **     Abstract    :
- **         Main module.
- **         This module contains user's application code.
- **     Settings    :
- **     Contents    :
- **         No public methods
- **
- ** ###################################################################*/
+**     Filename    : main.cpp
+**     Project     : Lab1
+**     Processor   : MK70FN1M0VMJ12
+**     Version     : Driver 01.01
+**     Compiler    : GNU C Compiler
+**     Date/Time   : 2015-07-20, 13:27, # CodeGen: 0
+**     Abstract    :
+**         Main module.
+**         This module contains user's application code.
+**     Settings    :
+**     Contents    :
+**         No public methods
+**
+** ###################################################################*/
 /*!
- ** @file main.cpp
- ** @version 6.0
- ** @brief
- **         Main module.
- **         This module contains user's application code.
- */
+** @file main.cpp
+** @version 1.0
+** @brief
+**         Main module.
+**         This module contains user's application code.
+**  Copyright (c) UTS. All rights reserved.
+*/
 /*!
- **  @addtogroup main_module main module documentation
- **  @{
- */
-/* MODULE main */
-
+**  @addtogroup main_module main module documentation
+**  @{
+*/
 // CPU module - contains low level hardware initialization routines
 #include "Cpu.h"
-
-// Simple OS
-#include "OS_cpp.h"
-
-// Analog functions
-#include "analog.h"
 
 //include packet module
 #include "packet.h"
 
-// ----------------------------------------
-// Thread set up
-// ----------------------------------------
-// Arbitrary thread stack size - big enough for stacking of interrupts and OS use.
-const uint8_t THREAD_STACK_SIZE = 100;
-const uint8_t NB_ANALOG_CHANNELS = 2;
+#include "LEDs.h"
+
+
+
+#include "PIT.h"
+
+
 
 const uint64_t BAUDRATE = 115200;
-
-// Thread stacks
-OS_THREAD_STACK(InitModulesThreadStack, THREAD_STACK_SIZE); /*!< The stack for the LED Init thread. */
-static uint32_t AnalogThreadStacks[NB_ANALOG_CHANNELS][THREAD_STACK_SIZE] __attribute__ ((aligned(0x08)));
-
-OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE); /*!< The stack for the handlePacket thread. */
-
-// ----------------------------------------
-// Thread priorities
-// 0 = highest priority
-// ----------------------------------------
-const uint8_t ANALOG_THREAD_PRIORITIES[NB_ANALOG_CHANNELS] = {1, 2};
-
+/* MODULE main */
 
 class HandlePacket
 {
@@ -145,176 +127,96 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
 }
 
 
-/*! @brief Data structure used to pass Analog configuration to a user thread
- *
- */
-typedef struct AnalogThreadData
-{
-  OS_ECB* semaphore;
-  uint8_t channelNb;
-} TAnalogThreadData;
 
 
-/*! @brief Analog thread configuration data
- *
- */
-static TAnalogThreadData AnalogThreadData[NB_ANALOG_CHANNELS] =
+void HandleIDMTCharacteristic(Packet_t &packet)
 {
+  IDMT idmt;
+  uint8_t setting;
+
+  if (packet.parameter2 == 0x01)
   {
-    semaphore = NULL,
-    channelNb = 0
-  },
-  {
-    semaphore = NULL,
-    channelNb = 1
+    idmt.GetSetting(setting); //User get IDMT char
+    packet.PacketPut(CMD_DOR, 0, 1, setting);
   }
-};
+  else
+  //User set IDMT char
+    idmt.Set(packet.parameter3);
 
-
-void LPTMRInit(const uint16_t count)
-{
-  // Enable clock gate to LPTMR module
-  SIM_SCGC5 |= SIM_SCGC5_LPTIMER_MASK;
-
-  // Disable the LPTMR while we set up
-  // This also clears the CSR[TCF] bit which indicates a pending interrupt
-  LPTMR0_CSR &= ~LPTMR_CSR_TEN_MASK;
-
-  // Enable LPTMR interrupts
-  LPTMR0_CSR |= LPTMR_CSR_TIE_MASK;
-  // Reset the LPTMR free running counter whenever the 'counter' equals 'compare'
-  LPTMR0_CSR &= ~LPTMR_CSR_TFC_MASK;
-  // Set the LPTMR as a timer rather than a counter
-  LPTMR0_CSR &= ~LPTMR_CSR_TMS_MASK;
-
-  // Bypass the prescaler
-  LPTMR0_PSR |= LPTMR_PSR_PBYP_MASK;
-  // Select the prescaler clock source
-  LPTMR0_PSR = (LPTMR0_PSR & ~LPTMR_PSR_PCS(0x3)) | LPTMR_PSR_PCS(1);
-
-  // Set compare value
-  LPTMR0_CMR = LPTMR_CMR_COMPARE(count);
-
-  // Initialize NVIC
-  // see p. 91 of K70P256M150SF3RM.pdf
-  // Vector 0x65=101, IRQ=85
-  // NVIC non-IPR=2 IPR=21
-  // Clear any pending interrupts on LPTMR
-  NVICICPR2 = NVIC_ICPR_CLRPEND(1 << 21);
-  // Enable interrupts from LPTMR module
-  NVICISER2 = NVIC_ISER_SETENA(1 << 21);
-
-  //Turn on LPTMR and start counting
-  LPTMR0_CSR |= LPTMR_CSR_TEN_MASK;
 }
 
-void __attribute__ ((interrupt)) LPTimer_ISR(void)
+
+namespace CallBack
 {
-  // Clear interrupt flag
-  LPTMR0_CSR |= LPTMR_CSR_TCF_MASK;
 
-  // Signal the analog channels to take a sample
-  for (uint8_t analogNb = 0; analogNb < NB_ANALOG_CHANNELS; analogNb++)
-    (void)OS_SemaphoreSignal(AnalogThreadData[analogNb].semaphore);
-}
+  static LED_t Led;
 
-/*! @brief Initialises modules.
- *
- */
-static void InitModulesThread(void* pData)
-{
-  // Analog
-  (void)Analog_Init(CPU_BUS_CLK_HZ);
-  
-  //Initialze UART
-  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
-
-  // Generate the global analog semaphores
-  for (uint8_t analogNb = 0; analogNb < NB_ANALOG_CHANNELS; analogNb++)
-    AnalogThreadData[analogNb].semaphore = OS_SemaphoreCreate(0);
-
-  // Initialise the low power timer to tick every 10 ms
-  LPTMRInit(10);
-
-  // We only do this once - therefore delete this thread
-  OS_ThreadDelete(OS_PRIORITY_SELF);
-}
-
-/*! @brief Samples a value on an ADC channel and sends it to the corresponding DAC channel.
- *
- */
-void AnalogLoopbackThread(void* pData)
-{
-  // Make the code easier to read by giving a name to the typecast'ed pointer
-  #define analogData ((TAnalogThreadData*)pData)
-
-  for (;;)
+ //function description
+  void PIT(void* argu)
   {
-    int16_t analogInputValue;
-
-    (void)OS_SemaphoreWait(analogData->semaphore, 0);
-    // Get analog sample
-    Analog_Get(analogData->channelNb, &analogInputValue);
-    // Put analog sample
-    Analog_Put(analogData->channelNb, analogInputValue);
-  }
-}
-
-
-/*! @brief Handle packet thread
-     *
-     *  @param pData might not use but is required by the OS to create a thread.
-     *
-     */
-static void HandlePacketThread(void* pData)
-{
-  // initialize the packet module
-  Packet_t packet;
-
-  for (;;)
-  {
-    if (packet.Packet_t::PacketGet())
-      HandlePacket::HandleCommandPacket(packet);
+    Led.Color(LED_t::GREEN);
+    Led.Toggle();
 
   }
 
 }
+
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
-  OS_ERROR error;
+  /* Write your local variable definition here */
 
-  // Initialise low-level clocks etc using Processor Expert code
+  __DI(); //Disable interrupt
+
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
+  pit.Set(20, true); // set timer period as 20ms which is roughly 50Hz
+  
+  //Initialze UART
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
+
+  //Initialize ADC
+  Analog_Init(CPU_BUS_CLK_HZ);
+
+  /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
+  /*** End of Processor Expert internal initialization.                    ***/
 
-  // Initialize the RTOS
-  OS_Init(CPU_CORE_CLK_HZ, true);
+  __EI(); //Enable the interrupt
 
-  // Create module initialisation thread
-  error = OS_ThreadCreate(InitModulesThread,
-                          NULL,
-                          &InitModulesThreadStack[THREAD_STACK_SIZE - 1],
-                          0); // Highest priority
-
-  // Create threads for 2 analog loopback channels
-  for (uint8_t threadNb = 0; threadNb < NB_ANALOG_CHANNELS; threadNb++)
+  /* Write your code here */
+  for (;;)
   {
-    error = OS_ThreadCreate(AnalogLoopbackThread,
-                            &AnalogThreadData[threadNb],
-                            &AnalogThreadStacks[threadNb][THREAD_STACK_SIZE - 1],
-                            ANALOG_THREAD_PRIORITIES[threadNb]);
-  }
-  
-  // Create sending packet thread with highest priority
-  HandlePacket packetThread(HandlePacketThread, 0, 3);
-  
-  // Start multithreading - never returns!
-  OS_Start();
-}
+    if ( packet.PacketGet())
+    HandlePacket::HandleCommandPacket(packet);
 
+  }
+
+  /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
+  /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
+  #ifdef PEX_RTOS_START
+    PEX_RTOS_START();                  /* Startup of the selected RTOS. Macro is defined by the RTOS component. */
+  #endif
+  /*** End of RTOS startup code.  ***/
+  /*** Processor Expert end of main routine. DON'T MODIFY THIS CODE!!! ***/
+  for(;;){}
+  /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
+} /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
+
+/* END main */
 /*!
- ** @}
- */
+** @}
+*/
+/*
+** ###################################################################
+**
+**     This file was created by Processor Expert 10.5 [05.21]
+**     for the Freescale Kinetis series of microcontrollers.
+**
+** ###################################################################
+*/
+
+
+

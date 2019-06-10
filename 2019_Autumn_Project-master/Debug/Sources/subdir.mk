@@ -5,18 +5,30 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../Sources/FIFO.cpp \
+../Sources/Flash.cpp \
+../Sources/IDMT.cpp \
+../Sources/LEDs.cpp \
+../Sources/PIT.cpp \
 ../Sources/Packet.cpp \
 ../Sources/UART.cpp \
 ../Sources/main.cpp 
 
 OBJS += \
 ./Sources/FIFO.o \
+./Sources/Flash.o \
+./Sources/IDMT.o \
+./Sources/LEDs.o \
+./Sources/PIT.o \
 ./Sources/Packet.o \
 ./Sources/UART.o \
 ./Sources/main.o 
 
 CPP_DEPS += \
 ./Sources/FIFO.d \
+./Sources/Flash.d \
+./Sources/IDMT.d \
+./Sources/LEDs.d \
+./Sources/PIT.d \
 ./Sources/Packet.d \
 ./Sources/UART.d \
 ./Sources/main.d 
