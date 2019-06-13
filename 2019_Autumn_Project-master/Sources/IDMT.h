@@ -15,6 +15,8 @@
 
 #include "Flash.h"
 
+namespace IDMT
+{
 
 typedef struct
 {
@@ -28,26 +30,27 @@ const uint8_t KEI = 80;
 
 
 
-
-class IDMT
+class IDMT_t
 {
   private:
     characteristic curve;
-    bool success;
+    bool success = 0;
 
   public:
-    IDMT();
+    IDMT_t();
     
     void Set(uint8_t slope);
 
     void GetSetting(uint8_t &slope);
 
-    bool GetTripTime(uint8_t &current);
+    bool GetNBTrip();
+
+    uint32_t& GetTripTime(uint8_t &current);
 };
 
 
 
-
+}
 
 
 

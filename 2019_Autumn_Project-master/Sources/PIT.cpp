@@ -23,6 +23,7 @@ namespace PIT
 
   bool PIT_t::Init()
   {
+    __DI(); //Disable interrupt
 
    //enable clock gate
     SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;
@@ -57,6 +58,7 @@ namespace PIT
     // Enable timer0 interrupt
     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
 
+    __EI(); //Enable the interrupt
 
     return true;
   }

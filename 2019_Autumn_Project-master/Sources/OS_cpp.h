@@ -7,8 +7,8 @@
  *  Copyright (c) Chao Li. All rights reserved.
  */
 
-#ifndef CRITICAL_H_INCLUDED
-#define CRITICAL_H_INCLUDED
+#ifndef OS_CPP_H_INCLUDED
+#define OS_CPP_H_INCLUDED
 
 #include "Cpu.h"
 #include "PE_Types.h"
@@ -18,6 +18,7 @@
  extern "C"{
    #include "OS.h" // Simple OS
  }
+
 
 class critical
 {

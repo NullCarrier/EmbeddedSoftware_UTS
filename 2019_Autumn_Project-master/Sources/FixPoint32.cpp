@@ -8,7 +8,7 @@
 
 #include "FixPoint32.h"
 
-
+#if 0
 
 bool FixPoint::GetVoltageRMS(uint16_t &vol)
 {
@@ -66,3 +66,4 @@ uint32_t FixPoint_Pow(const float num, uint8_t exp)
 
   return temp;
 }
+#endif

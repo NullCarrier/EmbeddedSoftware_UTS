@@ -42,6 +42,8 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 bool UART_t::Init() const
 {
 
+  __DI(); //Disable interrupt
+
  //local variable for storing SBR using union type
   uint16union_t sbr;
 
@@ -76,6 +78,8 @@ bool UART_t::Init() const
 
  //Set priority?
   UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
+
+  __EI(); //Enable the interrupt
 
   return true;
 }

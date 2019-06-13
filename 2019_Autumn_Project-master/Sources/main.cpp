@@ -33,11 +33,13 @@
 
 #include "LEDs.h"
 
+#include "OS_cpp.h"
 
+//#include "analog.h"
 
 #include "PIT.h"
 
-
+#include "IDMT.h"
 
 const uint64_t BAUDRATE = 115200;
 /* MODULE main */
@@ -48,7 +50,7 @@ class HandlePacket
 
   private:
     uint8_t priority;
-	  OS_ERROR error;
+	 // OS_ERROR error;
 
   public:
   
@@ -57,7 +59,8 @@ class HandlePacket
    *  @param pData data pointer passed to thread
    *  @param prio the proiority of thread
   */
-   	HandlePacket(F* thread, void* pData, const uint8_t prio):
+#if 0
+	  HandlePacket(F* thread, void* pData, const uint8_t prio):
    	priority(prio)
     {
    	  // Create HandlePacket thread
@@ -66,7 +69,7 @@ class HandlePacket
    		               &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
 					   prio); // Highest priority
     }
-
+#endif
     enum Command
 	  {
 	    IDMT = 0,
@@ -102,7 +105,7 @@ class HandlePacket
 
 void HandlePacket::HandleCommandPacket(Packet_t &packet)
 {
-  if (packet.Command == CMD_DOR)  
+  if (packet.command == CMD_DOR)
   {
 	  switch (packet.parameter1)
 	  {
@@ -110,16 +113,16 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
         HandleIDMTCharacteristic(packet);
         break;
       case FREQUENCY:
-        HandleFrequency(packet);	
+       // HandleFrequency(packet);
        	break;
       case CURRENT:
-        HandleCurrent(packet);
+       // HandleCurrent(packet);
         break;
       case NB_TIME_TRIPPED:
-        HandleNbTimeTripped(packet);
+       // HandleNbTimeTripped(packet);
         break;
       case FAULT_TYPE:
-	      HandleFaultType(packet);
+	    //  HandleFaultType(packet);
         break;
 	  }
   }
@@ -129,9 +132,9 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
 
 
 
-void HandleIDMTCharacteristic(Packet_t &packet)
+void HandlePacket::HandleIDMTCharacteristic(Packet_t &packet)
 {
-  IDMT idmt;
+  IDMT::IDMT_t idmt;
   uint8_t setting;
 
   if (packet.parameter2 == 0x01)
@@ -157,6 +160,7 @@ namespace CallBack
     Led.Color(LED_t::GREEN);
     Led.Toggle();
 
+
   }
 
 }
@@ -169,16 +173,17 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  __DI(); //Disable interrupt
 
   PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
-  pit.Set(20, true); // set timer period as 20ms which is roughly 50Hz
+  pit.Set(1, 0); // set timer period as 1ms which is roughly 52.3Hz
   
   //Initialze UART
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
   //Initialize ADC
-  Analog_Init(CPU_BUS_CLK_HZ);
+  //Analog_Init(CPU_BUS_CLK_HZ);
+
+  __DI(); //Disable interrupt
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
