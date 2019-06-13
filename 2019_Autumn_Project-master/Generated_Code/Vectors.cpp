@@ -56,9 +56,9 @@
 
 #include "Cpu.h"
 #include "UART.h"
-//#include "PIT.h"
+#include "PIT.h"
 //#include "RTC.h"
-void __attribute__ ((interrupt)) LPTimer_ISR(void);
+//void __attribute__ ((interrupt)) LPTimer_ISR(void);
 
 // This tells your c++ compiler not to use c++-style name mangling when defining the required symbols from the header, allowing the linker to successfully find them in the c-compiled .o files
  extern "C"{
@@ -167,7 +167,7 @@ void __attribute__ ((interrupt)) LPTimer_ISR(void);
     (tIsrFunc)&Cpu_Interrupt,          /* 0x52  0x00000148   -   ivINT_RTC                      unused by PE */
     //(tIsrFunc)&RTC::ISR,         /* 0x53  0x0000014C   -   ivINT_RTC_Seconds              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x54  0x00000150   -   ivINT_PIT0                     unused by PE */
-    //(tIsrFunc)&PIT::ISR,          /* 0x55  0x00000154   -   ivINT_PIT1                     unused by PE */
+    (tIsrFunc)&PIT::ISR,          /* 0x55  0x00000154   -   ivINT_PIT1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x56  0x00000158   -   ivINT_PIT2                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x57  0x0000015C   -   ivINT_PIT3                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x58  0x00000160   -   ivINT_PDB0                     unused by PE */
@@ -183,7 +183,7 @@ void __attribute__ ((interrupt)) LPTimer_ISR(void);
     (tIsrFunc)&Cpu_Interrupt,          /* 0x62  0x00000188   -   ivINT_DAC1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x63  0x0000018C   -   ivINT_TSI0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x64  0x00000190   -   ivINT_MCG                      unused by PE */
-    (tIsrFunc)&LPTimer_ISR,          /* 0x65  0x00000194   -   ivINT_LPTimer                  unused by PE */
+    //(tIsrFunc)&LPTimer_ISR,          /* 0x65  0x00000194   -   ivINT_LPTimer                  unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x66  0x00000198   -   ivINT_Reserved102              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x67  0x0000019C   -   ivINT_PORTA                    unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x68  0x000001A0   -   ivINT_PORTB                    unused by PE */
