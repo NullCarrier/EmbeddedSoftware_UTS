@@ -16,29 +16,54 @@ namespace IDMT
 {
 
 static Flash Flash;
-static uint8_t* IdmtSetting;
+static bool success = 0;
 
+uint8_t* IDMT_t::setting;
+uint16union_t* IDMT_t::nBTrip;
 
 IDMT_t::IDMT_t()
 {
-  success = Flash.AllocateVar( (volatile void**) &IdmtSetting, sizeof (*IdmtSetting) ); //Alocate space
+  //Do not allocate space multiple times for the same pointer
+  if (!success)
+  {
+     success = Flash.AllocateVar( (volatile void**) &setting, sizeof (*setting) ); //Alocate space for a byte
+
+     success = Flash.AllocateVar( (volatile void**) &nBTrip, sizeof (*nBTrip) );
+  }
+
 }
 
 
 void IDMT_t::Set(uint8_t slope)
 {
   if (success)
-  success = Flash.Write8(IdmtSetting, slope); //set new setting in flash memory
+  success = Flash.Write8(setting, slope); //set new setting in flash memory
 }
+
+
 
 void IDMT_t::GetSetting(uint8_t &slope)
 {
   if (success)
-    slope = *IdmtSetting;
+    slope = *setting;
 }
 
 
+uint16_t&& IDMT_t::GetCurrent(uint16_t &magV)
+{
+  uint32_t voltageRMS;
+  uint16_t current;
+  uint32_t tempData;
+  FixPoint fixP;
 
+  voltageRMS = fixP.GetVoltageRMS(magV); //RMS mv in 32Q16
+
+  tempData = fixP.GetCurrentRMS(voltageRMS); // current in 32Q16
+
+  current = (uint16_t) (tempData >> 6); //convert into 16Q10
+
+  return std::move(current);
+}
 
 
 

@@ -18,14 +18,8 @@ class FixPoint
 {
   private:
     const uint32_t RMS_COE = 46334; //RMS coe for sinusoidal
-    uint8_t base;
 
   public:
-
-    FixPoint(const uint8_t baseNum):
-    base(baseNum)
-    {
-    }
 
 
     /*! @brief To Convert the mag of input voltage to RMS in mv with 32Q16 data format
@@ -33,11 +27,11 @@ class FixPoint
      *  @return bool - TRUE if corresponding voltage has been converted
      *  @note Assumes the input voltage is sinusoidal
      */
-    bool GetVoltageRMS(uint16_t &inputVoltage);
+    uint32_t&& GetVoltageRMS(uint16_t &inputVoltage);
 
 
 
-    uint32_t& GetCurrentRMS(uint32_t &rmsVoltage);
+    uint32_t&& GetCurrentRMS(uint32_t &rmsVoltage);
 
 
     uint32_t& GetRMS(const float &baseF);

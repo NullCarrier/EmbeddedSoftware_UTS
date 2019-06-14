@@ -41,8 +41,15 @@
 
 #include "IDMT.h"
 
+#include "Analog.h"
+
 const uint64_t BAUDRATE = 115200;
+
 /* MODULE main */
+
+Analog::Analog_t AnalogIO(CPU_BUS_CLK_HZ);
+
+
 
 class HandlePacket
 {
@@ -116,7 +123,7 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
        // HandleFrequency(packet);
        	break;
       case CURRENT:
-       // HandleCurrent(packet);
+        HandleCurrent(packet);
         break;
       case NB_TIME_TRIPPED:
        // HandleNbTimeTripped(packet);
@@ -128,7 +135,6 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
   }
 
 }
-
 
 
 
@@ -149,6 +155,25 @@ void HandlePacket::HandleIDMTCharacteristic(Packet_t &packet)
 }
 
 
+
+void HandlePacket::HandleCurrent(Packet_t &packet)
+{
+  IDMT::IDMT_t idmt;
+  uint16union_t current;
+  uint16_t voltage;
+
+  voltage = AnalogIO.maxVp;
+
+  current.l = idmt.GetCurrent(voltage);
+
+
+  packet.PacketPut(CMD_DOR_CURRENT, 0x01, current.s.Lo, current.s.Hi);
+
+}
+
+
+
+
 namespace CallBack
 {
 
@@ -160,7 +185,18 @@ namespace CallBack
     Led.Color(LED_t::GREEN);
     Led.Toggle();
 
+    //analog get a sample, and retrieve a Vmax value
+    AnalogIO.GetVmax();
 
+    //calculate current
+
+    /*if (I > 1.03)
+       generate timing signal
+       calculate tripping time
+       generate trip time signal
+      else
+       send0V via DAC
+    */
   }
 
 }
@@ -181,7 +217,7 @@ int main(void)
   Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
   //Initialize ADC
-  //Analog_Init(CPU_BUS_CLK_HZ);
+  //
 
   __DI(); //Disable interrupt
 

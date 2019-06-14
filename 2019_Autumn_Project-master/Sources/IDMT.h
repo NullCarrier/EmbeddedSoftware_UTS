@@ -15,6 +15,10 @@
 
 #include "Flash.h"
 
+#include "FixPoint32.h"
+
+#include <utility>
+
 namespace IDMT
 {
 
@@ -33,8 +37,8 @@ const uint8_t KEI = 80;
 class IDMT_t
 {
   private:
-    characteristic curve;
-    bool success = 0;
+    static uint8_t* setting;
+    static uint16union_t* nBTrip;
 
   public:
     IDMT_t();
@@ -43,7 +47,9 @@ class IDMT_t
 
     void GetSetting(uint8_t &slope);
 
-    bool GetNBTrip();
+    uint16_t&& GetCurrent(uint16_t &magV);
+
+    bool GetNbTrip(uint16_t &NbTrip);
 
     uint32_t& GetTripTime(uint8_t &current);
 };
