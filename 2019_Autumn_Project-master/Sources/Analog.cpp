@@ -10,7 +10,7 @@
 namespace Analog
 {
 
-  uint16_t Analog_t::maxVp;
+  int32_t Analog_t::maxVp;
 
 
   Analog_t::Analog_t(const uint32_t clock)
@@ -19,23 +19,24 @@ namespace Analog
   }
 
 
-  bool Analog_t::GetSample(int16_t &analogInput)
+  bool Analog_t::GetSample()
   {
-    bool success;
-
-    success = Analog_Get(0, &magV); // get a value from ADC
-
-    analogInput = magV;
-
-    return success;
+     return Analog_Get(0, &adcReading); // get a value from ADC
   }
 
 
   void Analog_t::GetVmax()
   {
-    int16_t tempData = 0;
+    int64_t read;
+    int32_t tempData;
 
-    if (this->GetSample(tempData) )
+    if (this->GetSample() )
+    {
+      read = adcReading * 65536; //Convert into 32Q16
+
+      tempData = (read * resolution) >> 16;
+    }
+
       maxVp = (maxVp > tempData)? maxVp : tempData;
 
   }

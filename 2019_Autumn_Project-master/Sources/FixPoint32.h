@@ -18,6 +18,7 @@ class FixPoint
 {
   private:
     const uint32_t RMS_COE = 46334; //RMS coe for sinusoidal
+    const uint32_t ratio = 22938;
 
   public:
 
@@ -27,11 +28,10 @@ class FixPoint
      *  @return bool - TRUE if corresponding voltage has been converted
      *  @note Assumes the input voltage is sinusoidal
      */
-    uint32_t&& GetVoltageRMS(uint16_t &inputVoltage);
+    int32_t&& GetVoltageRMS(const int32_t &inputVoltage);
 
 
-
-    uint32_t&& GetCurrentRMS(uint32_t &rmsVoltage);
+    int32_t&& GetCurrentRMS(const int32_t &rmsVoltage);
 
 
     uint32_t& GetRMS(const float &baseF);

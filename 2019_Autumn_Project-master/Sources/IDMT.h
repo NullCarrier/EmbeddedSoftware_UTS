@@ -48,12 +48,12 @@ class IDMT_t
 
     void GetSetting(uint8_t &slope);
 
-    uint16_t&& GetCurrent(uint16_t &magV);
+    int16_t&& GetCurrent(int32_t &magV);
 
     bool GetNbTrip(uint16_t &NbTrip);
 
     //the return value is in 32Q16 with uni: sec
-    uint32_t&& GetTripTime(const uint16_t &current);
+    uint32_t&& GetTripTime( uint16_t &current);
 };
 
 

@@ -50,18 +50,15 @@ void IDMT_t::GetSetting(uint8_t &slope)
 }
 
 
-uint16_t&& IDMT_t::GetCurrent(uint16_t &magV)
+int16_t&& IDMT_t::GetCurrent(int32_t &magV)
 {
-  uint32_t voltageRMS;
-  uint16_t current;
-  uint32_t tempData;
+  int16_t current;
+  int32_t tempData;
   FixPoint fixP;
 
-  voltageRMS = fixP.GetVoltageRMS(magV); //RMS mv in 32Q16
+  tempData = fixP.GetCurrentRMS(magV); // current in 32Q16
 
-  tempData = fixP.GetCurrentRMS(voltageRMS); // current in 32Q16
-
-  current = (uint16_t) (tempData >> 6); //convert into 16Q10
+  current = (int16_t) (tempData >> 6); //convert into 16Q10
 
   return std::move(current);
 }
@@ -87,19 +84,19 @@ static uint32_t ExtremelyInverse();
 
   //input current is in 16Q10
   //32Q16
-  uint32_t&& IDMT_t::GetTripTime(const uint16_t &current)
+  uint32_t&& IDMT_t::GetTripTime(uint16_t &current)
   {
     uint32_t time;
 
     switch (*setting)
     {
-      case 0:
+     /* case 0:
 
-        return;
+        return; */
       case 1://Very Inverse
         time = VeryInverse(current);
         return std::move(time);
-      case 2:
+     // case 2:
 
     }
 

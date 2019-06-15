@@ -27,15 +27,16 @@ namespace Analog
 class Analog_t
 {
   private:
-    int16_t magV;
+    int16_t adcReading;
+    const int32_t resolution = 20 ; // in 32Q16
 
   public:
-    static uint16_t maxVp;
+    static int32_t maxVp; // in 32Q16
 
     Analog_t(const uint32_t clock);
 
     //Get a sample from channel 0
-    bool GetSample(int16_t &analogInput);
+    bool GetSample();
 
     void GetVmax();
 

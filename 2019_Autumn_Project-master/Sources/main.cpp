@@ -159,8 +159,8 @@ void HandlePacket::HandleIDMTCharacteristic(Packet_t &packet)
 void HandlePacket::HandleCurrent(Packet_t &packet)
 {
   IDMT::IDMT_t idmt;
-  uint16union_t current;
-  uint16_t voltage;
+  int16union_t current;
+  int32_t voltage;
 
   voltage = AnalogIO.maxVp;
 
