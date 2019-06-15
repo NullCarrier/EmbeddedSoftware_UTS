@@ -31,7 +31,7 @@ uint32_t&& FixPoint::GetCurrentRMS(uint32_t &rmsVoltage)
   const uint32_t ratio = 350 * 65536;
   uint32_t current;
 
-  current = ((uint64_t) rmsVoltage << 16 ) / ratio;
+  current = ((int64_t) rmsVoltage << 16 ) / ratio;
 
   return std::move(current); //bind a variable to the rvalue reference
 }

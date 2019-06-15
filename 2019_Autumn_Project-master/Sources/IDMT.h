@@ -25,7 +25,7 @@ namespace IDMT
 typedef struct
 {
   const float A = 0.02;
-const bool AVI = 1;
+const uint8_t AVI = 1;
 const uint8_t AEI = 2;
 const float KI = 0.14;
 const float KVI = 13.5;
@@ -40,6 +40,7 @@ class IDMT_t
     static uint8_t* setting;
     static uint16union_t* nBTrip;
 
+
   public:
     IDMT_t();
     
@@ -51,7 +52,8 @@ class IDMT_t
 
     bool GetNbTrip(uint16_t &NbTrip);
 
-    uint32_t& GetTripTime(uint8_t &current);
+    //the return value is in 32Q16 with uni: sec
+    uint32_t&& GetTripTime(const uint16_t &current);
 };
 
 
