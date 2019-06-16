@@ -34,7 +34,7 @@ namespace Analog
     {
       read = adcReading * 65536; //Convert into 32Q16
 
-      tempData = (read * resolution) >> 16;
+      tempData = (read * resolutionAD) >> 16;
     }
 
       maxVp = (maxVp > tempData)? maxVp : tempData;
@@ -42,9 +42,14 @@ namespace Analog
   }
 
 
-  bool Analog_t::PutSample(const int16_t &value)
+  bool Analog_t::PutSample(const int16_t value)
   {
-    return Analog_Put(0, value);
+    int16_t inputValue = value;
+
+    //Convert into discrete level
+    inputValue *= resolutionDA;
+
+    return Analog_Put(0, inputValue);
   }
 
 }

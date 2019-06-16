@@ -11,14 +11,15 @@
 #include "type_cpp.h"
 
 
-const uint8_t NB_ITERATIONS = 6;
+
 
 //32Q16
 class FixPoint
 {
   private:
     const uint32_t RMS_COE = 46334; //RMS coe for sinusoidal
-    const uint32_t ratio = 22938;
+    const uint32_t ratio = 22938; // 1 Irms = 0.35Vrms
+    const uint8_t NB_ITERATIONS = 6;
 
   public:
 
@@ -28,10 +29,10 @@ class FixPoint
      *  @return bool - TRUE if corresponding voltage has been converted
      *  @note Assumes the input voltage is sinusoidal
      */
-    int32_t&& GetVoltageRMS(const int32_t &inputVoltage);
+    uint32_t&& GetVoltageRMS(const uint32_t &inputVoltage);
 
 
-    int32_t&& GetCurrentRMS(const int32_t &rmsVoltage);
+    uint32_t&& GetCurrentRMS(const uint32_t &rmsVoltage);
 
 
     uint32_t& GetRMS(const float &baseF);

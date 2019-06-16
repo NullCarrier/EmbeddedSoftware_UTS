@@ -28,7 +28,8 @@ class Analog_t
 {
   private:
     int16_t adcReading;
-    const int32_t resolution = 20 ; // in 32Q16
+    const int32_t resolutionAD = 20 ; // in 32Q16
+    const uint16_t resolutionDA = 3277;
 
   public:
     static int32_t maxVp; // in 32Q16
@@ -40,7 +41,7 @@ class Analog_t
 
     void GetVmax();
 
-    bool PutSample(const int16_t &value);
+    bool PutSample(const int16_t value);
 
 };
 

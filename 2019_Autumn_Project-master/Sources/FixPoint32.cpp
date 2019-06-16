@@ -11,10 +11,10 @@
 
 
 
-int32_t&& FixPoint::GetVoltageRMS(const int32_t &vol)
+uint32_t&& FixPoint::GetVoltageRMS(const uint32_t &vol)
 {
-  int32_t rmsVoltage;
-  int32_t voltage = vol;
+  uint32_t rmsVoltage;
+  int64_t voltage = vol;
 
   //const int32_t rms_Coe = 0.707 * 65536; //Convert const into 32Q16
 
@@ -25,10 +25,10 @@ int32_t&& FixPoint::GetVoltageRMS(const int32_t &vol)
 
 
 //Convert voltage in v into current
-int32_t&& FixPoint::GetCurrentRMS(const int32_t &magV)
+uint32_t&& FixPoint::GetCurrentRMS(const uint32_t &magV)
 {
 
-  int32_t current;
+  uint32_t current;
 
   current = ( (int64_t) (this->GetVoltageRMS(magV) ) << 16 ) / ratio;
 

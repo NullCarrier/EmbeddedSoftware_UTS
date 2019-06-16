@@ -49,7 +49,11 @@ const uint64_t BAUDRATE = 115200;
 
 Analog::Analog_t AnalogIO(CPU_BUS_CLK_HZ);
 
+IDMT::IDMT_t Idmt;
 
+static uint32_t counter;
+
+uint32_t time;
 
 class HandlePacket
 {
@@ -126,7 +130,7 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
         HandleCurrent(packet);
         break;
       case NB_TIME_TRIPPED:
-       // HandleNbTimeTripped(packet);
+        //HandleNbTimeTripped(packet);
         break;
       case FAULT_TYPE:
 	    //  HandleFaultType(packet);
@@ -149,23 +153,28 @@ void HandlePacket::HandleIDMTCharacteristic(Packet_t &packet)
     packet.PacketPut(CMD_DOR, 0, 1, setting);
   }
   else
-  //User set IDMT char
+  {
+    //User set IDMT char
     idmt.Set(packet.parameter3);
-
+    packet.PacketPut(CMD_DOR, 0, 1, packet.parameter3);
+  }
 }
 
 
 
 void HandlePacket::HandleCurrent(Packet_t &packet)
 {
-  IDMT::IDMT_t idmt;
-  int16union_t current;
-  int32_t voltage;
+
+  uint16union_t current;
+  uint32_t voltage;
+
 
   voltage = AnalogIO.maxVp;
 
-  current.l = idmt.GetCurrent(voltage);
+  current.l = Idmt.GetCurrent(voltage);
 
+  time = Idmt.GetTripTime(current.l); //triptime in 32Q16 in sec
+  counter = time *1000 / 65536; // triptime in ms
 
   packet.PacketPut(CMD_DOR_CURRENT, 0x01, current.s.Lo, current.s.Hi);
 
@@ -177,18 +186,28 @@ void HandlePacket::HandleCurrent(Packet_t &packet)
 namespace CallBack
 {
 
-  static LED_t Led;
+ // static LED_t Led;
+
 
  //function description
   void PIT(void* argu)
   {
-    Led.Color(LED_t::GREEN);
-    Led.Toggle();
+   // Led.Color(LED_t::GREEN);
+   // Led.Toggle();
 
     //analog get a sample, and retrieve a Vmax value
     AnalogIO.GetVmax();
 
     //calculate current
+
+    if (counter != 0)
+    {
+      counter -= 1;
+      AnalogIO.PutSample(5);
+    }
+    else
+      AnalogIO.PutSample(0);
+
 
     /*if (I > 1.03)
        generate timing signal
