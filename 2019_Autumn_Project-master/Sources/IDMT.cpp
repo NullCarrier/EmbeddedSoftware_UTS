@@ -20,7 +20,9 @@ static bool success = 0;
 static characteristic curve;
 
 uint8_t* IDMT_t::setting;
-uint16union_t* IDMT_t::nBTrip;
+uint16_t* IDMT_t::nBTrip;
+
+uint16_t IDMT_t::count;
 
 IDMT_t::IDMT_t()
 {
@@ -64,47 +66,74 @@ uint16_t&& IDMT_t::GetCurrent(uint32_t &magV)
 }
 
 
-static uint32_t Inverse();
+ void IDMT_t::Inverse(uint16_t &current)
+ {
+   FixPoint fixP;
+   //uint32_t currentRMS = current << 6; // turn into 32Q16 format
+   const uint32_t K  = curve.KI * 65536;
+   //Calculate Irms ^ a
+   currentRMS = fixP.Exp(currentRMS, 50);
 
-static uint32_t VeryInverse(uint16_t &current)
-{
-  //Convert const into 32Q16 format
-  const uint32_t K  = curve.KVI * 65536;
-  uint32_t time;
-  uint32_t currentRMS = current << 6; // turn into 32Q16 format
+   time = ((int64_t) K << 16) / (currentRMS - 1 * 65536);
+ }
+
+
+ void IDMT_t::VeryInverse(uint16_t &current)
+ {
+  //Convert const K into 32Q16 format
+   const uint32_t K  = curve.KVI * 65536;
+   //uint32_t currentRMS = current << 6; // turn into 32Q16 format
+
+   time = ((int64_t) K << 16) / (currentRMS - 1 * 65536);
+
+ }
+
+
+ void IDMT_t::ExtremelyInverse(uint16_t &current)
+ {
+  //Convert const K into 32Q16 format
+  const uint32_t K = curve.KEI * 65536;
+
+  currentRMS = ( (int64_t) currentRMS * currentRMS ) >> 16;
 
   time = ((int64_t) K << 16) / (currentRMS - 1 * 65536);
 
-  return time;
-}
-
-
-static uint32_t ExtremelyInverse()
-{
-
-}
+ }
 
 
   //input current is in 16Q10
   //32Q16
   uint32_t&& IDMT_t::GetTripTime(uint16_t &current)
   {
-    uint32_t time;
+    currentRMS = current << 6; // turn into 32Q16 format
 
-    switch (1)
+    switch (*setting)
     {
-     /* case 0:
-
-        return; */
-      case 1://Very Inverse
-        time = VeryInverse(current);
-        return std::move(time);
-     // case 2:
-
+      case 0:
+        this->Inverse(current);
+        break;
+      case 1:
+        this->VeryInverse(current);
+        break;
+      case 2:
+        this->ExtremelyInverse(current);
+        break;
     }
 
+    //Whenever the trip time has been generated, increase the number
+    count++;
+    Flash.Write16(nBTrip, count);
 
+    return std::move(time);
   }
+
+
+
+  bool IDMT_t::GetNbTrip(uint16_t &NbTrip)
+  {
+    NbTrip = *nBTrip;
+  }
+
 
 
 

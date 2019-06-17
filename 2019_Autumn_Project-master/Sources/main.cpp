@@ -130,7 +130,7 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
         HandleCurrent(packet);
         break;
       case NB_TIME_TRIPPED:
-        //HandleNbTimeTripped(packet);
+        HandleNbTimeTripped(packet);
         break;
       case FAULT_TYPE:
 	    //  HandleFaultType(packet);
@@ -141,21 +141,28 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
 }
 
 
+void HandlePacket::HandleNbTimeTripped(Packet_t &packet)
+{
+  uint16union_t nBTimeTripped;
+
+  Idmt.GetNbTrip(nBTimeTripped.l);
+  packet.PacketPut(CMD_DOR, 3, nBTimeTripped.s.Lo, nBTimeTripped.s.Hi);
+}
+
 
 void HandlePacket::HandleIDMTCharacteristic(Packet_t &packet)
 {
-  IDMT::IDMT_t idmt;
   uint8_t setting;
 
   if (packet.parameter2 == 0x01)
   {
-    idmt.GetSetting(setting); //User get IDMT char
+    Idmt.GetSetting(setting); //User get IDMT char
     packet.PacketPut(CMD_DOR, 0, 1, setting);
   }
   else
   {
     //User set IDMT char
-    idmt.Set(packet.parameter3);
+    Idmt.Set(packet.parameter3);
     packet.PacketPut(CMD_DOR, 0, 1, packet.parameter3);
   }
 }

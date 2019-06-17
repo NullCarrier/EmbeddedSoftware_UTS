@@ -38,8 +38,16 @@ class IDMT_t
 {
   private:
     static uint8_t* setting;
-    static uint16union_t* nBTrip;
+    static uint16_t* nBTrip;
+    static uint16_t count;
+    uint32_t time;
+    uint32_t currentRMS;
 
+  protected:
+
+    void Inverse(uint16_t &current);
+    void VeryInverse(uint16_t &current);
+    void ExtremelyInverse(uint16_t &current);
 
   public:
     IDMT_t();

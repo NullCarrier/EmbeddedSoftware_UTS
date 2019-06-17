@@ -240,8 +240,8 @@ bool Flash::Write8(volatile uint8_t* const address, const uint8_t &data)
         // assign data into byte0-7 in FCCOB
         FTFE_FCCOB4 = fccobB; //dataByte7
         FTFE_FCCOB5 = fccobA; //dataByte6
-        FTFE_FCCOB6 = fccob4; //dataByte0
-        FTFE_FCCOB7 = fccob5; //dataByte1
+        FTFE_FCCOB6 = fccob5; //dataByte0
+        FTFE_FCCOB7 = fccob4; //dataByte1
         FTFE_FCCOB8 = fccob6; //dataByte2
         FTFE_FCCOB9 = fccob7; //dataByte2
         FTFE_FCCOBA = fccob8; //dataByte1

@@ -35,37 +35,35 @@ uint32_t&& FixPoint::GetCurrentRMS(const uint32_t &magV)
   return std::move(current); //bind a variable to the rvalue reference
 }
 
-/*
 
-uint32_t&& FixPoint::GetRMS(const float &baseF)
+
+uint32_t&& FixPoint::SquareRoot(uint32_t &base)
 {
-  int64_t base = baseF * 65536;
-  uint32_t temp;
   uint32_t result;
+  const uint32_t oneHalf = 0.5 * 65536;
 
-  result = (base * 32768) >> 16; //Initial guess
+  result = ((int64_t) base * oneHalf) >> 16; //Initial guess
 
-
+  //
   for (uint8_t i = 0; i < NB_ITERATIONS; i++)
-    result = ( ( ( base << 16) / result + result ) * 32768 ) >> 16;
+    result = ( ( ( (int64_t) base << 16) / result + result ) * oneHalf ) >> 16;
 
-  return result;
+  return std::move(result);
 }
 
 
 
-uint32_t FixPoint::Exp(const float num, uint8_t exp)
+uint32_t&& FixPoint::Exp(const uint32_t &base, uint8_t exp)
 {
-  uint32_t temp; //32Q16
+  uint32_t temp = base; //32Q16
 
-  temp = Bit32_RootMeanSquare(num);
 
   while (exp)
   {
-    temp = FixPoint_RootMeanSquare(temp / 65536.0);
-  exp /= 2;
+    temp = this->SquareRoot(temp);
+    exp /= 2;
   }
 
-  return temp;
+  return std::move(temp);
 }
-*/
+

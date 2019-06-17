@@ -35,10 +35,10 @@ class FixPoint
     uint32_t&& GetCurrentRMS(const uint32_t &rmsVoltage);
 
 
-    uint32_t& GetRMS(const float &baseF);
+    uint32_t&& SquareRoot(uint32_t &base);
 
 
-    uint32_t& Exp(const float &num, uint8_t exp);
+    uint32_t&& Exp(const uint32_t &base, uint8_t exp);
 
 };
 
