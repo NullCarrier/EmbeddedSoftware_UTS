@@ -52,13 +52,13 @@ void IDMT_t::GetSetting(uint8_t &slope)
 }
 
 
-uint16_t&& IDMT_t::GetCurrent(uint32_t &magV)
+uint16_t&& IDMT_t::GetCurrent()
 {
   uint16_t current;
   uint32_t tempData;
   FixPoint fixP;
 
-  tempData = fixP.GetCurrentRMS(magV); // current in 32Q16
+  tempData = fixP.GetCurrentRMS(); // current in 32Q16
 
   current = (uint16_t) (tempData >> 6); //convert into 16Q10
 
@@ -71,6 +71,7 @@ uint16_t&& IDMT_t::GetCurrent(uint32_t &magV)
    FixPoint fixP;
    //uint32_t currentRMS = current << 6; // turn into 32Q16 format
    const uint32_t K  = curve.KI * 65536;
+
    //Calculate Irms ^ a
    currentRMS = fixP.Exp(currentRMS, 50);
 

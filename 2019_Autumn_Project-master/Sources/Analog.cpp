@@ -10,7 +10,7 @@
 namespace Analog
 {
 
-  int32_t Analog_t::maxVp;
+  std::vector<int32_t> Analog_t::inputSinusoid;
 
 
   Analog_t::Analog_t(const uint32_t clock)
@@ -25,7 +25,7 @@ namespace Analog
   }
 
 
-  void Analog_t::GetVmax()
+  void Analog_t::GetVoltage()
   {
     int64_t read;
     int32_t tempData;
@@ -34,10 +34,12 @@ namespace Analog
     {
       read = adcReading * 65536; //Convert into 32Q16
 
-      tempData = (read * resolutionAD) >> 16;
+      tempData = (read * resolutionAD) >> 16; //Convert adcReading into actual voltage
     }
 
-      maxVp = (maxVp > tempData)? maxVp : tempData;
+    //Put one sample into vector
+    if (inputSinusoid.size() < SIZE)
+      inputSinusoid.push_back(tempData);
 
   }
 
@@ -51,5 +53,15 @@ namespace Analog
 
     return Analog_Put(0, inputValue);
   }
+
+
+  uint16_t&& Analog_t::GetFrequency()
+  {
+
+  }
+
+
+
+
 
 }

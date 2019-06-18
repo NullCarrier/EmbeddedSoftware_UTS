@@ -39,8 +39,8 @@ class IDMT_t
   private:
     static uint8_t* setting;
     static uint16_t* nBTrip;
-    static uint16_t count;
-    uint32_t time;
+    static uint16_t count; // nb of time tripped
+    uint32_t time; //trip time
     uint32_t currentRMS;
 
   protected:
@@ -56,7 +56,8 @@ class IDMT_t
 
     void GetSetting(uint8_t &slope);
 
-    uint16_t&& GetCurrent(uint32_t &magV);
+    uint16_t&& GetCurrent();
+
 
     bool GetNbTrip(uint16_t &NbTrip);
 

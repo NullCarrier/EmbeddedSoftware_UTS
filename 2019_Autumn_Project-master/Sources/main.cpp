@@ -173,12 +173,8 @@ void HandlePacket::HandleCurrent(Packet_t &packet)
 {
 
   uint16union_t current;
-  uint32_t voltage;
 
-
-  voltage = AnalogIO.maxVp;
-
-  current.l = Idmt.GetCurrent(voltage);
+  current.l = Idmt.GetCurrent();
 
   time = Idmt.GetTripTime(current.l); //triptime in 32Q16 in sec
   counter = time *1000 / 65536; // triptime in ms
@@ -189,21 +185,16 @@ void HandlePacket::HandleCurrent(Packet_t &packet)
 
 
 
-
 namespace CallBack
 {
-
- // static LED_t Led;
 
 
  //function description
   void PIT(void* argu)
   {
-   // Led.Color(LED_t::GREEN);
-   // Led.Toggle();
 
     //analog get a sample, and retrieve a Vmax value
-    AnalogIO.GetVmax();
+    AnalogIO.GetVoltage();
 
     //calculate current
 

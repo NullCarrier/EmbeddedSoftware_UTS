@@ -10,27 +10,38 @@
 #include <utility>
 
 
-
-uint32_t&& FixPoint::GetVoltageRMS(const uint32_t &vol)
+uint32_t&& FixPoint::GetVoltageRMS()
 {
+  using A = Analog::Analog_t;
+
   uint32_t rmsVoltage;
-  int64_t voltage = vol;
+  uint32_t tempData;
+  //uint64_t tempData[18]; //local array to hold square value
+  //uint64_t *ptr = tempData;
 
-  //const int32_t rms_Coe = 0.707 * 65536; //Convert const into 32Q16
+  //Square each sample
+  for (auto sample: A::inputSinusoid)
+  {
+    tempData += ( (int64_t)sample * sample ) >> 16;
+  }
 
-  rmsVoltage = (voltage * RMS_COE) >> 16; //multiplication of two 32Q16 figures
 
-  return std::move(rmsVoltage); //bind a variable to the rvalue reference
+
+  rmsVoltage = ( ( (int64_t) rmsVoltage ) << 16 ) / (18 * 65536);
+
+  A::inputSinusoid.clear(); // clear all samples
+
+  return this->SquareRoot(rmsVoltage); //bind a variable to the rvalue reference
 }
 
 
 //Convert voltage in v into current
-uint32_t&& FixPoint::GetCurrentRMS(const uint32_t &magV)
+uint32_t&& FixPoint::GetCurrentRMS()
 {
 
   uint32_t current;
 
-  current = ( (int64_t) (this->GetVoltageRMS(magV) ) << 16 ) / ratio;
+  current = ( (int64_t) (this->GetVoltageRMS() ) << 16 ) / ratio;
 
   return std::move(current); //bind a variable to the rvalue reference
 }

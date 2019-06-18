@@ -9,7 +9,7 @@
 #define SOURCES_ANALOG_H_
 
 #include "FixPoint32.h"
-
+#include <vector>
 
 extern "C"
 {
@@ -24,22 +24,27 @@ extern "C"
 namespace Analog
 {
 
+  const int32_t resolutionAD = 20 ; // in 32Q16
+  const uint16_t resolutionDA = 3277;
+  const uint8_t SIZE = 25;
+
 class Analog_t
 {
   private:
     int16_t adcReading;
-    const int32_t resolutionAD = 20 ; // in 32Q16
-    const uint16_t resolutionDA = 3277;
 
   public:
-    static int32_t maxVp; // in 32Q16
+
+    static std::vector<int32_t> inputSinusoid;
 
     Analog_t(const uint32_t clock);
 
     //Get a sample from channel 0
     bool GetSample();
 
-    void GetVmax();
+    void GetVoltage();
+
+    uint16_t&& GetFrequency();
 
     bool PutSample(const int16_t value);
 
