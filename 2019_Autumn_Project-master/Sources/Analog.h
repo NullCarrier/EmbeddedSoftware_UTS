@@ -34,7 +34,7 @@ class Analog_t
   private:
     int16_t adcReading;
     int16_t preSample;
-    bool success;
+
 
   public:
 

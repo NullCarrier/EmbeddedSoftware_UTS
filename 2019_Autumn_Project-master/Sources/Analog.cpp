@@ -15,7 +15,7 @@ namespace Analog
 
 
   Analog_t::Analog_t(const uint32_t clock):
-  preSample(0), success(0)
+  preSample(0)
   {
     Analog_Init(clock);
   }
@@ -32,20 +32,22 @@ namespace Analog
     int64_t read;
     int32_t tempData;
 
+    /*
     if (!success)
       success = this->ZeroCrossDetector();
     else
       success = 1;
+    */
 
-    if (success)
+    if (this->GetSample())
     {
       read = adcReading * 65536; //Convert into 32Q16
 
       tempData = (read * resolutionAD) >> 16; //Convert adcReading into actual voltage
 
       //Put one sample into vector
-          if (inputSinusoid.size() < 20)
-          inputSinusoid.push_back(tempData);
+      if (inputSinusoid.size() < 18)
+        inputSinusoid.push_back(tempData);
     }
 
   }
@@ -93,6 +95,8 @@ namespace Analog
 
   uint16_t&& Analog_t::GetFrequency()
   {
+    this->ZeroCrossDetector();
+
 
   }
 
