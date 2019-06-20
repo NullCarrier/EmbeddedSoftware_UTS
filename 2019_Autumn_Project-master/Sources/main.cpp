@@ -193,8 +193,8 @@ namespace CallBack
   void PIT(void* argu)
   {
 
-    //analog get a sample, and retrieve a Vmax value
-    AnalogIO.GetVoltage();
+	//Start measurement from zero crossing point
+    AnalogIO.GetVoltage(); //analog get a sample, and retrieve a Vmax value
 
     //calculate current
 

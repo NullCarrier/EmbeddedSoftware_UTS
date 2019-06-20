@@ -26,12 +26,15 @@ namespace Analog
 
   const int32_t resolutionAD = 20 ; // in 32Q16
   const uint16_t resolutionDA = 3277;
-  const uint8_t SIZE = 25;
+
+
 
 class Analog_t
 {
   private:
     int16_t adcReading;
+    int16_t preSample;
+    bool success;
 
   public:
 
@@ -43,6 +46,8 @@ class Analog_t
     bool GetSample();
 
     void GetVoltage();
+
+    bool ZeroCrossDetector();
 
     uint16_t&& GetFrequency();
 

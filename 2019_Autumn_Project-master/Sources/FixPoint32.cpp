@@ -15,19 +15,18 @@ uint32_t&& FixPoint::GetVoltageRMS()
   using A = Analog::Analog_t;
 
   uint32_t rmsVoltage;
-  uint32_t tempData;
-  //uint64_t tempData[18]; //local array to hold square value
-  //uint64_t *ptr = tempData;
+  uint32_t sum; //32Q16
 
-  //Square each sample
+
+  //Square each sample in 16Q7
   for (auto sample: A::inputSinusoid)
   {
-    tempData += ( (int64_t)sample * sample ) >> 16;
+	int16_t sample_16Q7 = sample >> 9; // Normalization
+
+    sum += ( (int32_t)sample_16Q7 * sample_16Q7) << 2;
   }
 
-
-
-  rmsVoltage = ( ( (int64_t) rmsVoltage ) << 16 ) / (18 * 65536);
+  rmsVoltage = ( ( (int64_t) sum ) << 16 ) / (20 * 65536);
 
   A::inputSinusoid.clear(); // clear all samples
 
