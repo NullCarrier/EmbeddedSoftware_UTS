@@ -23,7 +23,7 @@ namespace Analog
 
   bool Analog_t::GetSample()
   {
-     return Analog_Get(0, &adcReading); // get a value from ADC
+    return Analog_Get(0, &adcReading); // get a value from ADC
   }
 
 
@@ -32,14 +32,8 @@ namespace Analog
     int64_t read;
     int32_t tempData;
 
-    /*
-    if (!success)
-      success = this->ZeroCrossDetector();
-    else
-      success = 1;
-    */
 
-    if (this->GetSample())
+    if (this->GetSample() )
     {
       read = adcReading * 65536; //Convert into 32Q16
 
@@ -63,6 +57,7 @@ namespace Analog
     return Analog_Put(0, inputValue);
   }
 
+
 //To find the zero crossing point from negative to positive
 //True: find the zero crossing point
   bool Analog_t::ZeroCrossDetector()
@@ -71,10 +66,7 @@ namespace Analog
     if (preSample == 0)
     {
       if (this->GetSample() )
-      {
         preSample = adcReading;
-        return false;
-      }
     }
     else
     {
@@ -84,12 +76,11 @@ namespace Analog
     	  return true;
     	else
     	  preSample = adcReading;
-
-    	  return false;
       }
 
     }
 
+    return false;
   }
 
 
