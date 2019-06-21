@@ -21,9 +21,10 @@ uint32_t&& FixPoint::GetVoltageRMS()
   //Square each sample in 16Q7
   for (auto sample: A::inputSinusoid)
   {
-	int16_t sample_16Q7 = sample >> 9;
+	 uint32_t tempData;
 
-    sum += ( (uint32_t) (sample_16Q7 * sample_16Q7) ) << 2 ;
+	 tempData = ( (int64_t)sample * sample ) >> 16;
+	 sum += tempData;
   }
 
   rmsVoltage = ( ( (int64_t) sum ) << 16 ) / 1179648; //18 samples
