@@ -39,15 +39,15 @@ class IDMT_t
   private:
     static uint8_t* setting;
     static uint16_t* nBTrip;
-    static uint16_t count; // nb of time tripped
+    //static uint16_t count; // nb of time tripped
     uint32_t time; //trip time
     uint32_t currentRMS;
 
   protected:
 
-    void Inverse(uint16_t &current);
-    void VeryInverse(uint16_t &current);
-    void ExtremelyInverse(uint16_t &current);
+    void Inverse();
+    void VeryInverse();
+    void ExtremelyInverse();
 
   public:
     IDMT_t();

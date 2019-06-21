@@ -66,7 +66,7 @@ uint16_t&& IDMT_t::GetCurrent()
 }
 
 
- void IDMT_t::Inverse(uint16_t &current)
+ void IDMT_t::Inverse()
  {
    FixPoint fixP;
    //uint32_t currentRMS = current << 6; // turn into 32Q16 format
@@ -79,7 +79,7 @@ uint16_t&& IDMT_t::GetCurrent()
  }
 
 
- void IDMT_t::VeryInverse(uint16_t &current)
+ void IDMT_t::VeryInverse()
  {
   //Convert const K into 32Q16 format
    const uint32_t K  = curve.KVI * 65536;
@@ -90,7 +90,7 @@ uint16_t&& IDMT_t::GetCurrent()
  }
 
 
- void IDMT_t::ExtremelyInverse(uint16_t &current)
+ void IDMT_t::ExtremelyInverse()
  {
   //Convert const K into 32Q16 format
   const uint32_t K = curve.KEI * 65536;
@@ -106,24 +106,24 @@ uint16_t&& IDMT_t::GetCurrent()
   //32Q16
   uint32_t&& IDMT_t::GetTripTime(uint16_t &current)
   {
-    currentRMS = current << 6; // turn into 32Q16 format
+    currentRMS = ( (uint32_t) current ) << 6; // turn into 32Q16 format
 
     switch (*setting)
     {
       case 0:
-        this->Inverse(current);
+        this->Inverse();
         break;
       case 1:
-        this->VeryInverse(current);
+        this->VeryInverse();
         break;
       case 2:
-        this->ExtremelyInverse(current);
+        this->ExtremelyInverse();
         break;
     }
 
     //Whenever the trip time has been generated, increase the number
-    count++;
-    Flash.Write16(nBTrip, count);
+    //count++;
+    //Flash.Write16(nBTrip, count);
 
     return std::move(time);
   }

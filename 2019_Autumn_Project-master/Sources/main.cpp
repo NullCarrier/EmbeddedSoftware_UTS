@@ -53,11 +53,8 @@ IDMT::IDMT_t Idmt;
 
 static uint32_t counter;
 
-static uint16_t NbSample;
-
 uint32_t time;
 
-static uint8_t NbZero;
 
 class HandlePacket
 {
@@ -197,17 +194,7 @@ namespace CallBack
   void PIT(void* argu)
   {
 
-	//Start measurement from zero crossing point
-/*
-	if (!AnalogIO.ZeroCrossDetector() )
-	  NbSample++;
-	else
-	{
-		NbZero++; //Find one zero crossing point
-		NbSample++;
-	}
 
-	if (!(NbZero == 2) )*/
       AnalogIO.GetVoltage(); //analog get a sample
 
     //calculate current
