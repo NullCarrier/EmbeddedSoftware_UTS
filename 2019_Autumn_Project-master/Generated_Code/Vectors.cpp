@@ -183,7 +183,7 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x62  0x00000188   -   ivINT_DAC1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x63  0x0000018C   -   ivINT_TSI0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x64  0x00000190   -   ivINT_MCG                      unused by PE */
-    //(tIsrFunc)&LPTimer_ISR,          /* 0x65  0x00000194   -   ivINT_LPTimer                  unused by PE */
+    (tIsrFunc)&Cpu_Interrupt,          /* 0x65  0x00000194   -   ivINT_LPTimer                  unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x66  0x00000198   -   ivINT_Reserved102              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x67  0x0000019C   -   ivINT_PORTA                    unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x68  0x000001A0   -   ivINT_PORTB                    unused by PE */

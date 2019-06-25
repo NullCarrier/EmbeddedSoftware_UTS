@@ -51,7 +51,7 @@ class Analog_t
 
     bool ZeroCrossDetector();
 
-    bool PutSample(const int16_t value);
+    bool PutSample(const int16_t value, const uint8_t channelNb);
 
 };
 

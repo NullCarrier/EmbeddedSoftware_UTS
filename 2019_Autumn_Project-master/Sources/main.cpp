@@ -44,7 +44,7 @@
 #include "Analog.h"
 
 const uint64_t BAUDRATE = 115200;
-const uint16_t OVERCURRENT = 1.03 * 2048; // in 16Q11 notation
+const uint16_t OVERCURRENT = 2109; // in 16Q11 notation
 
 // ----------------------------------------
 // Thread set up
@@ -266,14 +266,14 @@ static void InitModulesThread(void* pData)
 static void OutputSignalThread(void* pData)
 {
   static Analog::Analog_t analogTrip( (uint8_t) 2 ); //Initialize analog channel 2 for tripping signal
-  analogTrip.PutSample(0); //Idie mode
+  //analogTrip.PutSample(0, 2); //Idie mode
 
   for (;;)
   {
-	(void)OS_SemaphoreWait(SignalFlag, 0);
+	OS_SemaphoreWait(SignalFlag, 0);
 
 	if (Counter == 0)
-	  analogTrip.PutSample(5); //Send tripping signal
+	  analogTrip.PutSample(5, 2); //Send tripping signal
 	else
 	  Counter -= 1;
   }
@@ -282,6 +282,9 @@ static void OutputSignalThread(void* pData)
 
 void __attribute__ ((interrupt)) PIT::ISR()
 {
+  // inform RTOS that ISR is being processed
+  OS ISR;
+
   if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
   {
     PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
@@ -301,7 +304,6 @@ void __attribute__ ((interrupt)) PIT::ISR()
  */
 void AnalogLoopbackThread(void* pData)
 {
-
 
   // Make the code easier to read by giving a name to the typecast'ed pointer
   #define analogData ((TAnalogThreadData*)pData)
@@ -338,7 +340,7 @@ void AnalogLoopbackThread(void* pData)
       Time = Idmt.GetTripTime(Current.l); //triptime in 32Q16 in sec
       Counter = Time *1000 / 65536; // triptime in ms
 
-      analogTime.PutSample(5); //Send timing signal
+      analogTime.PutSample(5, 1); //Send timing signal
 
       if (Counter == 0)
         (void)OS_SemaphoreSignal(SignalFlag);//signal output thread via semaphore

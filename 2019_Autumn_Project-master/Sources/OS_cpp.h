@@ -25,13 +25,28 @@ class critical
    public:
      critical()
      {
-        EnterCritical(); //Start critical section
+    	 OS_DisableInterrupts(); //Start critical section
      }
 
     ~critical()
     {
-       ExitCritical(); //End critical section
+    	OS_EnableInterrupts(); //End critical section
     }
+};
+
+class OS
+{
+  public:
+    OS()
+    {
+      OS_ISREnter(); //notifies the RTOS that an ISR is being processed
+    }
+
+    ~OS()
+    {
+      OS_ISRExit(); // notifies the RTOS that an ISR has completed
+    }
+
 };
 
 

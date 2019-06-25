@@ -55,14 +55,14 @@ namespace Analog
   }
 
 
-  bool Analog_t::PutSample(const int16_t value)
+  bool Analog_t::PutSample(const int16_t value, const uint8_t channelNb)
   {
     int16_t inputValue = value;
 
     //Convert into discrete level
     inputValue *= resolutionDA;
 
-    return Analog_Put(0, inputValue);
+    return Analog_Put(channelNb, inputValue);
   }
 
 

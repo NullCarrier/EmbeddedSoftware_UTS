@@ -31,10 +31,13 @@ class TFIFO
   protected:
     uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
     uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
-    uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
+    //uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
     uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
-
+    OS_ECB* spaceAvailable; //size of Buffer
+    OS_ECB* itemsAvailable; // items in the buffer
   public:
+
+    TFIFO();
 
 /*! @brief Put one character into the FIFO.
  *
