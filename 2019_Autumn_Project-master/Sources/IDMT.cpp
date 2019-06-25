@@ -22,18 +22,14 @@ static characteristic curve;
 uint8_t* IDMT_t::setting;
 uint16_t* IDMT_t::nBTrip;
 
-uint16_t IDMT_t::count;
+//uint16_t IDMT_t::count;
 
 IDMT_t::IDMT_t()
 {
   //Do not allocate space multiple times for the same pointer
-  if (!success)
-  {
-     success = Flash.AllocateVar( (volatile void**) &setting, sizeof (*setting) ); //Alocate space for a byte
+  success = Flash.AllocateVar( (volatile void**) &setting, sizeof (*setting) ); //Alocate space for a byte
 
-     success = Flash.AllocateVar( (volatile void**) &nBTrip, sizeof (*nBTrip) );
-  }
-
+  success = Flash.AllocateVar( (volatile void**) &nBTrip, sizeof (*nBTrip) );
 }
 
 
@@ -60,7 +56,7 @@ uint16_t&& IDMT_t::GetCurrent()
 
   tempData = fixP.GetCurrentRMS(); // current in 32Q16
 
-  current = (uint16_t) (tempData >> 6); //convert into 16Q10
+  current = (uint16_t) (tempData >> 5); //convert into 16Q11
 
   return std::move(current);
 }
@@ -106,7 +102,7 @@ uint16_t&& IDMT_t::GetCurrent()
   //32Q16
   uint32_t&& IDMT_t::GetTripTime(uint16_t &current)
   {
-    currentRMS = ( (uint32_t) current ) << 6; // turn into 32Q16 format
+    currentRMS = ( (uint32_t) current ) << 5; // turn into 32Q16 format
 
     switch (*setting)
     {

@@ -21,13 +21,19 @@ namespace Analog
   }
 
 
-  bool Analog_t::GetSample()
+  Analog_t::Analog_t(const uint8_t chNb):
+  channelNb(chNb), adcReading(0)
   {
-    return Analog_Get(0, &adcReading); // get a value from ADC
   }
 
 
-  void Analog_t::GetVoltage()
+  bool Analog_t::GetSample()
+  {
+    return Analog_Get(channelNb, &adcReading); // get a value from ADC
+  }
+
+
+  bool Analog_t::GetSignal()
   {
     int64_t read;
     int32_t tempData;
@@ -40,8 +46,10 @@ namespace Analog
       tempData = (read * resolutionAD) >> 16; //Convert adcReading into actual voltage
 
       //Put one sample into vector
-      if (inputSinusoid.size() < 18)
+      if (inputSinusoid.size() < 20)
         inputSinusoid.push_back(tempData);
+      else
+    	return true; //Got 20 sample already
     }
 
   }
@@ -83,13 +91,6 @@ namespace Analog
     return false;
   }
 
-
-  uint16_t&& Analog_t::GetFrequency()
-  {
-    this->ZeroCrossDetector();
-
-
-  }
 
 
 

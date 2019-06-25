@@ -49,10 +49,11 @@ class UART_t
     UART_t(const uint32_t rate, const uint32_t clock):
     baudRate{rate}, moduleClk{clock}
     {
-      this->Init();
+      if (this->Init() )
+        ;
     }
   
-    UART_t() = default;
+    //UART_t() = default;
 
   public:
   /*! @brief Put a byte in the transmit FIFO if it is not full.
@@ -71,6 +72,14 @@ class UART_t
    */
     bool OutChar(const uint8_t txData);
 };
+
+
+static void RxThread(void* pData)
+{
+
+}
+
+
 
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.

@@ -17,8 +17,8 @@ namespace PIT
   using F = void (void*); // a function type, not a pointer
 
   // Local function pointer
-  static F* UserFunc;
-  static void* UserArgu;
+  //static F* UserFunc;
+  //static void* UserArgu;
 
 
   bool PIT_t::Init()
@@ -52,8 +52,8 @@ namespace PIT
     this->Enable(true);
 
  // Initialize the local usefunction
-    UserFunc = userFunction;
-    UserArgu = userArguments;
+    //UserFunc = userFunction;
+    //UserArgu = userArguments;
 
     // Enable timer0 interrupt
     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
@@ -98,13 +98,13 @@ void PIT_t::Enable(const bool enable)
 }
 
 
-PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
-moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
+PIT_t::PIT_t(const uint32_t mClock):
+moduleClk(mClock)
 {
   this->Init();
 }
 
-
+/*
 void __attribute__ ((interrupt)) ISR(void)
 {
  if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
@@ -116,7 +116,7 @@ void __attribute__ ((interrupt)) ISR(void)
   UserFunc(UserArgu);
  }
 
-}
+}*/
 
 }
 
