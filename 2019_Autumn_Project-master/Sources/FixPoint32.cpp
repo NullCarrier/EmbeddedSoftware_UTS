@@ -1,8 +1,12 @@
-/*
- * FixPoint32.cpp
+/*! @file FixPoint32.cpp
  *
- *  Created on: 13 Jun 2019
- *      Author: paul
+ *  @brief Routines for calculation based on fix point
+ *
+ *  This contains the functions for calculating RMS, Current
+ *
+ *  @author Chao Li
+ *  @date 7/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 
@@ -12,39 +16,37 @@
 
 uint32_t&& FixPoint::GetVoltageRMS()
 {
-	using A = Analog::Analog_t;
+  using A = Analog::Analog_t;
 
-	  uint32_t rmsVoltage; //32Q16
-	  uint16_t sum = 0; //16Q7
+  uint32_t rmsVoltage; //32Q16
+  uint16_t sum = 0; //16Q7
 
 
-	  //Square each sample in 16Q7
-	  for (auto sample: A::inputSignal)
-	  {
-		int32_t sample_16Q7 = sample >> 9;
-		uint16_t tempData;
+  //Square each sample in 16Q7
+  for (auto sample: A::inputSignal)
+  {
+    int32_t sample_16Q7 = sample >> 9;
+	uint16_t tempData;
 
-	    tempData = ( sample_16Q7 * sample_16Q7 ) >> 7 ;
-	    sum += tempData;
-	  }
+	tempData = ( sample_16Q7 * sample_16Q7 ) >> 7 ;
+	sum += tempData;
+  }
 
-	  uint8_t num = A::inputSignal.size();
+  uint8_t num = A::inputSignal.size();
 
-	  rmsVoltage = ( (int32_t) sum) << 9;
+  rmsVoltage = ( (int32_t) sum) << 9;
 
-	  rmsVoltage = ( ( (int64_t) rmsVoltage ) << 16 ) / (num * 65536); //18 samples
+  rmsVoltage = ( ( (int64_t) rmsVoltage ) << 16 ) / (num * 65536); //18 samples
 
-	  A::inputSignal.clear();
+  A::inputSignal.clear(); //Clear all samples
 
-	  return this->SquareRoot(rmsVoltage); //bind a variable to the rvalue reference
-
+  return this->SquareRoot(rmsVoltage); //bind a variable to the rvalue reference
 }
 
 
 //Convert voltage in v into current
 uint32_t&& FixPoint::GetCurrentRMS()
 {
-
   uint32_t current;
 
   current = ( (int64_t) (this->GetVoltageRMS() ) << 16 ) / ratio;

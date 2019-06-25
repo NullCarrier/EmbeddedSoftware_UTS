@@ -1,8 +1,8 @@
-/*! @file UART.cpp
+/*! @file IDMT.cpp
  *
- *  @brief I/O routines for UART communications on the TWR-K70F120M.
+ *  @brief the basic routine for IDMT and related calculation
  *
- *  This contains the functions for operating the UART (serial port).
+ *  This contains the functions for IDMT
  *
  *  @author Chao Li
  *  @date 07/05/2019
@@ -22,7 +22,6 @@ static characteristic curve;
 uint8_t* IDMT_t::setting;
 uint16_t* IDMT_t::nBTrip;
 
-//uint16_t IDMT_t::count;
 
 IDMT_t::IDMT_t()
 {
@@ -123,10 +122,6 @@ uint16_t&& IDMT_t::GetCurrent()
     	this->Inverse();
     	break;
     }
-
-    //Whenever the trip time has been generated, increase the number
-    //count++;
-    //Flash.Write16(nBTrip, count);
 
     return std::move(time);
   }

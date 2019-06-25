@@ -1,8 +1,12 @@
-/*
- * Analog.cpp
+/*! @file Analog.cpp
  *
- *  Created on: 14 Jun 2019
- *      Author: paul
+ *  @brief Routines for Analog module
+ *
+ *  This contains the functions for operating the ADC and DAC
+ *
+ *  @author Chao Li
+ *  @date 7/05/2019
+ *  Copyright (c) Chao Li. All rights reserved.
  */
 
 #include "Analog.h"
@@ -34,9 +38,11 @@ namespace Analog
 
     if (this->GetSample() )
     {
+      //To find the zeroCrossing point
       if ( this->ZeroCrossDetector() )
         zeroPoint++;
 
+      //Increment period
       if (zeroPoint < 2)
         period++;
       else
@@ -70,14 +76,14 @@ namespace Analog
   }
 
 
-//To find the zero crossing point from negative to positive
+
 //True: find the zero crossing point
   bool Analog_t::ZeroCrossDetector()
   {
 
     if (prevSample == 0)
     {
-        prevSample = adcReading;
+      prevSample = adcReading;
     }
     else
     {

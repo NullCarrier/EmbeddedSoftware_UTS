@@ -17,7 +17,7 @@ C_DEPS += \
 Project_Settings/Startup_Code/%.o: ../Project_Settings/Startup_Code/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross ARM C Compiler'
-	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -I"C:\Users\12199434\My Local Data\08-b4bb57118f8777b56d792d1026c605e44fbec244\2019_Autumn_Project-master\Library" -I"C:/Users/12199434/My Local Data/08-b4bb57118f8777b56d792d1026c605e44fbec244/2019_Autumn_Project-master/Static_Code/IO_Map" -I"C:/Users/12199434/My Local Data/08-b4bb57118f8777b56d792d1026c605e44fbec244/2019_Autumn_Project-master/Sources" -I"C:/Users/12199434/My Local Data/08-b4bb57118f8777b56d792d1026c605e44fbec244/2019_Autumn_Project-master/Generated_Code" -std=c99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -c -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -I"C:\Users\12199434\My Local Data\08\2019_Autumn_Project-master\Library" -I"C:/Users/12199434/My Local Data/08/2019_Autumn_Project-master/Static_Code/IO_Map" -I"C:/Users/12199434/My Local Data/08/2019_Autumn_Project-master/Sources" -I"C:/Users/12199434/My Local Data/08/2019_Autumn_Project-master/Generated_Code" -std=c99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -c -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
