@@ -96,8 +96,8 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x0B  0x0000002C   -   ivINT_SVCall                   unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x0C  0x00000030   -   ivINT_DebugMonitor             unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x0D  0x00000034   -   ivINT_Reserved13               unused by PE */
-    (tIsrFunc)&OS_ContextSwitchISR,  /* 0x0E  0x00000038   -   ivINT_PendableSrvReq           unused by PE */
-    (tIsrFunc)&OS_SysTickISR,       /* 0x0F  0x0000003C   -   ivINT_SysTick                  unused by PE */
+    (tIsrFunc)&Cpu_Interrupt,  /* 0x0E  0x00000038   -   ivINT_PendableSrvReq           unused by PE */
+    (tIsrFunc)&Cpu_Interrupt,       /* 0x0F  0x0000003C   -   ivINT_SysTick                  unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x10  0x00000040   -   ivINT_DMA0_DMA16               unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x11  0x00000044   -   ivINT_DMA1_DMA17               unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x12  0x00000048   -   ivINT_DMA2_DMA18               unused by PE */
@@ -183,7 +183,7 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x62  0x00000188   -   ivINT_DAC1                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x63  0x0000018C   -   ivINT_TSI0                     unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x64  0x00000190   -   ivINT_MCG                      unused by PE */
-    (tIsrFunc)&Cpu_Interrupt,          /* 0x65  0x00000194   -   ivINT_LPTimer                  unused by PE */
+    //(tIsrFunc)&LPTimer_ISR,          /* 0x65  0x00000194   -   ivINT_LPTimer                  unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x66  0x00000198   -   ivINT_Reserved102              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x67  0x0000019C   -   ivINT_PORTA                    unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x68  0x000001A0   -   ivINT_PORTB                    unused by PE */

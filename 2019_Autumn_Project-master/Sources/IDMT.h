@@ -19,12 +19,16 @@
 
 #include <utility>
 
+#include "Analog.h"
+
 namespace IDMT
 {
 
 typedef struct
 {
   const float A = 0.02;
+const uint8_t AVI = 1;
+const uint8_t AEI = 2;
 const float KI = 0.14;
 const float KVI = 13.5;
 const uint8_t KEI = 80;
@@ -55,7 +59,6 @@ class IDMT_t
     void GetSetting(uint8_t &slope);
 
     uint16_t&& GetCurrent();
-
 
     bool GetNbTrip(uint16_t &NbTrip);
 

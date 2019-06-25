@@ -30,8 +30,8 @@ class PIT_t
  private:
   uint32_t moduleClk; /*!<The module clock rate in Hz.*/
   uint32_t period; /*!<set a period in nanosec */
-  //F* userFunction; /*!<a pointer to a user callback function.*/
-  //void* userArguments; /*!<a pointer to the user arguments to use with the user callback function.*/
+  F* userFunction; /*!<a pointer to a user callback function.*/
+  void* userArguments; /*!<a pointer to the user arguments to use with the user callback function.*/
 
  public:
 /*! @brief Constructor for initializing all member variables in PIT class
@@ -42,7 +42,7 @@ class PIT_t
  *  @param userArgu is a pointer to the user arguments to use with the user callback function.
  *  @note Assumes that moduleClk has a period which can be expressed as an integral number of nanoseconds.
  */
-  PIT_t(const uint32_t mClock);
+  PIT_t(const uint32_t mClock, F* userFunc, void* userArgu);
 
 /*! @brief Sets up the PIT before first use.
  *

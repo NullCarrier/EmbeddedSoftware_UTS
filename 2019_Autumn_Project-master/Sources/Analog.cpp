@@ -11,25 +11,19 @@ namespace Analog
 {
 // const int32_t ThreShold = 0.05 * 65536; //threshold in +- 0.01
 
-  std::vector<int32_t> Analog_t::inputSinusoid;
-
+  std::vector<int32_t> Analog_t::inputSignal;
+  uint16_t Analog_t::frequency;
 
   Analog_t::Analog_t(const uint32_t clock):
-  preSample(0)
+  prevSample(0)
   {
     Analog_Init(clock);
   }
 
 
-  Analog_t::Analog_t(const uint8_t chNb):
-  channelNb(chNb), adcReading(0)
-  {
-  }
-
-
   bool Analog_t::GetSample()
   {
-    return Analog_Get(channelNb, &adcReading); // get a value from ADC
+    return Analog_Get(0, &adcReading); // get a value from ADC channel 0
   }
 
 
@@ -38,20 +32,30 @@ namespace Analog
     int64_t read;
     int32_t tempData;
 
-
     if (this->GetSample() )
     {
+      if ( this->ZeroCrossDetector() )
+        zeroPoint++;
+
+      if (zeroPoint < 2)
+        period++;
+      else
+    	frequency = this->GetFrequency();//calculate frequency and reset period
+
+
       read = adcReading * 65536; //Convert into 32Q16
 
       tempData = (read * resolutionAD) >> 16; //Convert adcReading into actual voltage
 
-      //Put one sample into vector
-      if (inputSinusoid.size() < 20)
-        inputSinusoid.push_back(tempData);
+      //Put one sample into signal
+      if (inputSignal.size() < NB_Sample)
+        inputSignal.push_back(tempData);
       else
-    	return true; //Got 20 sample already
+        return true;
+
     }
 
+    return false;
   }
 
 
@@ -71,28 +75,39 @@ namespace Analog
   bool Analog_t::ZeroCrossDetector()
   {
 
-    if (preSample == 0)
+    if (prevSample == 0)
     {
-      if (this->GetSample() )
-        preSample = adcReading;
+        prevSample = adcReading;
     }
     else
     {
-      if (this->GetSample() )
-      {
-    	if (preSample * adcReading < 0) // this is the zero crossing point
-    	  return true;
-    	else
-    	  preSample = adcReading;
-      }
-
+      if (prevSample * adcReading < 0) // this is the zero crossing point
+        return true;
+      else
+    	prevSample = adcReading;
     }
 
     return false;
   }
 
+  //16Q4
+  uint16_t&& Analog_t::GetFrequency()
+  {
+    uint16_t frequency;
 
+    period *= 16; // in ms
 
+    frequency = (int32_t) (1000 * 16) / period >> 4; //in Hz
+
+    period = zeroPoint = 0;
+
+    return std::move(frequency);
+  }
+
+  uint16_t Analog_t::returnFrequency()
+  {
+    return frequency;
+  }
 
 
 

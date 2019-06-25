@@ -27,9 +27,13 @@ uint16_t* IDMT_t::nBTrip;
 IDMT_t::IDMT_t()
 {
   //Do not allocate space multiple times for the same pointer
-  success = Flash.AllocateVar( (volatile void**) &setting, sizeof (*setting) ); //Alocate space for a byte
+  if (!success)
+  {
+     success = Flash.AllocateVar( (volatile void**) &setting, sizeof (*setting) ); //Alocate space for a byte
 
-  success = Flash.AllocateVar( (volatile void**) &nBTrip, sizeof (*nBTrip) );
+     success = Flash.AllocateVar( (volatile void**) &nBTrip, sizeof (*nBTrip) );
+  }
+
 }
 
 
@@ -115,6 +119,9 @@ uint16_t&& IDMT_t::GetCurrent()
       case 2:
         this->ExtremelyInverse();
         break;
+      default:
+    	this->Inverse();
+    	break;
     }
 
     //Whenever the trip time has been generated, increase the number
@@ -125,13 +132,10 @@ uint16_t&& IDMT_t::GetCurrent()
   }
 
 
-
   bool IDMT_t::GetNbTrip(uint16_t &NbTrip)
   {
     NbTrip = *nBTrip;
   }
-
-
 
 
 

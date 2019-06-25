@@ -27,31 +27,11 @@
 
 #include "OS_cpp.h" //critical section
 
-
-const uint8_t THREAD_STACK_SIZE_RT = 120;
-
-OS_THREAD_STACK(RxThreadStack, THREAD_STACK_SIZE_RT );
-OS_THREAD_STACK(TxThreadStack, THREAD_STACK_SIZE_RT );
-
-
-static void RxThread(void* pData);
-
-static void TxThread(void* pData);
-
-static TFIFO TxFIFO;
-static TFIFO RxFIFO;
-
-static OS_ECB* RxfifoSemaphore;
-static OS_ECB* TxfifoSemaphore;
-
-static uint8_t RxData;
-
 class UART_t
 {
   private:
     uint32_t baudRate;  /*!< baudRate The desired baud rate in bits/sec. */
     uint32_t moduleClk;  /*!< moduleClk The module clock rate in Hz. */
-    OS_ERROR error;
 
   protected:
   /*! @brief Sets up the UART interface before first use.
@@ -69,25 +49,11 @@ class UART_t
     UART_t(const uint32_t rate, const uint32_t clock):
     baudRate{rate}, moduleClk{clock}
     {
-      if (this->Init() )
-      {
-        error = OS_ThreadCreate(RxThread,
-    	      	                0,
-    	      	                &RxThreadStack[THREAD_STACK_SIZE_RT - 1],
-    	      	                7);
-
-        error = OS_ThreadCreate(TxThread,
-            	      	                0,
-            	      	                &TxThreadStack[THREAD_STACK_SIZE_RT - 1],
-            	      	                8);
-
-
-      }
-
+      this->Init();
     }
-
-    UART_t() = default;
   
+    UART_t() = default;
+
   public:
   /*! @brief Put a byte in the transmit FIFO if it is not full.
    *
@@ -105,49 +71,6 @@ class UART_t
    */
     bool OutChar(const uint8_t txData);
 };
-
-/*! @brief Receiving thread
-       *
-       *  @param pData might not use but is required by the OS to create a thread.
-       *
-       */
-  void RxThread(void* pData)
- {
-    for (;;)
-    {
-  	  OS_SemaphoreWait(RxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-      RxFIFO.Put(RxData); // let the receiver to send a byte of data to RxFIFO
-
-     // OS_SemaphoreSignal(ShareFIFOSemaphore); //Release a remaphore
-    }
- }
-
-
-
-  /*! @brief Transimission thread
-       *
-       *  @param pData might not use but is required by the OS to create a thread.
-       *
-       */
-  void TxThread(void* pData)
- {
-    uint8_t data = 0;
-
-    for (;;)
-    {
-  	OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-
-      if (!TxFIFO.Get(data) )
-  	  UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
-  	else
-  	{
-  	  UART2_D = data;
-  	  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
-  	}
-
-    }
-
- }
 
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.

@@ -35,7 +35,7 @@
 
 #include "OS_cpp.h"
 
-#include "analog.h"
+//#include "analog.h"
 
 #include "PIT.h"
 
@@ -44,46 +44,22 @@
 #include "Analog.h"
 
 const uint64_t BAUDRATE = 115200;
-const uint16_t OVERCURRENT = 2109; // in 16Q11 notation
 
-// ----------------------------------------
-// Thread set up
-// ----------------------------------------
-// Arbitrary thread stack size - big enough for stacking of interrupts and OS use.
-const uint8_t THREAD_STACK_SIZE = 100;
-const uint8_t NB_ANALOG_CHANNELS = 3; // Three Channels
-
-
-// ----------------------------------------
-// Thread stack
-// ----------------------------------------
-OS_THREAD_STACK(InitModulesThreadStack, THREAD_STACK_SIZE); /*!< The stack for the LED Init thread. */
-static uint32_t AnalogThreadStacks[NB_ANALOG_CHANNELS][THREAD_STACK_SIZE] __attribute__ ((aligned(0x08)));
-
-OS_THREAD_STACK(HandlePacketThreadStack, THREAD_STACK_SIZE); /*!< The stack for the handlePacket thread. */
-OS_THREAD_STACK(OutputSignalThreadStack, THREAD_STACK_SIZE); /*!< The stack for the  thread. */
-
-
-// ----------------------------------------
-// Thread priorities
-// 0 = highest priority
-// ----------------------------------------
-const uint8_t ANALOG_THREAD_PRIORITIES[NB_ANALOG_CHANNELS] = {3, 4, 5};
+const uint16_t OVERLOAD = 2109; // in 16Q11
 
 /* MODULE main */
 
+static Analog::Analog_t AnalogIO(CPU_BUS_CLK_HZ);
 
-IDMT::IDMT_t Idmt;
+static IDMT::IDMT_t Idmt;
 
-uint16union_t Current;
+static uint16_t Counter;
 
-static uint32_t Counter;
+static uint32_t Time;
 
-uint32_t Time;
+static uint16union_t Current;
 
-static OS_ECB* SignalFlag;
 
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class HandlePacket
 {
@@ -91,33 +67,18 @@ class HandlePacket
 
   private:
     uint8_t priority;
-	 OS_ERROR error;
+
 
   public:
   
-  /*! @brief Constructor for creating the thread
-   *  @param thread the thread needed to create
-   *  @param pData data pointer passed to thread
-   *  @param prio the proiority of thread
-  */
-
-	HandlePacket(F* thread, void* pData, const uint8_t prio):
-   	priority(prio)
-    {
-   	  // Create HandlePacket thread
-   	  error = OS_ThreadCreate(thread,
-   		                      pData,
-   	                          &HandlePacketThreadStack[THREAD_STACK_SIZE - 1],
-	                          prio);
-    }
 
     enum Command
-	{
-	  IDMT = 0,
-	  CURRENT = 0x01,
-	  FREQUENCY = 0x02,
-	  NB_TIME_TRIPPED = 0x03,
-	  FAULT_TYPE = 0x04,
+	  {
+	    IDMT = 0,
+	    CURRENT = 0x01,
+	    FREQUENCY = 0x02,
+	    NB_TIME_TRIPPED = 0x03,
+	    FAULT_TYPE = 0x04,
       CMD_DOR = 0x70,
       CMD_DOR_CURRENT = 0x71
     };
@@ -128,7 +89,7 @@ class HandlePacket
 	
     static void HandleNbTimeTripped(Packet_t &packet);
 	
-	static void HandleFaultType(Packet_t &packet);
+	  static void HandleFaultType(Packet_t &packet);
 	
   /*! @brief To return RMS value of current of each channel
    *  
@@ -154,7 +115,7 @@ void HandlePacket::HandleCommandPacket(Packet_t &packet)
         HandleIDMTCharacteristic(packet);
         break;
       case FREQUENCY:
-       // HandleFrequency(packet);
+        HandleFrequency(packet);
        	break;
       case CURRENT:
         HandleCurrent(packet);
@@ -182,221 +143,132 @@ void HandlePacket::HandleNbTimeTripped(Packet_t &packet)
 
 void HandlePacket::HandleIDMTCharacteristic(Packet_t &packet)
 {
+  IDMT::IDMT_t idmt;
   uint8_t setting;
 
   if (packet.parameter2 == 0x01)
   {
-    Idmt.GetSetting(setting); //User get IDMT char
+    idmt.GetSetting(setting); //User get IDMT char
     packet.PacketPut(CMD_DOR, 0, 1, setting);
   }
   else
   {
     //User set IDMT char
-    Idmt.Set(packet.parameter3);
+    idmt.Set(packet.parameter3);
     packet.PacketPut(CMD_DOR, 0, 1, packet.parameter3);
   }
-
 }
 
 
+void HandlePacket::HandleFrequency(Packet_t &packet)
+{
+  uint16union_t frequency;
+
+  frequency.l = AnalogIO.returnFrequency(); //Calculate frequency
+
+  packet.PacketPut(CMD_DOR, 0x01, frequency.s.Lo, frequency.s.Hi);
+}
 
 void HandlePacket::HandleCurrent(Packet_t &packet)
 {
- //
-  packet.PacketPut(CMD_DOR_CURRENT, 0x01, Current.s.Lo, Current.s.Hi);
-}
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-/*! @brief Data structure used to pass Analog configuration to a user thread
- *
- */
-typedef struct AnalogThreadData
-{
-  OS_ECB* semaphore;
-  uint8_t channelNb;
-} TAnalogThreadData;
-
-
-/*! @brief Analog thread configuration data
- *
- */
-static TAnalogThreadData AnalogThreadData[NB_ANALOG_CHANNELS] =
-{
-  {
-    0, //semaphore
-    0 // channelNb
-  },
-  {
-    0,
-    1
-  },
-  {
-    0,
-    2
-  }
-};
-
-
-/*! @brief Initializes modules.
- *
- */
-static void InitModulesThread(void* pData)
-{
-  // Analog
-  Analog::Analog_t analog( (uint32_t) CPU_BUS_CLK_HZ);
-
-  //Initialze UART
-  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
-
-  // Generate the global analog semaphores
-  for (uint8_t analogNb = 0; analogNb < NB_ANALOG_CHANNELS; analogNb++)
-    AnalogThreadData[analogNb].semaphore = OS_SemaphoreCreate(0);
-
-  // Initialize PIT module
-  PIT::PIT_t pit(CPU_BUS_CLK_HZ);
-  pit.Set(1, 0); // set timer period as 1ms which is roughly 52.3Hz
-
-  // We only do this once - therefore delete this thread
-  OS_ThreadDelete(OS_PRIORITY_SELF);
-}
-
-
-static void OutputSignalThread(void* pData)
-{
-  static Analog::Analog_t analogTrip( (uint8_t) 2 ); //Initialize analog channel 2 for tripping signal
-  //analogTrip.PutSample(0, 2); //Idie mode
-
-  for (;;)
-  {
-	OS_SemaphoreWait(SignalFlag, 0);
-
-	if (Counter == 0)
-	  analogTrip.PutSample(5, 2); //Send tripping signal
-	else
-	  Counter -= 1;
-  }
-}
-
-
-void __attribute__ ((interrupt)) PIT::ISR()
-{
-  // inform RTOS that ISR is being processed
-  OS ISR;
-
-  if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
-  {
-    PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
-
-    // Signal the analog channels to take a sample
-    for (uint8_t analogNb = 0; analogNb < NB_ANALOG_CHANNELS; analogNb++)
-      (void)OS_SemaphoreSignal(AnalogThreadData[analogNb].semaphore);
-  }
-
+  //critical section; //Enter critical section
+  packet.PacketPut(CMD_DOR_CURRENT, 0x02, Current.s.Lo, Current.s.Hi);
 }
 
 
 
-
-/*! @brief Samples a value on an ADC channel and sends it to the corresponding DAC channel.
- *
- */
-void AnalogLoopbackThread(void* pData)
+static uint16_t GetInverTime(uint32_t tripTime)
 {
+  uint16_t newTime;
+  uint32_t TimeR = (int64_t)Counter * 65536 / 1000;
+  uint32_t percent;
 
-  // Make the code easier to read by giving a name to the typecast'ed pointer
-  #define analogData ((TAnalogThreadData*)pData)
-  static LED_t led;
-  static Analog::Analog_t analogTime( (uint8_t) 1);	//Initialize analog channel 1 for timing signal
+  //Counter *= 1024; //Convert time in ms into 16Q7
+  //oldCounter *= 1024; //Convert time in ms into 16Q7
+  percent = (int64_t)TimeR << 16 / Time ;
 
-  if (Time != 0)
-    Counter--;
-
-  for (;;)
-  {
-	//OS_DisableInterrupts();
-
-    int16_t analogInputValue;
-
-    //Waiting from ISR from PIT
-    (void)OS_SemaphoreWait(analogData->semaphore, 0);
-
-    Analog::Analog_t analogIO(analogData->channelNb);
-
-    // Get analog sample, if 20 sample received then calculate RMS and the current
-    if (analogIO.GetSignal() )
-    {
-      Current.l = Idmt.GetCurrent(); //Current in 16Q11
-
-    }
+  newTime = (percent * tripTime) >> 16;
 
 
-    if (Current.l > OVERCURRENT)
-    {
-      led.Color(LED_t::ORANGE);
-      led.On(); //Turn on warming LED
-
-      Time = Idmt.GetTripTime(Current.l); //triptime in 32Q16 in sec
-      Counter = Time *1000 / 65536; // triptime in ms
-
-      analogTime.PutSample(5, 1); //Send timing signal
-
-      if (Counter == 0)
-        (void)OS_SemaphoreSignal(SignalFlag);//signal output thread via semaphore
-    }
-    else
-    {
-      Time = 0; // Reset trip time
-      led.Off(); //Turn on warming LED
-    }
-
-
-    //OS_EnableInterrupts();
-  }
+  return (newTime * 1000 / 65536); // Convert back to original vlaue
 }
 
 
-/*! @brief Handle packet thread
-     *
-     *  @param pData might not use but is required by the OS to create a thread.
-     *
-     */
-static void HandlePacketThread(void* pData)
-{
-  // initialize the packet module
-  Packet_t packet;
-
-  for (;;)
-  {
-    if (packet.Packet_t::PacketGet())
-      HandlePacket::HandleCommandPacket(packet);
-  }
-
-}
-
-
-#if 0
 namespace CallBack
 {
 
+  static LED_t led;
+  static uint8_t PrevCurrent;
+  static bool Flag_Trip;
+  static bool success;
 
- //function description
+  //function description
   void PIT(void* argu)
   {
+	if (Time != 0)
+	{
+	  Counter--;
+
+	  if ( Counter == 0)
+	  {
+		if (!Flag_Trip)
+		  Flag_Trip = AnalogIO.PutSample(5, 2); //Send trip time signal
+		//Increment nBTriptime
+	  }
+	}
 
 
-      AnalogIO.GetVoltage(); //analog get a sample
-
-    //calculate current
-
-    if (counter != 0)
+    if (AnalogIO.GetSignal() ) //Got 20 samples
     {
-      counter -= 1;
-      AnalogIO.PutSample(5);
+    	Current.l = Idmt.GetCurrent(); //calculate current
+
+    }
+
+    if (!success)
+    {
+    	PrevCurrent = Current.s.Hi; // Get higher byte
+    	success = 1;
+    }
+
+
+    if (Current.l > OVERLOAD)
+    {
+      led.Color(LED_t::ORANGE);
+      led.On();
+
+      AnalogIO.PutSample(5, 1); //Send timing signal via channel 1
+
+      //Compare to find whether current has significant changes
+      if (Current.s.Hi != PrevCurrent)
+      {
+    	  //Inverse timing
+    	  if (Counter != 0)
+    	    Counter = GetInverTime( Idmt.GetTripTime(Current.l) ); // Calculate new trip time based on new current
+
+    	  PrevCurrent = Current.s.Hi;
+      }
+
+      else
+      {
+    	//New trip time
+    	if (Counter == 0)
+    	{
+    		Time = Idmt.GetTripTime(Current.l); //triptime in 32Q16 in sec
+    		Counter = Time *1000 / 65536; // triptime in ms
+    		Flag_Trip = 0;
+    	}
+
+      }
+
     }
     else
-      AnalogIO.PutSample(0);
+    {
+      Time = 0; //Reset trip time
+      led.Off();
+
+      if (AnalogIO.PutSample(0, 1) )// Stop sending signal on both channel
+    	AnalogIO.PutSample(0, 2);
+    }
 
 
     /*if (I > 1.03)
@@ -409,7 +281,7 @@ namespace CallBack
   }
 
 }
-#endif
+
 
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -417,45 +289,40 @@ int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
+
+
+  PIT::PIT_t pit(CPU_BUS_CLK_HZ, CallBack::PIT, 0); // Initialize PIT module
+  pit.Set(1, 0); // set timer period as 1ms which is roughly 52.3Hz
   
-  OS_ERROR error;
-
-    // Initialise low-level clocks etc using Processor Expert code
-    PE_low_level_init();
-
-    // Initialize the RTOS
-    OS_Init(CPU_CORE_CLK_HZ, true);
-
-    SignalFlag = OS_SemaphoreCreate(0);
-
-    // Create module initialization thread
-    error = OS_ThreadCreate(InitModulesThread,
-                            NULL,
-                            &InitModulesThreadStack[THREAD_STACK_SIZE - 1],
-                            0); // Highest priority
-
-    // Create module OutputSignal thread
-        error = OS_ThreadCreate(OutputSignalThread,
-                                NULL,
-                                &OutputSignalThreadStack[THREAD_STACK_SIZE - 1],
-                                1);
+  //Initialze UART
+  Packet_t packet(BAUDRATE, CPU_BUS_CLK_HZ);
 
 
-    // Create threads for 3 analog loopback channels
-    for (uint8_t threadNb = 0; threadNb < NB_ANALOG_CHANNELS; threadNb++)
-    {
-      error = OS_ThreadCreate(AnalogLoopbackThread,
-                              &AnalogThreadData[threadNb],
-                              &AnalogThreadStacks[threadNb][THREAD_STACK_SIZE - 1],
-                              ANALOG_THREAD_PRIORITIES[threadNb]);
-    }
+  __DI(); //Disable interrupt
 
-    // Create sending packet thread
-    HandlePacket packetThread(HandlePacketThread, 0, 6);
+  /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
+  PE_low_level_init();
+  /*** End of Processor Expert internal initialization.                    ***/
 
-    // Start multithreading - never returns!
-    OS_Start();
+  __EI(); //Enable the interrupt
 
+  /* Write your code here */
+  for (;;)
+  {
+    if ( packet.PacketGet())
+    HandlePacket::HandleCommandPacket(packet);
+
+  }
+
+  /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
+  /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
+  #ifdef PEX_RTOS_START
+    PEX_RTOS_START();                  /* Startup of the selected RTOS. Macro is defined by the RTOS component. */
+  #endif
+  /*** End of RTOS startup code.  ***/
+  /*** Processor Expert end of main routine. DON'T MODIFY THIS CODE!!! ***/
+  for(;;){}
+  /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
 
 /* END main */

@@ -25,31 +25,35 @@ namespace Analog
 {
 
   const int32_t resolutionAD = 20 ; // in 32Q16
-  const uint16_t resolutionDA = 3277; // resolution for converting actual voltage into DAC reading
-
+  const uint16_t resolutionDA = 3277;
+  const uint8_t NB_Sample = 20; //Size of array
 
 
 class Analog_t
 {
   private:
     int16_t adcReading;
-    int16_t preSample;
-    uint8_t channelNb;
+    int16_t prevSample;
+    uint16_t period;
+    uint8_t zeroPoint;
+    static uint16_t frequency;
 
   public:
 
-    static std::vector<int32_t> inputSinusoid;
+    static std::vector<int32_t> inputSignal;
 
     Analog_t(const uint32_t clock);
 
-    Analog_t(const uint8_t chNb);
-
     //Get a sample from channel 0
-    inline bool GetSample();
+    bool GetSample();
 
     bool GetSignal();
 
     bool ZeroCrossDetector();
+
+    uint16_t&& GetFrequency();
+
+    uint16_t returnFrequency();
 
     bool PutSample(const int16_t value, const uint8_t channelNb);
 
