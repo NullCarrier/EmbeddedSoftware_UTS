@@ -17,11 +17,14 @@ namespace PIT
   using F = void (void*); // a function type, not a pointer
 
   // Local function pointer
-  static F* UserFunc;
-  static void* UserArgu;
+  static F* UserFunc1;
+  static void* UserArgu1;
+
+  static F* UserFunc0;
+  static void* UserArgu0;
 
 
-  bool PIT_t::Init()
+  bool PIT_t1::Init()
   {
     __DI(); //Disable interrupt
 
@@ -52,8 +55,8 @@ namespace PIT
     this->Enable(true);
 
  // Initialize the local usefunction
-    UserFunc = userFunction;
-    UserArgu = userArguments;
+    UserFunc1 = userFunction;
+    UserArgu1 = userArguments;
 
     // Enable timer0 interrupt
     PIT_TCTRL1 |= PIT_TCTRL_TIE_MASK;
@@ -64,60 +67,61 @@ namespace PIT
   }
 
 
-void PIT_t::Set(const uint32_t& newPeriod, bool restart)
-{
-  period = newPeriod * 1e6; // Convert into ns
-
-  if (restart)
+  void PIT1_t::Set(const uint32_t& newPeriod, bool restart)
   {
-  //disable timer1
-   this->Enable(false);
+    period = newPeriod * 1e6; // Convert into ns
 
-  //reload the timer
-   PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
+    if (restart)
+    {
+      //disable timer1
+      this->Enable(false);
 
-  //Enable timer1
-   this->Enable(true);
- }
- else
- {
-  //reload the timer during running the timer
-   PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
- }
+      //reload the timer
+      PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
 
+      //Enable timer1
+      this->Enable(true);
+    }
+    else
+    {
+      //reload the timer during running the timer
+      PIT_LDVAL1 = ( period / ( (1/ (float) moduleClk) * 1e9) ) - 1;
+    }
+
+
+  }
+
+
+  void PIT1_t::Enable(const bool enable)
+  {
+   if (enable)
+     PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
+   else
+     PIT_TCTRL1 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
+  }
+
+
+  PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
+  moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
+  {
+    this->Init();
+  }
 
 }
 
-
-void PIT_t::Enable(const bool enable)
+void __attribute__ ((interrupt)) PIT1_ISR(void)
 {
- if (enable)
-   PIT_TCTRL1 |= PIT_TCTRL_TEN_MASK; //Enable the timer0
- else
-   PIT_TCTRL1 &= ~PIT_TCTRL_TEN_MASK; // disable the timer0
-}
+  if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
+  {
+    PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
 
-
-PIT_t::PIT_t(const uint32_t mClock, F* userFunc, void* userArgu):
-moduleClk(mClock), userFunction(userFunc), userArguments(userArgu)
-{
-  this->Init();
-}
-
-
-void __attribute__ ((interrupt)) ISR(void)
-{
- if (PIT_TFLG1 & PIT_TFLG_TIF_MASK)
- {
-  PIT_TFLG1 = PIT_TFLG_TIF_MASK; //Clear the flag bit when interrupt trigger
-
- // then call callback function
-  if (UserFunc)
-  UserFunc(UserArgu);
- }
+    // then call callback function
+    if (UserFunc)
+      UserFunc(UserArgu);
+  }
 
 }
 
-}
+
 
 
