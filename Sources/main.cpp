@@ -51,17 +51,9 @@ const uint64_t BAUDRATE = 115200;
 
 const uint8_t THREAD_STACK_SIZE = 100;
 
-extern TFIFO TxFIFO;
-extern TFIFO RxFIFO;
 
-extern OS_ECB* TxfifoSemaphore;
-extern OS_ECB* RxfifoSemaphore;
-extern OS_ECB* ShareFIFOSemaphore;
 extern OS_ECB* PIT_Semaphore;
 extern OS_ECB* RTC_Semaphore;
-
-extern uint8_t RxData;
-extern uint8_t TxData;
 
 static OS_ERROR Error; //Error for all possible ones in RTOS
 
@@ -184,15 +176,6 @@ class HandlePacket
      *  @return void
     */
     static void SetModePacket(Packet_t &packet);
-
-  /*! @brief Destructor for deleting thread when object has not existed
-   *
-   *
-  */
-    ~HandlePacket()
-    {
-      OS_ThreadDelete(priority); // delete thread in destructor , has not assigned priority yet
-    }
 
 };
 
@@ -422,7 +405,7 @@ static void InitModulesThread(void* pData)
   pit.Set(500, true); // Set period 500ms
 
   // Initialize RTC module
-  RTC::RTC_t rtc(0);
+  RTC::RTC_t rtc(nullptr);
 
   LED_t led(LED_t::ORANGE);
   led.On();
@@ -432,47 +415,6 @@ static void InitModulesThread(void* pData)
 }
 
 
-/*! @brief Receiving thread
-     *
-     *  @param pData might not use but is required by the OS to create a thread.
-     *
-     */
-static void RxThread(void* pData)
-{
-  for (;;)
-  {
-	OS_SemaphoreWait(RxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-    RxFIFO.Put(RxData); // let the receiver to send a byte of data to RxFIFO
-
-    OS_SemaphoreSignal(ShareFIFOSemaphore); //Release a remaphore
-  }
-}
-
-
-/*! @brief Transimission thread
-     *
-     *  @param pData might not use but is required by the OS to create a thread.
-     *
-     */
-static void TxThread(void* pData)
-{
-  uint8_t data = 0;
-
-  for (;;)
-  {
-	OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
-
-    if (!TxFIFO.Get(data) )
-	  UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
-	else
-	{
-	  UART2_D = data;
-	  UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
-	}
-
-  }
-
-}
 
 
 /*! @brief PIT thread
@@ -592,7 +534,7 @@ int main(void)
         		      4);
 
   // Create sending packet thread with highest priority
-  static HandlePacket packetThread(HandlePacketThread, 0, 5);
+  HandlePacket packetThread(HandlePacketThread, nullptr, 5);
 
   __EI(); //Enable the interrupt
 

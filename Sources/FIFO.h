@@ -21,7 +21,7 @@
 #include "critical.h"
 
 // Number of bytes in a FIFO
-#define FIFO_SIZE 256
+const uint16_t FIFO_SIZE = 256;
 
 /*!
  * @class TFIFO
@@ -32,11 +32,12 @@ class TFIFO
     uint8_t Start;		/*!< The index of the position of the oldest data in the FIFO */
     uint8_t End; 		/*!< The index of the next available empty position in the FIFO */
     uint8_t Buffer[FIFO_SIZE];	/*!< The actual array of bytes to store the data */
-    uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
-    //OS_ECB* nbItem; /*!< The number of bytes currently stored in the FIFO */
-    //OS_ECB* availability; /*!< the semaphore for singalling a event */
+    //uint16_t volatile NbBytes;	/*!< The number of bytes currently stored in the FIFO */
+    OS_ECB* itemsAvailable; /*!< The number of bytes currently stored in the FIFO */
+    OS_ECB* spaceAvailable; /*!< the size of the buffer */
 
   public:
+    TFIFO();
 
 /*! @brief Put one character into the FIFO.
  *

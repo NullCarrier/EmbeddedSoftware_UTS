@@ -17,15 +17,13 @@
 // const number for converting baudrate into SBR
 const float DIVISIOR = 16.0;
 
-TFIFO TxFIFO;
-TFIFO RxFIFO;
+static TFIFO TxFIFO;
+static TFIFO RxFIFO;
 
-OS_ECB* TxfifoSemaphore;
-OS_ECB* RxfifoSemaphore;
+static OS_ECB* TxfifoSemaphore;
+static OS_ECB* RxfifoSemaphore;
 
-OS_ECB* ShareFIFOSemaphore;
-
-uint8_t RxData;
+static uint8_t RxData;
 
 
 /*! @brief Calculate the fractional part of number
@@ -49,7 +47,7 @@ static uint8_t GetFraction(const uint32_t &baudRate, const uint32_t &moduleClk)
 
 bool UART_t::Init() const
 {
- // __DI();//Disable interrupt
+  critical section; //Enter critical section
 
  //local variable for storing SBR using union type
   uint16union_t sbr;
@@ -88,12 +86,10 @@ bool UART_t::Init() const
   RxfifoSemaphore = OS_SemaphoreCreate(0);
 
   //Create binary semaphore
-  ShareFIFOSemaphore = OS_SemaphoreCreate(0);
+  //ShareFIFOSemaphore = OS_SemaphoreCreate(0);
 
  //Set priority?
   UART2_C2 |= UART_C2_RIE_MASK; // Arm the receive interrupt
-
- // __EI();// Enable the interrupt
 
   return true;
 }
@@ -101,7 +97,7 @@ bool UART_t::Init() const
 
 bool UART_t::InChar(uint8_t &rxData)
 {
-  OS_SemaphoreWait(ShareFIFOSemaphore, 0); // Wait for semaphore signalled by RxThread
+  //OS_SemaphoreWait(ShareFIFOSemaphore, 0); // Wait for semaphore signalled by RxThread
 
   // retrieve data from FIFO and send it to Packet module
   return RxFIFO.Get(rxData);
@@ -112,6 +108,55 @@ bool UART_t::InChar(uint8_t &rxData)
 {
   return TxFIFO.Put(txData); // Packet module requires to send data to FIFO
 }
+
+
+ /*! @brief Receiving thread
+      *
+      *  @param pData might not use but is required by the OS to create a thread.
+      *
+      */
+ void RxThread(void* pData)
+{
+  for (;;)
+  {
+    OS_SemaphoreWait(RxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+    RxFIFO.Put(RxData); // let the receiver to send a byte of data to RxFIFO
+
+   // OS_SemaphoreSignal(ShareFIFOSemaphore); //Release a remaphore
+  }
+}
+
+
+/*! @brief Transimission thread
+     *
+     *  @param pData might not use but is required by the OS to create a thread.
+     *
+     */
+ void TxThread(void* pData)
+{
+  for (;;)
+  {
+	OS_SemaphoreWait(TxfifoSemaphore, 0); //suspend the thread until next time it has been siginified
+
+	uint8_t data = 0;
+
+    TxFIFO.Get(data);
+
+    OS_DisableInterrupts(); //Start critical section
+
+	//UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+
+	UART2_D = data;
+
+	UART2_C2 |= UART_C2_TIE_MASK;// Arm output device
+
+	OS_EnableInterrupts();
+
+  }
+
+}
+
+
 
 
 
@@ -159,7 +204,7 @@ void __attribute__ ((interrupt)) UART_ISR(void)
    {
      if (UART2_S1 & UART_S1_TDRE_MASK)
        OS_SemaphoreSignal(TxfifoSemaphore); // To check any threads waiting on semaphore and make them ready to run
-       UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
+     UART2_C2 &= ~UART_C2_TIE_MASK; // Disarm the UART output
    }
 
 }

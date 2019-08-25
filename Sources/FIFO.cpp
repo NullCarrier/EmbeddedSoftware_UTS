@@ -12,26 +12,31 @@
 
 #include "FIFO.h"
 
+TFIFO::TFIFO()
+{
+  //Create the semaphore
+  itemsAvailable = OS_SemaphoreCreate(0);
+  spaceAvailable = OS_SemaphoreCreate(FIFO_SIZE);
+}
+
 
 bool TFIFO::Put(const uint8_t data)
 {
   critical section; //Enter critical section
 
-  if (NbBytes < FIFO_SIZE) // To make sure the buffer is not full or overflow
-  {
+  OS_SemaphoreWait(spaceAvailable, 0);
 
-    NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
+    //NbBytes++; // increment one for NbBytes as soon as Buffer is adding one byte
 
-	Buffer[End] = data; // add a byte of data into array buffer
+  Buffer[End] = data; // add a byte of data into array buffer
 
-	End++; // add a new data , then increment one for End index
+  End++; // add a new data , then increment one for End index
 
-	End %= FIFO_SIZE; // to make a circular array, reset End index
+  End %= FIFO_SIZE; // to make a circular array, reset End index
 
-	return true;
-  }
-  else
-    return false;
+  OS_SemaphoreSignal(itemsAvailable);
+
+  return true;
 }
 
 
@@ -39,20 +44,18 @@ bool TFIFO::Get(uint8_t &dataRef)
 {
   critical section; //Enter critical section
 
-  if (NbBytes != 0) // can not retrieve if buffer is empty
-  {
-    NbBytes--; // decrement one whenever the Buffer has been retrieved
+  OS_SemaphoreWait(itemsAvailable, 0);
 
-	dataRef = Buffer[Start]; // place the retrieved byte
+    //NbBytes--; // decrement one whenever the Buffer has been retrieved
 
-	Start++; // removing one data, then increment Start index
+  dataRef = Buffer[Start]; // place the retrieved byte
 
-	Start %= FIFO_SIZE; // to make a circular array, reset Start index
+  Start++; // removing one data, then increment Start index
 
-	return true;
-  }
-  else
-	return false;
+  Start %= FIFO_SIZE; // to make a circular array, reset Start index
+
+  OS_SemaphoreSignal(spaceAvailable);
+  return true;
 }
 
 

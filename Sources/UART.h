@@ -28,12 +28,12 @@
 #include "critical.h" //critical section
 
 
-
 class UART_t
 {
   private:
   uint32_t baudRate;  /*!< baudRate The desired baud rate in bits/sec. */
   uint32_t moduleClk;  /*!< moduleClk The module clock rate in Hz. */
+
 
   protected:
   /*! @brief Sets up the UART interface before first use.
@@ -51,7 +51,7 @@ class UART_t
   UART_t(const uint32_t rate, const uint32_t clock):
   baudRate{rate}, moduleClk{clock}
   {
-   this->Init();
+    this->Init();
   }
 
   /*! @brief default constructor for HandlePacketThread
@@ -85,11 +85,8 @@ class UART_t
 };
 
 
-
-//static void RxThread(void* pData);
-
-
-//static void TxThread(void* pData);
+ void RxThread(void* pData);
+ void TxThread(void* pData);
 
 
 /*! @brief Poll the UART status register to try and receive and/or transmit one character.
