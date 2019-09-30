@@ -10,6 +10,11 @@ system.
 project is to implement a 3-phase DOR that is able to be set and interrogated
 remotely (via the PC and USB interface).
 
+## Project Structure
+  This project is entirely based on the development board TWR-K70F120M with K70 families 32bits Arm Cortex-M4 MCUs.
+  It consists of several haradware abstraction layers (HAL) writen in C++ and RTOS from the tutor, Peter McLean.
+   
+
 ## Authors
   Author: Chao Li
 
